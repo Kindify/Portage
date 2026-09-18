@@ -544,3 +544,97 @@ Expect roughly **941 rows (3.3%) with `bilingual_gap = 1`** in the Act, spread
 across 157 sections. Those rows are a feature of the law, not a failure of the
 build, and the acceptance tests should assert the count rather than drive it
 to zero.
+
+---
+
+## 4. XML vocabulary map - English Income Tax Act (2026-09-18)
+
+Completed before writing the parser, per PLAN.md step 1. Counts are for
+`data/ITA-eng.xml` under `<Body>`.
+
+### The seven addressable levels
+
+`Section` 763 (under Body), `Subsection` 5,309, `Paragraph` 13,165,
+`Subparagraph` 8,465, `Clause` 2,876, `Subclause` 773, `Subsubclause` 150.
+
+Two invariants were checked against the file rather than assumed, and the parser
+depends on both:
+
+- **An addressable unit has at most one direct `<Text>` child.** Zero units have
+  more.
+- **That `<Text>` never follows a structural child.** Zero violations. Opening
+  text always comes first.
+
+### Continued text - the thing that makes round-tripping hard
+
+`ContinuedParagraph` 649, `ContinuedSectionSubsection` 628 (607 under Subsection,
+21 under Section), `ContinuedSubparagraph` 201, `ContinuedDefinition` 148,
+`ContinuedClause` 36, `ContinuedSubclause` 6, `ContinuedFormulaParagraph` 84.
+
+1,337 units contain at least one. **802 of those have it interleaved between
+structural children, not trailing.** 1,184 units have one fragment, 131 have two,
+21 have three, one has five.
+
+ITA 6(1)(f) is the clearest case - child sequence `SSSSCSCS`:
+
+```
+<Text>          the total of all amounts received by the taxpayer in the year ...
+<Subparagraph>  (i)   a sickness or accident insurance plan,
+<Subparagraph>  (ii)  a disability insurance plan,
+<Subparagraph>  (iii) an income maintenance insurance plan, or
+<Subparagraph>  (iii.1) a plan described in any of subparagraphs (i) to (iii) ...
+<ContinuedParagraph>   to or under which the taxpayer's employer has made a contribution ...
+<Subparagraph>  (iv)  the total of all such amounts received by the taxpayer ...
+<ContinuedParagraph>   exceeds
+<Subparagraph>  (v)   the total of the contributions made by the taxpayer ...
+```
+
+The fragments are connective tissue in the middle of a list. This is why
+continued text is a row and not a column - see `docs/decisions.md`.
+
+### Definitions
+
+`Definition` 2,191. **None carries a `<Label>`**, but they contain 6,853
+addressable descendants (3,602 `Paragraph`, 2,239 `Subparagraph`). Treating them
+as transparent - letting their paragraphs attach straight to the parent
+subsection - produces **1,068 colliding citation paths**: `248(1)(a)` occurs 86
+times, `248(1)(b)` 86 times, `95(1)(a)` 27 times. 3,412 rows would be lost to the
+uniqueness constraint. Hence the `~d<n>` ordinal.
+
+`DefinedTermEn` 3,347 and `DefinedTermFr` 2,111 appear inside definition text.
+Both language files carry both terms, but not universally - the English file has
+an English term on 2,189 of 2,191 definitions and a French term on 2,072. So the
+defined term is **not** a reliable universal key. It is stored in
+`defined_term_en` / `defined_term_fr` so the option stays open.
+
+### Formulas
+
+`FormulaGroup` 754, of which **123 are nested inside another FormulaGroup**.
+`FormulaDefinition` 2,236, `FormulaTerm` 2,236, `FormulaParagraph` 1,849,
+`Formula` 754, `FormulaText` 754, `FormulaConnector` 744.
+
+A `FormulaGroup` contains **no addressable descendants**, so it is captured whole.
+But a `FormulaDefinition` can sit directly under a `Subsection` outside any
+FormulaGroup, and then its variable name lives in a `<FormulaTerm>` or a
+`<Label>` - which is body text, not metadata. Missing this cost 93 characters and
+a round-trip test that passed while wrong. See `docs/decisions.md`.
+
+### Everything else
+
+- `Repealed` 548 - **inline inside `<Text>`**, so it needs no special handling.
+  Carried through untouched, e.g. `[Repealed, 1996, c. 21, s. 2(1)]`.
+- `Heading` 174 - direct children of `<Body>`, structural headings above section
+  level (`PART I`, `DIVISION A`). Captured as non-addressable fragments.
+- `HistoricalNote` 762 against 763 sections, attaching at section level only -
+  so `history_note` is a section-level column in practice.
+- `MarginalNote` 5,772 - the heading of a unit, stored in `heading_en`.
+- Wrappers with no identity of their own: `SectionPiece`, `BodyPiece`,
+  `Provision` (39), `ReadAsText`. The parser descends without emitting.
+
+### Outside the Body
+
+`<Statute>` has three `<Schedule>` children and a `<RecentAmendments>`.
+The schedules hold the 22 `Section` elements that make up the difference between
+785 in the file and 763 in the Body: "RELATED PROVISIONS" (16) and "AMENDMENTS
+NOT IN FORCE" (6). A third, "Listed Corporations", holds no Section elements and
+is currently not captured - flagged in PLAN.md.

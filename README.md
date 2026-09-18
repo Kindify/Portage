@@ -9,8 +9,13 @@ navigable at the subsection level.
 
 ## Status
 
-**Phase 0, session 1: setup and source inspection.** No data has been built
-yet. There is no `portage.sqlite` in this repository.
+**Phase 0, session 2.** The parser works on the **English Income Tax Act**.
+`python -m portage.build` produces `portage.sqlite` - 36,277 rows, 31,501
+addressable provisions, 763 sections - and the test suite passes, including a
+byte-exact round trip against the source with no normalisation applied.
+
+Not yet done: French text, the Income Tax Regulations, and the
+`cross_references` table. See `PLAN.md`.
 
 ## What this is
 

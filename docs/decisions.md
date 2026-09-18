@@ -182,3 +182,173 @@ mismatches; strip trailing periods. The 13 malformed source labels catalogued in
 `docs/source-notes.md` section 3 are handled explicitly, not by a general rule.
 
 ---
+
+## 2026-09-18 - Anomalies are catalogued, never counted
+
+**Decided (Matt):** the build writes `data/bilingual_gaps.csv` and
+`data/label_anomalies.csv`. Tests compare those files against committed fixtures
+in `tests/fixtures/` and **fail on any difference**. Changing a fixture is a
+deliberate commit with a stated reason.
+
+**Never assert a bare number.** A test that says `assert len(gaps) == 941` passes
+while a gap silently moves from one provision to another. A test that diffs the
+catalogue catches that. The number in `docs/source-notes.md` is descriptive
+prose, not a contract.
+
+**Session 2 scope note:** only `label_anomalies.csv` can be produced this
+session, since bilingual gaps need the French file. `bilingual_gaps.csv` and its
+fixture arrive in session 3 with French. The catalogue-and-diff mechanism is
+built now so the second one slots into a pattern that already exists.
+
+---
+
+## 2026-09-18 - Label normalisation: derive the path, never alter the source
+
+**Decided (Matt):** `citation_path` is derived from `<Label>` through a
+documented normalisation. The label as published is preserved verbatim in
+`label_raw`. Where normalisation had to do anything beyond the ordinary
+bracketing, `label_anomaly = 1` and the case appears in
+`data/label_anomalies.csv`.
+
+**The rule, in order of application.** Input is the `<Label>` element's text and
+nothing else - never body text, never position, never a number pattern.
+
+1. **Collapse whitespace.** Internal runs of whitespace (including the
+   non-breaking spaces the French file uses after `«`) become a single space;
+   leading and trailing whitespace is stripped.
+2. **Section level: take the label bare.** `87` stays `87`; `110.6` stays
+   `110.6`. Strip a single trailing period if present.
+3. **Below section level: strip stray quotation marks.** Remove leading or
+   trailing `"`, `"`, `«`, `»` and any space left behind. This is what turns the
+   English `"(a)` and the French `« a)` at 181.7 and 190.21 into `(a)`.
+   **Sets `label_anomaly = 1`.**
+4. **Range connectors.** Within a label, ` et ` becomes ` and `, and ` à `
+   becomes ` to `, so the French `(10) et (11)` and `(14.01) à (14.1)` match the
+   English `(10) and (11)` and `(14.01) to (14.1)`. This alone resolved 41 of 42
+   subsection mismatches. Not an anomaly - it is ordinary bilingual form.
+5. **Bracket bare labels.** A token ending in `)` but not starting with `(`
+   becomes bracketed: the French `a)` becomes `(a)`, `b.1)` becomes `(b.1)`.
+   Applied to each token in a range as well. Not an anomaly.
+6. **Repair unmatched brackets.** A label with an opening `(` and no closing `)`
+   gets the closing bracket added: the English `(b` at 12.4 becomes `(b)`.
+   **Sets `label_anomaly = 1`.**
+7. **A label that is still not a recognisable form after all of the above** is
+   kept as-is in the path, `label_anomaly = 1`, and listed in the catalogue for
+   a human to look at. Nothing is dropped and nothing is guessed.
+
+**What this rule never does:** it never changes `<Text>`. Source text is
+reproduced exactly as published, including the `[Repealed, ...]` markers, which
+are inline inside `<Text>` and are carried through untouched. Normalisation
+applies to the derived key only.
+
+**Why derive rather than correct:** the malformed labels are defects in the
+published XML, not in the law. Correcting the source would make our copy differ
+from what Justice Canada publishes, which breaks the round-trip test and the
+promise that text is reproduced exactly. Deriving a clean key while keeping the
+raw label means both the citation works and the source is intact, and
+`label_anomaly` tells a reader exactly where we had to do something.
+
+---
+
+## 2026-09-18 - Continued text: non-addressable rows, not a column
+
+**Decided:** text that belongs to a unit but appears *after* one of its children
+(`ContinuedParagraph`, `ContinuedSectionSubsection`, `ContinuedSubparagraph`,
+`ContinuedClause`, `ContinuedDefinition`) is stored as its **own row** in
+`sections`, with `is_addressable = 0`, `level = 'continued'`, and a
+`citation_path` formed from the parent's path plus a non-citable suffix
+(`6(1)(f)~c1`, `~c2`, ...). Unlabelled `Definition` elements and the `Formula`
+family are handled the same way.
+
+**Why a row and not a column.** A `text_continued` column assumes continued text
+always trails its unit. It does not. Of the 1,337 units in the English Act that
+contain continued text, **802 have it interleaved between structural children**,
+not trailing. ITA 6(1)(f) is typical - its child sequence is `SSSSCSCS`, and the
+fragments read "to or under which the taxpayer's employer has made a
+contribution..." and "exceeds", sitting between subparagraphs (iii.1) and (iv)
+and between (iv) and (v). They are connective tissue in the middle of a list. A
+single column would have to either reorder them to the end, which corrupts the
+text, or drop them, which breaks the round-trip. 131 units have two such
+fragments, 21 have three, and one has five.
+
+**Why `is_addressable`.** Continued text is not an addressable unit of the Act -
+nobody cites `6(1)(f)~c1`, and CLAUDE.md's `sections` table is defined as one row
+per addressable unit. The flag keeps both promises at once: citation queries and
+the structure test filter `is_addressable = 1` and see exactly the addressable
+units; the round-trip test reads every row in `order_index` order and reproduces
+the source. The `~` suffix is deliberately not valid citation syntax so it can
+never be mistaken for one.
+
+**Flagged for Matt's review.** This adds `is_addressable`, `label_raw` and
+`label_anomaly` to the column list in CLAUDE.md. The alternative was a second
+table, which keeps `sections` literally one-row-per-addressable-unit but makes
+the round-trip test a two-table merge rather than the single ordered read
+CLAUDE.md describes. I went with the flag because it matches the test as written.
+Say if you would rather have the separate table.
+
+---
+
+## 2026-09-18 - Two refinements to the label rule, found by running it
+
+**Decided:** added rule 2b (a bare numeral is the correct label form at
+subsubclause level) and rule 3b (remove whitespace immediately inside brackets,
+so `(b )` normalises to `(b)` instead of splitting into two tokens). Both are
+written into `docs/citation-path-rule.md`.
+
+**Why:** the first run of the rule as specified produced 176 label anomalies.
+150 of them were subsubclauses labelled `1`, `2`, `3` - the ordinary published
+form for that level, not a defect. A catalogue that is 85% false positives is one
+nobody reads, which defeats the point of cataloguing rather than counting. After
+the refinement the English Act yields 26 anomalies, all genuine.
+
+**Note on process:** the rule was written first and then corrected against
+reality, which is the right way round. The correction is recorded here rather
+than quietly folded into the spec.
+
+---
+
+## 2026-09-18 - A round-trip test that shares code with the parser proves nothing
+
+**Decided:** `parse.source_text()` reconstructs the source by a deliberately
+different method from the parser - a mixed-content walk over `.text` and `.tail`
+- and `tests/test_roundtrip.py` carries a second check that accounts for every
+character against the raw XML by a third route.
+
+**Why this exists.** The first version of the round-trip passed exactly, with
+zero normalisation, and it was wrong. Both the parser and the round-trip target
+skipped every `<Label>` element unconditionally. That is right for a Label on a
+subsection, which is stored in a column - but wrong for the `<Label>` and
+`<FormulaTerm>` on a `FormulaDefinition`, which carry the variable name that
+introduces the sentence. The database was missing 93 characters of formula
+variable names, and the test could not see it because it had the same blind spot.
+
+An independent character accounting against the raw file caught it. The lesson is
+general enough to write down: **a verification that reuses the logic it is
+verifying only proves the logic is self-consistent.** Every acceptance test in
+this project should be able to say what it would catch that the parser could get
+wrong.
+
+**Second fix from the same investigation:** the walker now captures any subtree
+containing nothing it tracks structurally (`_is_text_leaf`), rather than
+recursing into it and emitting nothing. That is a structural test, not a list of
+element names, so an element type nobody anticipated is captured rather than
+silently dropped.
+
+---
+
+## 2026-09-18 - Schedules are not in the sections table
+
+**Decided:** `sections` covers the `<Body>` of the Act - 763 sections. The file
+holds 785 `Section` elements; the other 22 are inside `<Schedule>` elements
+titled "RELATED PROVISIONS" (16) and "AMENDMENTS NOT IN FORCE" (6).
+
+**Why:** those are appended material, not the enacted text, and they carry a
+different meaning - amendments not in force are, by definition, not the law as
+consolidated. Including them in the same table as enacted provisions would let a
+reader retrieve a provision that is not in effect without noticing.
+
+**Flagged for Matt.** There is a third schedule, "Listed Corporations", which
+contains no `Section` elements and is genuinely part of the Act. It is currently
+not captured at all. See PLAN.md.
+
+---
