@@ -2,104 +2,117 @@
 
 ## Where things stand
 
-**Phase 0, session 2 (2026-09-18): the parser works on the English Income Tax
-Act.** `python -m portage.build` produces `portage.sqlite` and 19 tests pass,
-including a byte-exact round trip with no normalisation at all.
+**Phase 0, session 3 (2026-09-18): the Income Tax Act is built in both
+languages.** 29 tests pass. Both round trips reproduce their source files
+character-for-character with no normalisation.
 
-French, the Regulations and cross-references are still to come.
+Still to come: the Income Tax Regulations, and the `cross_references` table.
 
 ---
 
-## Done in session 2
+## Done in session 3
 
-**XML vocabulary mapped** before any code was written -
-`docs/source-notes.md` section 4. Two invariants checked rather than assumed:
-an addressable unit has at most one direct `<Text>`, and that text never follows
-a structural child.
+**Definitions re-keyed by defined term.** The ordinal could not be a bilingual
+key: each file alphabetises definitions in its own language, so `248(1)~d1` is
+"absorbed capacity" in English and "tax shelter" in French. Now
+`248(1)"active business"`, with French-term and ordinal fallbacks catalogued.
 
-**The citation path rule written down first**, as a specification with worked
-examples, in `docs/citation-path-rule.md`. Two refinements were needed once it
-met the data, both logged with reasons.
+**French parsed and joined.** Same walker, no language-specific code beyond the
+label rule. Both round trips exact.
 
-**`portage/labels.py`** - label normalisation. **`portage/parse.py`** - XML to
-records, a pure function. **`portage/build.py`** - records to SQLite, with
-`sections`, `meta`, an English FTS5 index, the anomaly catalogue and the
-spot-check file.
-
-**Results on the English Act:**
+**`alignment_unverified` added** - see the open question below, which is the
+main thing I need from you.
 
 | | |
 |---|---|
-| rows in `sections` | 36,277 |
-| addressable units | 31,501 |
-| sections (Body) | 763 |
-| label anomalies | 26, catalogued in `tests/fixtures/label_anomalies.csv` |
-| citation path collisions | 0 |
-| round trip | **exact, zero normalisation** |
-| tests | 19 passing |
+| rows | 36,778 |
+| addressable | 31,766 |
+| rows with both languages | 34,296 |
+| **verified bilingual pairs** | **31,888** |
+| `alignment_unverified` | 2,408 |
+| `bilingual_gap` | 2,482 |
+| label anomalies | 55 |
+| definition key fallbacks | 140 |
+| round trip EN / FR | **exact, zero normalisation** |
 
-### The two bugs worth remembering
-
-**A round-trip test that shared the parser's blind spot passed while wrong.**
-Both skipped every `<Label>`, so both lost the formula variable names on
-`FormulaDefinition` elements - 93 characters. An independent character
-accounting against the raw XML caught it. `source_text()` now uses a different
-method from the parser, and a second test accounts for every character by a
-third route. Written up in `docs/decisions.md`.
-
-**Treating definitions as transparent would have silently lost 3,412 rows.**
-`Definition` carries no label but holds 6,853 addressable descendants, so
-`248(1)(a)` collided 86 ways. Definitions now get a `~d<n>` ordinal.
+Four catalogues are written by the build and diffed against committed fixtures:
+`label_anomalies.csv`, `definition_key_fallbacks.csv`, `bilingual_gaps.csv`,
+`alignment_unverified.csv`.
 
 ---
 
-## Session 3 - scope
+## The open question - `alignment_unverified`
 
-**Add French to the Income Tax Act.** Still not the Regulations.
+**You asked me to confirm the 51(1) case lands as gaps rather than misaligned
+pairs. It did not.** Joining on `citation_path` produced four *paired* rows for
+51(1)(a) to (d), and they are not translations of each other:
 
-1. Parse `data/ITA-fra.xml` with the same parser - it is language-agnostic
-   already, and the label rule handles French forms.
-2. Join English and French on `citation_path`. Populate `text_fr`,
-   `heading_fr`, `label_fr`.
-3. Write `data/bilingual_gaps.csv` and commit
-   `tests/fixtures/bilingual_gaps.csv`. The diff test is already written for
-   label anomalies and the same shape applies.
-4. Confirm the three converging typos. Session 1 counted 941 single-language
-   paths **before** the label rule existed. 12.4, 181.7 and 190.21 should now
-   resolve to the same path in both languages and stop being gaps. The
-   catalogue will say what is actually left; the 941 is not a target.
-5. Add the French FTS5 index.
+```
+51(1)(a)  EN  "a capital property of the taxpayer that is another share..."
+          FR  "sauf pour l'application des paragraphes 20(21) et 44.1(6)..."
+```
 
-Then session 4: the Regulations, and the tagged `cross_references` table.
+English breaks the opening conditions into lettered paragraphs; French leaves
+them in the subsection text and letters only the rules. Same label, different
+provision. The gaps - (d.1), (d.2), (e), (f) against b.1), b.2) - came out right;
+the joined four were silently wrong.
+
+I have marked them rather than decided for you. Where a parent's set of children
+differs between the files, the children sharing a path keep one row but carry
+`alignment_unverified = 1`. That asserts nothing; it records that we do not know.
+It is a structural test - it compares child label sets and makes no judgment
+about the texts.
+
+**What I need from you.** Three options:
+
+- **(a) Keep the flag, as built.** One row per path, both texts present, the
+  uncertainty visible and filterable. Nothing is asserted and nothing is lost.
+  Risk: a consumer who ignores the flag sees a wrong pair.
+- **(b) Split them into single-language rows**, like gaps. Safest reading of
+  "never force alignment" - we stop putting the two texts on one row at all.
+  Cost: ~2,400 rows become two rows each, and the many cases where the pairing
+  is in fact correct lose their join.
+- **(c) Keep the flag for fragments, split the addressable ones.** The 333
+  addressable rows are the ones a person would actually cite and be misled by;
+  the ~2,075 fragment rows are non-citable continued text where the risk is
+  lower.
+
+I lean to **(c)**, because the harm is concentrated in the rows someone can cite,
+and 51(1)(a) returning two unrelated texts on one row is the specific failure
+mode you have been guarding against all along. But **(a)** is defensible if you
+would rather keep the data shape simple and rely on the flag.
+
+---
+
+## Session 4 - scope
+
+1. Settle `alignment_unverified` (above), and apply it.
+2. The Income Tax Regulations, both languages. The parser should need no
+   changes - the root element is `<Regulation>` rather than `<Statute>`, which
+   `parse()` already handles. Expect new label shapes and a fresh anomaly
+   catalogue.
+3. The tagged `cross_references` table: `XRefExternal` (1,112 in the Act) and
+   `DefinitionRef` (1,158), every row `method = 'tagged'`. Internal references
+   stay deferred to Phase 1.
 
 ---
 
 ## Open questions for Matt
 
-**1. How should definitions be keyed?** Currently `248(1)~d17(a)` - an ordinal
-in document order. It works, collides with nothing and needs no text parsing, but
-nobody can cite it and it cannot be looked up by hand, so definitions are
-excluded from the spot-check file. The alternative is the defined term itself,
-`248(1)"active business"(a)`, which is how these are actually cited - but the
-term is missing from about 5% of definitions, and the English and French terms
-differ, so it would not serve as a bilingual join key without more thought.
-`defined_term_en` and `defined_term_fr` are already stored, so switching later
-needs no reparse. **This is the one I would most like an answer on**, because
-definitions are the most-cited part of the Act.
+**1. `alignment_unverified` - see above.** The one that matters.
 
-**2. Three new columns.** `is_addressable`, `label_raw` and `label_anomaly` are
-not in the CLAUDE.md column list. The reasoning is in `docs/decisions.md`; the
-alternative for continued text was a second table. Confirm or redirect.
+**2. Fragments join by ordinal across languages.** `2(3)~c1` in English is paired
+with `2(3)~c1` in French purely by position within the provision. That is the
+same positional-key reasoning I rejected for definitions. It is less dangerous -
+fragments are not citable and each language round-trips in its own order - but it
+is the same species of assumption. Where the counts differ the rows are now
+flagged; where the counts match they are paired on trust. Worth a decision.
 
-**3. The "Listed Corporations" schedule is not captured.** It is part of the Act
-but contains no `Section` elements, so nothing in the current model holds it.
-Should Phase 0 include schedules at all? The round-trip currently covers the
-enacted `<Body>` only, which is stated in the test.
+**3. "Listed Corporations" schedule still not captured.** Part of the Act,
+contains no `Section` elements, so nothing in the current model holds it.
 
-**4. `history_note` is section-level.** 762 `HistoricalNote` elements against
-763 sections. Subsections do not carry their own. The column exists on every row
-but is only ever populated on sections - confirm that is what you want rather
-than a separate table.
+**4. `history_note` is section-level only.** 762 notes against 763 sections.
+Stated in README under Known limits.
 
 ---
 

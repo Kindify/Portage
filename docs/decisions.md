@@ -352,3 +352,87 @@ contains no `Section` elements and is genuinely part of the Act. It is currently
 not captured at all. See PLAN.md.
 
 ---
+
+## 2026-09-18 - Definitions are keyed by their defined term, not by position
+
+**Decided (Matt):** `citation_path` for a definition is the subsection path plus
+the defined term: `248(1)"active business"`. English term preferred, French term
+where English is absent, ordinal only where neither exists. Fallbacks are
+catalogued in `data/definition_key_fallbacks.csv` against a committed fixture.
+
+**Why - the evidence that settled it.** Session 2 used a document-order ordinal.
+Session 3 checked whether it could serve as a bilingual key. **It cannot: each
+language file alphabetises its definitions in its own language.** In 248(1),
+ordinal 1 is "absorbed capacity" in the English file and "tax shelter"
+(*abri fiscal*) in the French. Ordinal 2 is "active business" and "separation
+agreement". Joining on position would have mis-paired almost every definition in
+the Act.
+
+**Two bugs found while implementing it**, both worth recording because both
+produced plausible-looking wrong answers:
+
+1. **A descendant search returns the wrong term.** `.//DefinedTermEn` finds the
+   first English term *anywhere* in the definition, which is usually a
+   cross-reference to a different definition quoted in the body. It keyed
+   "action admissible" to a phrase from its own body text and collided three
+   definitions in 135.2(1) onto one path. The term must be read from the direct
+   children of the definition's own `<Text>`.
+2. **But the equivalent term is not in the opening `<Text>`.** For a definition
+   with paragraphs, the "(english term)" is published after the last paragraph.
+   Restricting to the opening `<Text>` dropped the English equivalent on more
+   than half of them - 984 of 2,202 in the French file, against 2,078 when the
+   whole subtree is searched. So: own term from the opening `<Text>`, equivalent
+   from the last match in the subtree, nested definitions excluded.
+
+**Normalisation** is Unicode NFC plus collapsed whitespace, nothing more. Case
+preservation and quote handling were measured against the real files and changed
+the join rate by exactly zero, so neither is applied.
+
+**Duplicate terms are real.** 44.1(1) defines "eligible small business
+corporation share" twice, with different text. Duplicates get a `#2` suffix,
+`label_anomaly = 1` and a catalogue row, rather than one of them being lost to
+the uniqueness constraint. The same mechanism covers duplicate *labels*, which
+also occur: the French 142.6(8)b) numbers two subparagraphs `(iv)` where the
+English has `(iv)` and `(v)` - a typo in the published XML.
+
+---
+
+## 2026-09-18 - alignment_unverified: joining on a shared label is not evidence
+
+**Decided:** where a provision's set of children differs between the two
+language files, the children that happen to share a path are kept as one row but
+marked `alignment_unverified = 1` and catalogued in
+`data/alignment_unverified.csv`. Consumers wanting only verified pairs filter
+`bilingual_gap = 0 AND alignment_unverified = 0`.
+
+**Why.** Joining on `citation_path` is not by itself enough to honour "never
+force alignment". ITA 51(1) is the proof: English lists paragraphs (a) to (f),
+French lists a) to d), and the join produced four *paired* rows -
+
+```
+51(1)(a)  EN "a capital property of the taxpayer that is another share..."
+          FR "sauf pour l'application des paragraphes 20(21) et 44.1(6)..."
+```
+
+- which are not translations of each other at all. English breaks the opening
+conditions into lettered paragraphs; French leaves them in the subsection text
+and letters only the rules. The label `(a)` is the same on both sides and means
+something different. Four silently wrong pairs, exactly the mis-attribution this
+project exists to prevent.
+
+**The test is structural, not semantic.** It compares the *set of child labels*
+under each parent. It makes no judgment about whether two texts correspond - it
+only marks where the label alone is not evidence that they do. Addressable
+children and non-addressable fragments are compared separately, because a
+subsection whose continued-text fragments differ in number says nothing about
+whether its paragraphs correspond.
+
+**This is a flag, not a decision.** Marking a pair unverified asserts nothing. It
+records that we do not know, which is the honest state. Whether those 2,408 rows
+should instead be split into single-language rows is Matt's call - see PLAN.md.
+
+**Scale:** 125 provisions have differing addressable child sets, covering 333
+addressable rows; fragments add the rest, for 2,408 in total. 31,888 bilingual
+pairs are verified.
+
+---

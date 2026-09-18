@@ -105,3 +105,19 @@ def normalise(raw, level):
         reason = "%s; %s" % (reason, token_reason) if reason else token_reason
 
     return " ".join(out), anomaly, reason
+
+
+def normalise_term(raw):
+    """Normalise a defined term for use in a citation path.
+
+    Unicode NFC, collapsed whitespace, nothing else. Case is preserved as
+    published: lowercasing and quote-stripping were both measured against the
+    real files and changed the English/French join rate by zero, so neither is
+    applied. The less a normalisation does, the less it can do wrong.
+
+    Specified in docs/citation-path-rule.md section 4.
+    """
+    if raw is None:
+        return None
+    text = " ".join(unicodedata.normalize("NFC", raw).split())
+    return text or None

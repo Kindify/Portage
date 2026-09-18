@@ -11,7 +11,7 @@ from collections import defaultdict
 
 from lxml import etree
 
-from .labels import normalise
+from .labels import normalise, normalise_term
 
 LIMS = "{http://justice.gc.ca/lims}"
 
@@ -88,6 +88,53 @@ def _is_text_leaf(el):
     return True
 
 
+def _defined_terms(definition):
+    """The definition's own term and its other-language equivalent.
+
+    Read from the DIRECT children of the definition's own <Text>, never by a
+    descendant search. A descendant search returns the first DefinedTerm
+    anywhere in the body, which is normally a cross-reference to a *different*
+    definition - in the French file that mis-keyed "action admissible" to a
+    phrase quoted in its body, and collided three definitions onto one path.
+
+    The published pattern is: own term first, then the body, then the other
+    language's equivalent in parentheses at the end.
+    """
+    text = None
+    for child in definition:
+        if isinstance(child.tag, str) and child.tag == "Text":
+            text = child
+            break
+    if text is None:
+        return None, None
+
+    terms = [c for c in text if isinstance(c.tag, str)
+             and c.tag in ("DefinedTermEn", "DefinedTermFr")]
+    if not terms:
+        return None, None
+
+    # The definition's own term is the first DefinedTerm in its opening <Text>.
+    own = terms[0]
+    other_tag = "DefinedTermFr" if own.tag == "DefinedTermEn" else "DefinedTermEn"
+
+    # The other language's equivalent is published in parentheses at the END of
+    # the definition - which for a definition with paragraphs is after the last
+    # of them, not in the opening <Text>. So search the whole subtree and take
+    # the LAST match: cross-references to other definitions occur mid-body, the
+    # equivalent comes last. Nested definitions are excluded so their terms are
+    # not mistaken for this one's.
+    other = None
+    for candidate in definition.iter(other_tag):
+        if any(a is not definition and a.tag == "Definition"
+               for a in candidate.iterancestors()):
+            continue
+        other = candidate
+
+    if own.tag == "DefinedTermEn":
+        return own.text, (other.text if other is not None else None)
+    return (other.text if other is not None else None), own.text
+
+
 def _marginal_note(el):
     for child in el:
         if isinstance(child.tag, str) and child.tag == "MarginalNote":
@@ -111,6 +158,8 @@ class _Walker:
         # Fragment counters are keyed on the owning path, not held per call, so
         # two sibling wrappers under the same parent cannot produce the same path.
         self.counters = defaultdict(int)
+        self.seen_paths = set()
+        self.dup_terms = defaultdict(int)
 
     def _next(self, parent_path, letter):
         self.counters[(parent_path, letter)] += 1
@@ -187,6 +236,17 @@ class _Walker:
                 raw = label.text if label is not None else None
                 token, anomaly, reason = normalise(raw, level)
                 path = prefix + token
+                if path in self.seen_paths:
+                    # The published XML does repeat a label: the French 142.6(8)b)
+                    # has two subparagraphs numbered (iv) where the English has
+                    # (iv) and (v). Disambiguate deterministically and catalogue
+                    # it; the source text is never altered.
+                    self.dup_terms[path] += 1
+                    path = "%s#%d" % (path, self.dup_terms[path] + 1)
+                    anomaly = True
+                    reason = (reason + "; " if reason else "") + \
+                        "duplicate label in the same provision"
+                self.seen_paths.add(path)
                 self._emit(
                     citation_path=path,
                     level=level,
@@ -202,19 +262,43 @@ class _Walker:
                 self.walk(child, path, path, skip_direct_text=True)
 
             elif tag == "Definition":
-                # Transparent container: no <Label>, but it holds addressable
-                # Paragraphs. An ordinal keeps their paths unique - without it,
-                # 248(1)(a) collides 86 ways.
-                path = self._next(parent_path, "d")
-                term_en = child.find(".//DefinedTermEn")
-                term_fr = child.find(".//DefinedTermFr")
+                # No <Label>, but it holds addressable Paragraphs, so it needs a
+                # key or 248(1)(a) collides 86 ways. The key is the defined term,
+                # not a document-order ordinal: each language file alphabetises
+                # its definitions in its own language, so ordinal 1 is "absorbed
+                # capacity" in English and "tax shelter" in French. See
+                # docs/citation-path-rule.md section 4.
+                raw_en, raw_fr = _defined_terms(child)
+                term_en = normalise_term(raw_en)
+                term_fr = normalise_term(raw_fr)
+
+                if term_en:
+                    path, fallback = '%s"%s"' % (parent_path, term_en), ""
+                elif term_fr:
+                    path, fallback = '%s"%s"' % (parent_path, term_fr), "french term - no english term present"
+                else:
+                    path, fallback = self._next(parent_path, "d"), "ordinal - no defined term in either language"
+
+                # The Act does define the same term twice in one subsection -
+                # 44.1(1) "eligible small business corporation share" is two
+                # distinct definitions. Disambiguate deterministically rather
+                # than lose one to the uniqueness constraint.
+                if path in self.seen_paths:
+                    self.dup_terms[path] += 1
+                    path = "%s#%d" % (path, self.dup_terms[path] + 1)
+                    fallback = (fallback + "; " if fallback else "") + \
+                        "duplicate defined term in the same provision"
+                self.seen_paths.add(path)
+
                 self._emit(
                     citation_path=path,
                     level="definition",
                     parent_path=parent_path,
                     is_addressable=0,
-                    defined_term_en=term_en.text if term_en is not None else None,
-                    defined_term_fr=term_fr.text if term_fr is not None else None,
+                    label_anomaly=1 if fallback else 0,
+                    anomaly_reason=fallback,
+                    defined_term_en=term_en,
+                    defined_term_fr=term_fr,
                     text_en=_own_text(child),
                 )
                 self.walk(child, path, path, skip_direct_text=True)

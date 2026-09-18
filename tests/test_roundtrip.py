@@ -1,22 +1,30 @@
-"""Acceptance test 1: the database reproduces the source text exactly.
+"""Acceptance test 1: the database reproduces both source texts exactly.
 
 CLAUDE.md allows "a documented, minimal whitespace normalization". None is
-applied. The comparison is byte-for-byte on the raw text, because a test that
-normalises is a test that cannot see certain classes of loss.
+applied, in either language. The comparison is byte-for-byte, because a test
+that normalises is a test that cannot see certain classes of loss.
 """
+
+import pytest
 
 from portage.parse import source_text
 
-from conftest import ITA_EN
+from conftest import ITA_EN, ITA_FR
 
 
-def test_roundtrip_is_exact(conn):
+@pytest.mark.parametrize(
+    "col,order,xml",
+    [("text_en", "order_index", ITA_EN), ("text_fr", "order_index_fr", ITA_FR)],
+    ids=["english", "french"],
+)
+def test_roundtrip_is_exact(conn, col, order, xml):
     rebuilt = "".join(
         r[0] for r in conn.execute(
-            "SELECT COALESCE(text_en,'') FROM sections WHERE act='ITA' ORDER BY order_index"
+            "SELECT COALESCE(%s,'') FROM sections "
+            "WHERE act='ITA' AND %s IS NOT NULL ORDER BY %s" % (col, order, order)
         )
     )
-    expected = source_text(ITA_EN)
+    expected = source_text(xml)
     assert len(rebuilt) == len(expected), (
         "length differs by %d characters" % (len(rebuilt) - len(expected))
     )
@@ -28,19 +36,21 @@ def test_roundtrip_is_exact(conn):
         )
 
 
-def test_no_text_is_silently_dropped(conn):
-    """Guards the failure mode that actually happened during session 2.
+@pytest.mark.parametrize("xml,col", [(ITA_EN, "text_en"), (ITA_FR, "text_fr")],
+                         ids=["english", "french"])
+def test_no_text_is_silently_dropped(conn, xml, col):
+    """Guards the failure mode that actually happened in session 2.
 
     The parser and the round-trip target once shared a blind spot - both skipped
     every <Label> - so the round-trip passed while the formula variable names
-    were missing from the database. This checks the total against the raw XML by
-    a third route that shares no code with either.
+    were missing. This checks the total against the raw XML by a third route
+    that shares no code with either.
     """
     from lxml import etree
 
     from portage.parse import METADATA, OWNERS
 
-    body = etree.parse(str(ITA_EN)).getroot().find("Body")
+    body = etree.parse(str(xml)).getroot().find("Body")
     all_text = len("".join(body.itertext()))
     in_columns = 0
     for tag in METADATA:
@@ -51,6 +61,6 @@ def test_no_text_is_silently_dropped(conn):
                 in_columns += len("".join(el.itertext()))
 
     stored = conn.execute(
-        "SELECT SUM(LENGTH(COALESCE(text_en,''))) FROM sections WHERE act='ITA'"
+        "SELECT SUM(LENGTH(COALESCE(%s,''))) FROM sections WHERE act='ITA'" % col
     ).fetchone()[0]
     assert stored == all_text - in_columns

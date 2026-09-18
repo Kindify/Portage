@@ -70,9 +70,11 @@ def test_section_count_matches_the_enacted_body(conn):
 
 
 def test_addressable_records_carry_a_label(conn):
+    """In at least one language. A French-only record has no English label."""
     missing = conn.execute(
         "SELECT citation_path, level FROM sections "
-        "WHERE is_addressable=1 AND (label_raw IS NULL OR label_raw='')"
+        "WHERE is_addressable=1 "
+        "AND COALESCE(label_raw,'')='' AND COALESCE(label_raw_fr,'')=''"
     ).fetchall()
     assert missing == [], "addressable records with no label: %s" % [
         tuple(r) for r in missing[:10]

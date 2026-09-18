@@ -30,16 +30,51 @@ Deliver one SQLite file, `portage.sqlite`, containing:
 1. `sections`: one row per addressable unit of the Income Tax Act
    (RSC 1985, c 1 (5th Supp)) and the Income Tax Regulations
    (CRC, c 945): section, subsection, paragraph, subparagraph, clause.
-   Columns: id, act, citation_path (e.g. `110.6(2.1)(a)(ii)`), level,
-   parent_id, order_index, heading_en, heading_fr, text_en, text_fr,
-   history_note (the amending-statute note if present in source),
-   source_url, snapshot_date.
+   Plus non-addressable rows (`is_addressable = 0`) for text that belongs
+   to a unit but is not itself citable - continued text, definitions,
+   formulas, headings. Those carry a derived path containing `~`, which
+   is deliberately not valid citation syntax.
+
+   Identity and structure:
+     id, act, citation_path, level, parent_id, parent_path,
+     order_index (English document order), order_index_fr (French),
+     is_addressable, UNIQUE (act, citation_path)
+
+   Labels, as published and as derived:
+     label_raw, label_raw_fr - verbatim, never altered
+     label_anomaly, anomaly_reason, label_anomaly_fr, anomaly_reason_fr
+
+   Content:
+     heading_en, heading_fr (from MarginalNote)
+     text_en, text_fr
+     defined_term_en, defined_term_fr (definitions are keyed by term)
+     history_note (section level only - the source attaches it there)
+
+   Bilingual state:
+     bilingual_gap - the path exists in one language only
+     alignment_unverified - the path exists in both, but its parent's
+       set of child labels differs between the files, so a shared label
+       is not evidence that the two texts correspond. Consumers wanting
+       only verified pairs filter bilingual_gap = 0 AND
+       alignment_unverified = 0.
+
+   Provenance:
+     source_url, source_url_fr
+
 2. `cross_references`: one row per reference from one unit to another
    found in the text (from_id, to_citation_path, to_id if resolved,
    raw_text). Mechanical extraction only.
 3. FTS5 virtual tables over text_en and text_fr.
-4. A `meta` table with source, version, snapshot_date, build timestamp,
-   and row counts.
+4. A `meta` table with source, consolidation_date and retrieved_date
+   (kept separate - one describes the law, the other our copy), build
+   timestamp, and row counts.
+5. Catalogue files, written by the build and diffed against committed
+   fixtures in `tests/fixtures/`. Anomalies are catalogued, never
+   counted - a bare number passes while a case moves silently:
+     data/label_anomalies.csv
+     data/definition_key_fallbacks.csv
+     data/bilingual_gaps.csv
+     data/alignment_unverified.csv
 
 Nothing else in Phase 0. No embeddings, no web front end, no MCP server
 yet. Those are later phases.

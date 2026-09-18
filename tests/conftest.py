@@ -5,12 +5,13 @@ import pytest
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 ITA_EN = ROOT / "data" / "ITA-eng.xml"
+ITA_FR = ROOT / "data" / "ITA-fra.xml"
 
 
 @pytest.fixture(scope="session")
 def built(tmp_path_factory):
     """Build the database once for the whole test session."""
-    if not ITA_EN.exists():
+    if not (ITA_EN.exists() and ITA_FR.exists()):
         pytest.skip("source XML not present in data/ - see README Setup")
     from portage.build import build
 

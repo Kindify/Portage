@@ -1,27 +1,56 @@
-act,citation_path,level,label_raw,reason
-ITA,111(2)(a)111(1)(b),paragraph,“111(1)(b),stray quotation mark; unrecognised label form
-ITA,111(2)(b)(b),paragraph,“(b),stray quotation mark
-ITA,111(5.4)111(5.4)(a),paragraph,111(5.4)(a),unrecognised label form
-ITA,12.4(b),paragraph,(b,unmatched opening bracket
-ITA,126(1.1)(d)(ii),subparagraph,“(ii),stray quotation mark
-ITA,128(2)(d.1)(i)(b),paragraph,“(b),stray quotation mark
-ITA,128(2)(d.1)(ii)(b),paragraph,“(b),stray quotation mark
-ITA,130(3)(a)(vii)(B)~d1(a),paragraph,“(a),stray quotation mark
-ITA,130(3)(a)(vii)(D)(a),paragraph,“(a),stray quotation mark
-ITA,130.1(6)(d)(ii)~d1(a),paragraph,“(a),stray quotation mark
-ITA,130.1(6)(d)(iv)(a),paragraph,“(a),stray quotation mark
-ITA,142.7(3)85,section,“85,stray quotation mark
-ITA,147.1(1)~d7(b),paragraph,(b ),whitespace inside brackets
-ITA,181.7(a),paragraph,“(a),stray quotation mark
-ITA,190.21(a),paragraph,“(a),stray quotation mark
-ITA,217(3)(b)(i)(A)(i.1),subparagraph,“(i.1),stray quotation mark
-ITA,217(3)(b)(i)(B)(f),paragraph,“(f),stray quotation mark
-ITA,248(1)~d53(a)(i)(b),paragraph,“(b),stray quotation mark
-ITA,248(1)~d53(a)(ii)(i),subparagraph,“(i),stray quotation mark
-ITA,248(1.1)(b)(iv)(B)(III)(ii),subparagraph,“(ii),stray quotation mark
-ITA,47(2)(ii),subparagraph,“(ii),stray quotation mark
-ITA,70(1)(b)12(1)(t),paragraph,“12(1)(t),stray quotation mark; unrecognised label form
-ITA,70(7)(a)150(1)(d),paragraph,“150(1)(d),stray quotation mark; unrecognised label form
-ITA,80.1(5)(a)(iv),subparagraph,“(iv),stray quotation mark
-ITA,88(2)(c)(t),paragraph,“(t),stray quotation mark
-ITA,95(2)(f.11)(ii)(F)(IV)1(ii),subparagraph,“(ii),stray quotation mark
+act,lang,citation_path,level,label_raw,reason
+ITA,en,111(2)(a)111(1)(b),paragraph,“111(1)(b),stray quotation mark; unrecognised label form
+ITA,en,111(2)(b)(b),paragraph,“(b),stray quotation mark
+ITA,en,111(5.4)111(5.4)(a),paragraph,111(5.4)(a),unrecognised label form
+ITA,en,12.4(b),paragraph,(b,unmatched opening bracket
+ITA,en,126(1.1)(d)(ii),subparagraph,“(ii),stray quotation mark
+ITA,en,128(2)(d.1)(i)(b),paragraph,“(b),stray quotation mark
+ITA,en,128(2)(d.1)(ii)(b),paragraph,“(b),stray quotation mark
+ITA,en,130(3)(a)(vii)(B)~d1(a),paragraph,“(a),stray quotation mark
+ITA,en,130(3)(a)(vii)(D)(a),paragraph,“(a),stray quotation mark
+ITA,en,130.1(6)(d)(ii)~d1(a),paragraph,“(a),stray quotation mark
+ITA,en,130.1(6)(d)(iv)(a),paragraph,“(a),stray quotation mark
+ITA,en,142.7(3)85,section,“85,stray quotation mark
+ITA,en,"147.1(1)""former limit""(b)",paragraph,(b ),whitespace inside brackets
+ITA,en,181.7(a),paragraph,“(a),stray quotation mark
+ITA,en,190.21(a),paragraph,“(a),stray quotation mark
+ITA,en,217(3)(b)(i)(A)(i.1),subparagraph,“(i.1),stray quotation mark
+ITA,en,217(3)(b)(i)(B)(f),paragraph,“(f),stray quotation mark
+ITA,en,"248(1)""cost amount""(a)(i)(b)",paragraph,“(b),stray quotation mark
+ITA,en,"248(1)""cost amount""(a)(ii)(i)",subparagraph,“(i),stray quotation mark
+ITA,en,248(1.1)(b)(iv)(B)(III)(ii),subparagraph,“(ii),stray quotation mark
+ITA,en,47(2)(ii),subparagraph,“(ii),stray quotation mark
+ITA,en,70(1)(b)12(1)(t),paragraph,“12(1)(t),stray quotation mark; unrecognised label form
+ITA,en,70(7)(a)150(1)(d),paragraph,“150(1)(d),stray quotation mark; unrecognised label form
+ITA,en,80.1(5)(a)(iv),subparagraph,“(iv),stray quotation mark
+ITA,en,88(2)(c)(t),paragraph,“(t),stray quotation mark
+ITA,en,95(2)(f.11)(ii)(F)(IV)1(ii),subparagraph,“(ii),stray quotation mark
+ITA,fr,111(2)(a)(b),paragraph,« b),stray quotation mark
+ITA,fr,111(2)(b)(b),paragraph,« b),stray quotation mark
+ITA,fr,"125(7)""adjusted aggregate investment income""(c)(a)#2",paragraph,a),duplicate label in the same provision
+ITA,fr,"125.7(1)""prior reference period""(a)(xvi)#2",subparagraph,(xvi),duplicate label in the same provision
+ITA,fr,"125.7(1)""prior reference period""(a)(xvii)#2",subparagraph,(xvii),duplicate label in the same provision
+ITA,fr,"125.7(1)""prior reference period""(a)(xviii)#2",subparagraph,(xviii),duplicate label in the same provision
+ITA,fr,126(1.1)(d)(ii),subparagraph,« (ii),stray quotation mark
+ITA,fr,130(3)(a)(vii)(B)~d1(a),paragraph,« a),stray quotation mark
+ITA,fr,130(3)(a)(vii)(D)(a),paragraph,« a),stray quotation mark
+ITA,fr,130.1(6)(d)(ii)~d1(a),paragraph,« a),stray quotation mark
+ITA,fr,130.1(6)(d)(iv)(a),paragraph,« a),stray quotation mark
+ITA,fr,142.6(8)(b)(iv)#2,subparagraph,(iv),duplicate label in the same provision
+ITA,fr,142.7(3)85,section,« 85,stray quotation mark
+ITA,fr,181.7(a),paragraph,« a),stray quotation mark
+ITA,fr,"183.3(1)""qualifying issuance""(a)(ii)#2",subparagraph,(ii),duplicate label in the same provision
+ITA,fr,190.21(a),paragraph,« a),stray quotation mark
+ITA,fr,"191(1)""financial intermediary corporation""i",paragraph,i,unrecognised label form
+ITA,fr,217(3)(b)(i)(A)(i.1),subparagraph,« (i.1),stray quotation mark
+ITA,fr,217(3)(b)(i)(B)(f),paragraph,« f),stray quotation mark
+ITA,fr,"248(1)""cost amount""(a)(i)(b)",paragraph,« b),stray quotation mark
+ITA,fr,"248(1)""cost amount""(a)(ii)(i)",subparagraph,« (i),stray quotation mark
+ITA,fr,248(1.1)(b)(iv)(B)(III)(ii),subparagraph,« (ii),stray quotation mark
+ITA,fr,47(2)(ii),subparagraph,« (ii),stray quotation mark
+ITA,fr,62(2)~d1(c),paragraph,« c),stray quotation mark
+ITA,fr,70(1)(b)(t),paragraph,« t),stray quotation mark
+ITA,fr,70(7)(a)(d),paragraph,« d),stray quotation mark
+ITA,fr,80.1(5)(a)(iv),subparagraph,« (iv),stray quotation mark
+ITA,fr,88(2)(c)(t),paragraph,« t),stray quotation mark
+ITA,fr,95(2)(f.11)(ii)(F)(IV)1(ii),subparagraph,« (ii),stray quotation mark

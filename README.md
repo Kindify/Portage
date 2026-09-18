@@ -9,13 +9,14 @@ navigable at the subsection level.
 
 ## Status
 
-**Phase 0, session 2.** The parser works on the **English Income Tax Act**.
-`python -m portage.build` produces `portage.sqlite` - 36,277 rows, 31,501
-addressable provisions, 763 sections - and the test suite passes, including a
-byte-exact round trip against the source with no normalisation applied.
+**Phase 0, session 3.** The **Income Tax Act in both languages** is built.
+`python -m portage.build` produces `portage.sqlite` - 36,778 rows, 31,766
+addressable provisions, 33,963 verified bilingual pairs - and both the English
+and French round trips reproduce their source files character-for-character with
+no normalisation applied.
 
-Not yet done: French text, the Income Tax Regulations, and the
-`cross_references` table. See `PLAN.md`.
+Not yet done: the Income Tax Regulations, and the `cross_references` table.
+See `PLAN.md`.
 
 ## What this is
 
@@ -135,21 +136,54 @@ itself is non-commercial. Both clauses are quoted above and in
 
 ## Known limits
 
-- **Cross-references are incomplete in Phase 0 by design.** The source XML tags
-  references to other statutes (`XRefExternal`) and to defined terms
-  (`DefinitionRef`), but contains no markup at all for references from one
-  provision to another inside the same instrument. Phase 0 ships only the tagged
-  references, each marked `method = 'tagged'`. Internal references
-  ("Notwithstanding subsections 152(4) to (5)") are **not present** and are
-  deferred to Phase 1 as a separate table. Do not read the `cross_references`
-  table as a complete reference graph.
-- **About 3.3% of records have text in only one language.** English and French
-  genuinely structure some provisions differently - English section 51(1) has
-  eight lettered paragraphs where French has six, with offset contents. Those
-  records carry `bilingual_gap = 1` and a NULL on one side. This reflects the
-  law as published; alignment is never forced. See `docs/source-notes.md`.
-- **This is a dated snapshot, not a consolidation service.** `meta` records
-  `consolidation_date` and `retrieved_date` separately.
+Read these before using the data. Each is a deliberate boundary, not a bug, and
+each is catalogued in a file the tests check.
+
+**Cross-references are tagged-only.** The source XML marks references to other
+statutes (`XRefExternal`) and to defined terms (`DefinitionRef`), but has no
+markup at all for a reference from one provision to another inside the same
+instrument. Phase 0 ships only the tagged ones, each marked `method = 'tagged'`.
+References like "Notwithstanding subsections 152(4) to (5)" are **not present**
+and are deferred to Phase 1 as a separate table. Do not read `cross_references`
+as a complete reference graph.
+
+**Schedules and amendments-not-in-force are not captured.** The `sections` table
+covers the enacted `<Body>`. The file also contains three `<Schedule>` elements -
+"RELATED PROVISIONS" (16 sections), "AMENDMENTS NOT IN FORCE" (6 sections) and
+"Listed Corporations" (no sections) - and none of them is in the database.
+Amendments not in force are, by definition, not the law as consolidated, and
+mixing them into the same table would let a reader retrieve a provision that is
+not in effect without noticing. "Listed Corporations" is genuinely part of the
+Act and its omission is a gap, not a principle.
+
+**History notes are section-level only.** The source attaches `HistoricalNote`
+to sections, not to subsections - 762 notes against 763 sections. The
+`history_note` column exists on every row but is only ever populated on sections.
+It does not tell you when a particular subsection was amended.
+
+**About 3% of records exist in one language only.** English and French genuinely
+structure some provisions differently. Those rows carry `bilingual_gap = 1` with
+NULL on one side, and are listed in `data/bilingual_gaps.csv`. Alignment is never
+forced.
+
+**Some pairs are joined by label but unverified.** Where a provision's set of
+child labels differs between the two files, a shared label is not evidence that
+the two texts correspond - English 51(1)(a) is a condition while French 51(1)a)
+is a rule. Those rows carry `alignment_unverified = 1` and are listed in
+`data/alignment_unverified.csv`. **For verified bilingual pairs only, filter
+`bilingual_gap = 0 AND alignment_unverified = 0`.**
+
+**Definitions are keyed by their defined term**, not by position - each language
+file alphabetises definitions in its own language, so position means nothing
+across languages. Where no English term is published the key falls back to the
+French term, and where neither exists to an ordinal; both cases are listed in
+`data/definition_key_fallbacks.csv`.
+
+**This is a dated snapshot, not a consolidation service.** `meta` records
+`consolidation_date` and `retrieved_date` separately.
+
+**It is unofficial.** For anything that matters, check
+<https://laws-lois.justice.gc.ca>.
 
 ## Setup
 

@@ -118,7 +118,69 @@ not gaps, they are source typos.
 
 ---
 
-## 4. Non-addressable fragments
+## 4. Definitions
+
+A `<Definition>` carries no `<Label>`, so it has no label to normalise. It does
+carry addressable `Paragraph` children, which means it needs a key of its own -
+without one, `248(1)(a)` collides 86 ways.
+
+**The key is the subsection path plus the defined term in quotation marks:**
+
+```
+248(1)"active business"        and its paragraphs:  248(1)"active business"(a)
+```
+
+This is how these provisions are actually cited, and unlike a document-order
+ordinal it is stable across languages.
+
+### Why not an ordinal
+
+Session 2 used a document-order ordinal, `248(1)~d17`. Session 3 checked whether
+that could serve as a bilingual join key. **It cannot.** Each language file
+alphabetises its definitions in its own language:
+
+| position in 248(1) | English file | French file |
+|---|---|---|
+| 1 | absorbed capacity | tax shelter / *abri fiscal* |
+| 2 | active business | separation agreement / *accord de séparation* |
+| 3 | additional voluntary contribution | listed international agreement |
+| 4 | adjusted cost base | estate of the bankrupt / *actifs du failli* |
+
+`248(1)~d1` is "absorbed capacity" in English and "tax shelter" in French.
+Joining on the ordinal would have mis-paired almost every definition in the Act -
+the precise failure this project exists to prevent.
+
+### The rule, in order
+
+1. **Normalise the term:** Unicode NFC, collapse internal whitespace, strip
+   leading and trailing whitespace. **Case is preserved as published.** Tested
+   against the data: lowercasing and quote-stripping change the join rate by
+   zero, so neither is applied - the less a rule does, the less it can do wrong.
+2. **Prefer the English term** (`<DefinedTermEn>`), in both language files. This
+   is what makes the key language-independent: the French file carries
+   `<DefinedTermEn>` on 2,076 of its 2,206 definitions.
+3. **Fall back to the French term** (`<DefinedTermFr>`) where no English term is
+   present.
+4. **Fall back to the ordinal** `~d<n>` only where **neither** term is present -
+   2 definitions in the English file, 4 in the French. These get
+   `label_anomaly = 1` and a row in `data/definition_key_fallbacks.csv`, which
+   the tests diff against a committed fixture.
+
+Fallbacks at step 3 are also catalogued, because a French-term key in the French
+file cannot join an English-term key in the English file, and the reader should
+be able to see which definitions those are rather than infer them from a gap
+count.
+
+### Expected join
+
+2,048 definition keys occur in both files. About 140 occur in one only, mostly
+where the French file carries no English term and the key therefore falls back to
+French. Those are genuine bilingual gaps: there is no mechanical way to pair
+them, and guessing is not an option. They carry `bilingual_gap = 1`.
+
+---
+
+## 4b. Non-addressable fragments
 
 Text that is part of a provision but is not itself citable gets a path built from
 its parent plus a suffix that is **deliberately not valid citation syntax**, so
@@ -127,13 +189,12 @@ it can never be mistaken for one:
 | Kind | Element | Path form | Example |
 |---|---|---|---|
 | continued text | `Continued*` | `<parent>~c<n>` | `6(1)(f)~c1` |
-| definition | `Definition` (no label) | `<parent>~d<n>` | `248(1)~d17` |
+| loose text | wrapper `<Text>` | `<parent>~t<n>` | `20.2(3)~t1` |
 | formula | `FormulaGroup` | `<parent>~f<n>` | `122.61(1)~f1` |
+| definition, no term | `Definition` | `<parent>~d<n>` | fallback only |
 
 These rows carry `is_addressable = 0`. Citation lookups and the structure test
 filter on `is_addressable = 1`; the round-trip test reads every row.
-
----
 
 ## 5. Uniqueness
 
