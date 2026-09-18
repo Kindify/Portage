@@ -1,0 +1,9 @@
+# Phase 0 stack. Nothing gets added here without a written reason in
+# docs/decisions.md. See CLAUDE.md > Stack.
+
+pandas>=2.2          # inspecting tabular source data
+pyarrow>=16.0        # reading Parquet (the A2AJ distribution format)
+lxml>=5.2            # parsing Justice Laws XML, structure-only
+pytest>=8.0          # acceptance tests
+
+# sqlite3 is in the Python standard library - nothing to install.

@@ -1,0 +1,30 @@
+# --- Source data downloads -------------------------------------------------
+# Raw source files (Parquet from A2AJ, XML from Justice Laws) are never
+# committed. They are large, they are not ours to redistribute, and the build
+# is supposed to be reproducible from the documented source URLs instead.
+data/
+*.parquet
+*.xml
+*.zip
+
+# --- Build output ----------------------------------------------------------
+# The database is a build artifact. It gets rebuilt by `python -m portage.build`.
+portage.sqlite
+portage.sqlite-journal
+portage.sqlite-wal
+portage.sqlite-shm
+build/
+dist/
+
+# --- Python ----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# --- macOS / editors -------------------------------------------------------
+.DS_Store
+.vscode/
+.idea/
