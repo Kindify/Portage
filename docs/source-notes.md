@@ -638,3 +638,30 @@ The schedules hold the 22 `Section` elements that make up the difference between
 785 in the file and 763 in the Body: "RELATED PROVISIONS" (16) and "AMENDMENTS
 NOT IN FORCE" (6). A third, "Listed Corporations", holds no Section elements and
 is currently not captured - flagged in PLAN.md.
+
+---
+
+## 5. How the term-extraction rule evolved (2026-09-18)
+
+Three versions in one session. Each passed its immediate check and each was
+wrong in a way the next piece of evidence exposed. Recorded because the pattern -
+a plausible rule, a passing check, a silent error - is the one this project is
+built to resist.
+
+| Version | Rule | What it produced | Evidence that changed it |
+|---|---|---|---|
+| **1** | `definition.find('.//DefinedTermEn')` - first English term anywhere in the subtree | Looked right on 248(1). **3 collisions in the English file, 11 in the French.** Keyed "action admissible" to *prorogation de la Commission canadienne du blé*, a phrase quoted in its own body | Path collisions. The descendant search was returning cross-references to *other* definitions, not this one's term. Three definitions in 135.2(1) landed on one path |
+| **2** | Own term = first term among **direct children of the opening `<Text>`**; equivalent = last opposite-type term among those same direct children | Collisions gone. But **1,219 French definitions reported "no English term"** against an expected ~130 | The equivalent is published in parentheses at the *end* of the definition, which for a definition with paragraphs is after the last paragraph - not in the opening `<Text>`. Measured: 984 found against 2,078 when the whole subtree is searched |
+| **3** (current) | Own term = first term among direct children of the opening `<Text>`. Equivalent = **last** opposite-type term **anywhere in the subtree**, excluding nested `Definition` | 0 collisions both languages, 2,046 joins, 126 French-term fallbacks - matching the independent estimate | Held up under the symmetric-join test: 2,021 of 2,046 symmetric |
+
+**What the symmetric test then added.** Version 3 still joined 25 pairs the two
+files disagree about, including 44.1(1) "eligible small business corporation
+share" - a term the Act defines twice, where the join had paired one
+definition's English text with the other's French. A key that matches is not
+proof that two records are the same provision. Those 25 are now unjoined and
+catalogued in `data/definition_join_suspects.csv`.
+
+**The generalisable point.** Each version was checked against the thing it was
+most likely to get wrong, and each check passed until a *different* measurement
+was taken - collisions, then coverage against an independent estimate, then
+symmetry. No single check would have caught all three.

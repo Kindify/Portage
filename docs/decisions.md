@@ -436,3 +436,48 @@ addressable rows; fragments add the rest, for 2,408 in total. 31,888 bilingual
 pairs are verified.
 
 ---
+
+## 2026-09-18 - Uniqueness is tested on the shipped citation_path, never on a proxy
+
+**Decided (Matt):** every uniqueness test runs against the `citation_path` as it
+is written to the database. No test may assert uniqueness of a structural proxy -
+a label tuple, an element path, a pre-disambiguation key - and infer that the
+shipped column is therefore unique.
+
+**Why.** The proxy and the shipped value can diverge, and when they do the test
+passes while the database is wrong. This session had two live examples of exactly
+that shape: a test that measured "English terms duplicated within the same parent
+element" returned zero, while the shipped paths collided three ways in the
+English file and eleven in the French, because the parent element and the parent
+*path* are not the same thing. Uniqueness is a property of the column that ships.
+Test the column that ships.
+
+**In practice:** `tests/test_structure.py::test_citation_paths_are_unique` groups
+on `(act, citation_path)` in SQL, against the built database, after every
+disambiguation rule has been applied. The `UNIQUE (act, citation_path)`
+constraint is a second line of defence, not the test.
+
+---
+
+## 2026-09-18 - Duplicate labels are the source's; disambiguated paths are ours
+
+**Decided:** where the published XML repeats a label or a defined term within one
+provision, the duplication is recorded as a defect **in the source**, and the
+`#2` suffix that separates the records is recorded as **ours**. Both facts are
+stated in README's Known limits, so nobody reads `142.6(8)(b)(iv)#2` as a
+citation Justice Canada would recognise.
+
+**The cases.** The French file numbers two subparagraphs `(iv)` in 142.6(8)b)
+where the English has `(iv)` and `(v)` - a numbering error in the published
+consolidation. 44.1(1) defines "eligible small business corporation share" twice,
+which is not an error but does mean the term alone does not identify a provision.
+Six duplicate labels and five duplicate terms in total.
+
+**Why it matters that the distinction is explicit.** We do not correct the
+source: `label_raw` holds `(iv)` verbatim on both records and the text is
+untouched. But we cannot ship two rows with the same key either. So the suffix is
+an artefact of this dataset, not of the law, and a reader who cites
+`142.6(8)(b)(iv)#2` to a court would be citing something that does not exist. The
+README says this in as many words.
+
+---

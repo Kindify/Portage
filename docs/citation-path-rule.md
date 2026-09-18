@@ -150,33 +150,81 @@ alphabetises its definitions in its own language:
 Joining on the ordinal would have mis-paired almost every definition in the Act -
 the precise failure this project exists to prevent.
 
-### The rule, in order
+### The rule, in order — term extraction
 
-1. **Normalise the term:** Unicode NFC, collapse internal whitespace, strip
-   leading and trailing whitespace. **Case is preserved as published.** Tested
-   against the data: lowercasing and quote-stripping change the join rate by
-   zero, so neither is applied - the less a rule does, the less it can do wrong.
-2. **Prefer the English term** (`<DefinedTermEn>`), in both language files. This
-   is what makes the key language-independent: the French file carries
-   `<DefinedTermEn>` on 2,076 of its 2,206 definitions.
-3. **Fall back to the French term** (`<DefinedTermFr>`) where no English term is
-   present.
-4. **Fall back to the ordinal** `~d<n>` only where **neither** term is present -
-   2 definitions in the English file, 4 in the French. These get
-   `label_anomaly = 1` and a row in `data/definition_key_fallbacks.csv`, which
-   the tests diff against a committed fixture.
+Reading a term is a structural operation: `<DefinedTermEn>` and
+`<DefinedTermFr>` are elements. But *which* element is the definition's own term
+is not obvious, and getting it wrong produces plausible, silently wrong keys.
+The rule below is the third version this session; the earlier two and what broke
+them are tabulated in `docs/source-notes.md` section 5.
 
-Fallbacks at step 3 are also catalogued, because a French-term key in the French
-file cannot join an English-term key in the English file, and the reader should
-be able to see which definitions those are rather than infer them from a gap
-count.
+1. **Find the definition's opening `<Text>`** - its first direct `<Text>` child.
+   A definition with no such child has no term.
+2. **The own term is the first `DefinedTermEn` or `DefinedTermFr` among the
+   direct children of that `<Text>`.** Direct children only. A descendant search
+   returns the first term *anywhere* in the body, which is normally a
+   cross-reference to a different definition - it keyed "action admissible" to a
+   phrase quoted in its own text and collapsed three definitions in 135.2(1)
+   onto one path.
+3. **The other language's equivalent is the LAST element of the opposite type
+   anywhere in the definition's subtree**, excluding any nested `Definition`.
+   It is published in parentheses at the end, which for a definition with
+   paragraphs is after the last paragraph, not in the opening `<Text>`.
+   Restricting this step to the opening `<Text>` loses the equivalent on more
+   than half of them - 984 of 2,202 in the French file against 2,078 across the
+   subtree. Taking the *last* match rather than the first avoids the
+   cross-references, which occur mid-body.
+4. **Normalise each term:** Unicode NFC, collapse internal whitespace, strip
+   ends. Nothing else. Lowercasing and quote-stripping were measured against the
+   real files and changed the join rate by exactly zero.
 
-### Expected join
+### Building the key
 
-2,048 definition keys occur in both files. About 140 occur in one only, mostly
-where the French file carries no English term and the key therefore falls back to
-French. Those are genuine bilingual gaps: there is no mechanical way to pair
-them, and guessing is not an option. They carry `bilingual_gap = 1`.
+1. **English term** where present - this is what makes the key
+   language-independent, since the French file carries `<DefinedTermEn>` on
+   2,078 of its 2,206 definitions.
+2. **French term** where no English term exists.
+3. **Ordinal** `~d<n>` where neither exists.
+
+Steps 2 and 3 set `label_anomaly = 1` and are listed in
+`data/definition_key_fallbacks.csv`.
+
+### The join must be symmetric
+
+A shared key is necessary but not sufficient. A definition in the English file
+is joined to one in the French file **only if both files agree about both
+terms**:
+
+```
+english_file.own_english_term    == french_file.extracted_english_term
+english_file.extracted_french_term == french_file.own_french_term
+```
+
+If the two files disagree about what the other language calls this definition,
+the shared key is not evidence that they are the same provision. Those pairs are
+**not joined**: the French record becomes its own row at `<path>~fr`, both halves
+carry `bilingual_gap = 1`, and the case is listed in
+`data/definition_join_suspects.csv`.
+
+**2,021 of 2,046 joins are symmetric (98.8%). 25 are not.** All 25 fail on the
+French term while agreeing on the English one. Eight are orthographic variance
+between the files - `œ` against `oe`, a missing accent. The rest are real
+disagreements, most of them typos in the English file's parenthetical
+(`compe` for `compte`, `jurisdiction` for `juridiction`, `platforme` for
+`plateforme`), but some substantive: the English file gives the French term for
+248(1) "business" as *commerce* where the French file's own term is *affaires*.
+
+The test earns its place on 44.1(1) "eligible small business corporation share",
+which the Act defines **twice**. The symmetric check caught that the join had
+paired the English text of one definition with the French text of the other.
+
+### Duplicate keys
+
+The Act does define the same term twice in one provision, and the published XML
+does repeat a label - the French 142.6(8)b) numbers two subparagraphs `(iv)`
+where the English has `(iv)` and `(v)`. A second occurrence gets a `#2` suffix,
+`label_anomaly = 1` and a catalogue row. Nothing is dropped, and the source text
+is never altered.
 
 ---
 

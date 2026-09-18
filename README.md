@@ -179,6 +179,22 @@ across languages. Where no English term is published the key falls back to the
 French term, and where neither exists to an ordinal; both cases are listed in
 `data/definition_key_fallbacks.csv`.
 
+**Some citation paths are ours, not Justice Canada's.** The published XML
+sometimes repeats a label or a defined term inside one provision - the French
+142.6(8)b) numbers two subparagraphs `(iv)` where the English has `(iv)` and
+`(v)`, and 44.1(1) defines "eligible small business corporation share" twice.
+The duplication is the source's; the `#2` suffix we add to tell the two records
+apart is **ours**. `label_raw` keeps the label exactly as published and the text
+is never altered, but a path like `142.6(8)(b)(iv)#2` is an artefact of this
+dataset and is **not a citation Justice Canada would recognise**. The same
+applies to any path containing `~`. All such cases are listed in
+`data/label_anomalies.csv`.
+
+**Definition joins must be symmetric.** An English and a French definition are
+paired only if both files agree about both terms. 2,021 of 2,046 pass; the 25
+that do not are unjoined and listed in `data/definition_join_suspects.csv`,
+with the French record at `<path>~fr`.
+
 **This is a dated snapshot, not a consolidation service.** `meta` records
 `consolidation_date` and `retrieved_date` separately.
 

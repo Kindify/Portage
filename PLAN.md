@@ -3,7 +3,7 @@
 ## Where things stand
 
 **Phase 0, session 3 (2026-09-18): the Income Tax Act is built in both
-languages.** 29 tests pass. Both round trips reproduce their source files
+languages.** 32 tests pass. Both round trips reproduce their source files
 character-for-character with no normalisation.
 
 Still to come: the Income Tax Regulations, and the `cross_references` table.
@@ -12,32 +12,47 @@ Still to come: the Income Tax Regulations, and the `cross_references` table.
 
 ## Done in session 3
 
-**Definitions re-keyed by defined term.** The ordinal could not be a bilingual
-key: each file alphabetises definitions in its own language, so `248(1)~d1` is
-"absorbed capacity" in English and "tax shelter" in French. Now
-`248(1)"active business"`, with French-term and ordinal fallbacks catalogued.
+**Definitions re-keyed by defined term.** A document-order ordinal could never
+have been a bilingual key - each file alphabetises in its own language, so
+`248(1)~d1` is "absorbed capacity" in English and "tax shelter" in French. Now
+`248(1)"active business"`.
+
+**The term-extraction rule went through three versions**, each of which passed
+its own check and was then shown wrong by a different measurement. The sequence
+is tabulated in `docs/source-notes.md` section 5; the final rule is in
+`docs/citation-path-rule.md` section 4.
+
+**Definition joins must now be symmetric** - both files must agree about both
+terms. 2,021 of 2,046 pass. The 25 that do not are unjoined, split into two
+rows, and catalogued.
 
 **French parsed and joined.** Same walker, no language-specific code beyond the
-label rule. Both round trips exact.
+label rule.
 
-**`alignment_unverified` added** - see the open question below, which is the
-main thing I need from you.
+**`alignment_unverified` added** - see the open question below.
 
 | | |
 |---|---|
-| rows | 36,778 |
+| rows | 36,803 |
 | addressable | 31,766 |
-| rows with both languages | 34,296 |
-| **verified bilingual pairs** | **31,888** |
+| rows carrying both languages | 34,271 |
+| **verified bilingual pairs** | **31,863** |
 | `alignment_unverified` | 2,408 |
-| `bilingual_gap` | 2,482 |
-| label anomalies | 55 |
+| `bilingual_gap` | 2,532 |
+| definition joins, symmetric | 2,021 of 2,046 (98.8%) |
+| definition join suspects | 25 |
 | definition key fallbacks | 140 |
+| label anomalies | 55 |
 | round trip EN / FR | **exact, zero normalisation** |
 
-Four catalogues are written by the build and diffed against committed fixtures:
-`label_anomalies.csv`, `definition_key_fallbacks.csv`, `bilingual_gaps.csv`,
+**Five catalogues**, each written by the build and diffed against a committed
+fixture: `label_anomalies.csv`, `definition_key_fallbacks.csv`,
+`definition_join_suspects.csv`, `bilingual_gaps.csv`,
 `alignment_unverified.csv`.
+
+**51(1) confirmed.** Nothing under it is asserted as a verified translation
+pair: (d.1), (d.2), (e), (f) and b.1), b.2) are gaps, and (a) to (d) are flagged
+`alignment_unverified` pending the decision below.
 
 ---
 
@@ -63,24 +78,22 @@ differs between the files, the children sharing a path keep one row but carry
 It is a structural test - it compares child label sets and makes no judgment
 about the texts.
 
-**What I need from you.** Three options:
+**What I need from you.** The four paired rows under 51(1) are currently
+flagged, not split. Three options:
 
 - **(a) Keep the flag, as built.** One row per path, both texts present, the
-  uncertainty visible and filterable. Nothing is asserted and nothing is lost.
-  Risk: a consumer who ignores the flag sees a wrong pair.
-- **(b) Split them into single-language rows**, like gaps. Safest reading of
-  "never force alignment" - we stop putting the two texts on one row at all.
-  Cost: ~2,400 rows become two rows each, and the many cases where the pairing
-  is in fact correct lose their join.
-- **(c) Keep the flag for fragments, split the addressable ones.** The 333
-  addressable rows are the ones a person would actually cite and be misled by;
-  the ~2,075 fragment rows are non-citable continued text where the risk is
-  lower.
+  uncertainty visible and filterable. Nothing asserted, nothing lost. Risk: a
+  consumer who ignores the flag sees a wrong pair.
+- **(b) Split all of them into single-language rows**, like gaps. Safest reading
+  of "never force alignment". Cost: ~2,400 rows become two each, and the many
+  cases where the pairing is in fact correct lose their join.
+- **(c) Split the 333 addressable rows, keep the flag for the ~2,075
+  fragments.** The addressable rows are the ones someone can cite and be misled
+  by; fragments are non-citable continued text.
 
-I lean to **(c)**, because the harm is concentrated in the rows someone can cite,
-and 51(1)(a) returning two unrelated texts on one row is the specific failure
-mode you have been guarding against all along. But **(a)** is defensible if you
-would rather keep the data shape simple and rely on the flag.
+I lean to **(c)**. The machinery for splitting already exists - the 25
+definition join suspects are split exactly this way, French record at
+`<path>~fr` - so applying it to the addressable rows is a small change.
 
 ---
 

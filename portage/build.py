@@ -75,6 +75,34 @@ CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT);
 """
 
 
+def _definition_join_suspects(en_records, fr_records):
+    """Definition paths that join but do not join symmetrically.
+
+    A join is symmetric when each file agrees about both terms: the English
+    file's own term equals the French file's extracted English equivalent, and
+    the English file's extracted French equivalent equals the French file's own
+    term. If the two files disagree about what the other language calls this
+    definition, the shared key is not enough to treat them as the same
+    provision, so they are not joined.
+    """
+    en = {r["citation_path"]: r for r in en_records if r["level"] == "definition"}
+    fr = {r["citation_path"]: r for r in fr_records if r["level"] == "definition"}
+    suspects = {}
+    for path in set(en) & set(fr):
+        e, f = en[path], fr[path]
+        same_en = e["defined_term_en"] == f["defined_term_en"]
+        same_fr = e["defined_term_fr"] == f["defined_term_fr"]
+        if same_en and same_fr:
+            continue
+        reasons = []
+        if not same_en:
+            reasons.append("english term differs between files")
+        if not same_fr:
+            reasons.append("french term differs between files")
+        suspects[path] = (e, f, "; ".join(reasons))
+    return suspects
+
+
 def _unverified_alignments(en_records, fr_records):
     """Paths joined by label under a parent whose children differ between files.
 
@@ -187,6 +215,7 @@ def build(db_path=DB_PATH):
 
     all_meta = {}
     unverified_rows = []
+    join_suspects = []
     anomalies = []
     def_fallbacks = []
     gaps = []
@@ -218,9 +247,32 @@ def build(db_path=DB_PATH):
         # becomes its own row with text_en NULL - never merged onto a
         # neighbouring record, never matched by position.
         en_paths = {r["citation_path"] for r in en_records}
+        suspects = _definition_join_suspects(en_records, fr_records)
+        for path, (e, f, reason) in sorted(suspects.items()):
+            join_suspects.append(
+                (act, path, e["defined_term_en"] or "", f["defined_term_en"] or "",
+                 e["defined_term_fr"] or "", f["defined_term_fr"] or "", reason))
+
         for rec in fr_records:
             path = rec["citation_path"]
-            if path in en_paths:
+            if path in suspects:
+                # Not joined. The French record becomes its own row, marked so
+                # that its path is visibly derived rather than citable.
+                conn.execute(
+                    """INSERT INTO sections
+                       (act, citation_path, level, parent_path, order_index_fr,
+                        is_addressable, label_raw_fr, label_anomaly_fr,
+                        anomaly_reason_fr, heading_fr, text_fr,
+                        defined_term_en, defined_term_fr, bilingual_gap,
+                        source_url_fr)
+                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,1,?)""",
+                    (act, path + "~fr", rec["level"], rec["parent_path"],
+                     rec["order_index"], rec["is_addressable"], rec["label_raw"],
+                     1, suspects[path][2], rec["heading_en"], rec["text_en"],
+                     rec["defined_term_en"], rec["defined_term_fr"],
+                     src["fr"]["url"]),
+                )
+            elif path in en_paths:
                 conn.execute(
                     """UPDATE sections SET
                            order_index_fr=?, label_raw_fr=?, label_anomaly_fr=?,
@@ -315,6 +367,10 @@ def build(db_path=DB_PATH):
     n_fb = _write_catalogue(
         DATA / "definition_key_fallbacks.csv", def_fallbacks,
         ["act", "lang", "citation_path", "level", "label_raw", "reason"])
+    n_sus = _write_catalogue(
+        DATA / "definition_join_suspects.csv", join_suspects,
+        ["act", "citation_path", "term_en_from_en_file", "term_en_from_fr_file",
+         "term_fr_from_en_file", "term_fr_from_fr_file", "reason"])
     n_unv = _write_catalogue(
         DATA / "alignment_unverified.csv", unverified_rows,
         ["act", "citation_path", "level", "parent_path", "text_en_start", "text_fr_start"])
@@ -356,6 +412,7 @@ def build(db_path=DB_PATH):
         "rows_both_languages": str(both),
         "rows_bilingual_gaps": str(n_gap),
         "rows_alignment_unverified": str(n_unv),
+        "rows_definition_join_suspects": str(n_sus),
         "rows_label_anomalies": str(n_anom),
         "rows_definition_key_fallbacks": str(n_fb),
         "phase": "0",
@@ -368,7 +425,8 @@ def build(db_path=DB_PATH):
     conn.close()
     return {"rows": rows, "addressable": addressable, "both_languages": both,
             "bilingual_gaps": n_gap, "label_anomalies": n_anom,
-            "definition_fallbacks": n_fb, "alignment_unverified": n_unv}
+            "definition_fallbacks": n_fb, "alignment_unverified": n_unv,
+            "definition_join_suspects": n_sus}
 
 
 if __name__ == "__main__":

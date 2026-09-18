@@ -109,3 +109,60 @@ def test_definitions_are_keyed_by_term_not_position(conn):
     assert row["defined_term_en"] == "active business"
     assert row["text_en"] and row["text_fr"], "should carry both languages"
     assert "entreprise exploitée activement" in (row["defined_term_fr"] or "")
+
+
+def test_definition_joins_are_symmetric(conn):
+    """No joined definition may have the two files disagreeing about a term.
+
+    Derived from the XML rather than from the build's own suspect list, so it
+    does not restate the build's logic back to itself.
+    """
+    from portage.parse import parse
+
+    from conftest import ITA_EN, ITA_FR
+
+    en_recs, _ = parse(ITA_EN, "ITA", "u")
+    fr_recs, _ = parse(ITA_FR, "ITA", "u")
+    en = {r["citation_path"]: r for r in en_recs if r["level"] == "definition"}
+    fr = {r["citation_path"]: r for r in fr_recs if r["level"] == "definition"}
+
+    asymmetric = {
+        p for p in set(en) & set(fr)
+        if en[p]["defined_term_en"] != fr[p]["defined_term_en"]
+        or en[p]["defined_term_fr"] != fr[p]["defined_term_fr"]
+    }
+
+    joined = {
+        r[0] for r in conn.execute(
+            "SELECT citation_path FROM sections WHERE act='ITA' AND level='definition' "
+            "AND text_en IS NOT NULL AND text_fr IS NOT NULL"
+        )
+    }
+    leaked = joined & asymmetric
+    assert leaked == set(), (
+        "definitions joined although the two files disagree about a term: %s"
+        % sorted(leaked)[:5]
+    )
+
+
+def test_join_suspects_are_split_not_dropped(conn):
+    """Every unjoined suspect keeps both records - nothing is lost."""
+    import csv
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parent.parent
+    rows = list(csv.DictReader(
+        open(root / "data" / "definition_join_suspects.csv", encoding="utf-8")))
+    assert rows, "expected some suspects"
+    for row in rows:
+        path = row["citation_path"]
+        en = conn.execute(
+            "SELECT text_en, text_fr FROM sections WHERE act='ITA' AND citation_path=?",
+            (path,)).fetchone()
+        fr = conn.execute(
+            "SELECT text_en, text_fr FROM sections WHERE act='ITA' AND citation_path=?",
+            (path + "~fr",)).fetchone()
+        assert en is not None, "english record missing for %s" % path
+        assert fr is not None, "french record missing for %s" % path
+        assert en["text_en"] and not en["text_fr"], path
+        assert fr["text_fr"] and not fr["text_en"], path

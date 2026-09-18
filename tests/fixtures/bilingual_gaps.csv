@@ -164,6 +164,8 @@ ITA,113(1)(a.1)(ii)(A)(I)~c1,continued,en,,,exceeds
 ITA,113(1)(a.1)(ii)(A)(II)~c1,continued,en,,,is multiplied by
 ITA,113(1)(b)(i)~c1,continued,en,,,exceeds
 ITA,113(1)(c)(i)~c1,continued,en,,,is multiplied by
+ITA,"113(3)""foreign expense restriction rule""",definition,en,foreign expense restriction rule,régle étrangère de restriction des dépenses,foreign expense restriction rule has the same meaning as in subsection 18.4(1). 
+ITA,"113(3)""foreign expense restriction rule""~fr",definition,fr,foreign expense restriction rule,règle étrangère de restriction des dépenses,règle étrangère de restriction des dépenses S’entend au sens du paragraphe 18.4(
 ITA,114(a)~c1,continued,fr,,,sur la somme des montants suivants :
 ITA,114~c1,continued,en,,,exceeds the total of
 ITA,"115.2(1)""non-résident admissible""",definition,fr,,non-résident admissible,"non-résident admissible[Abrogée, 2002, ch. 9, art. 35]"
@@ -234,7 +236,9 @@ ITA,12(2.2)~c3,continued,en,,,"and, notwithstanding subsections 152(4) to 152(5)
 ITA,12.2(1)~c1,continued,en,,,"on any anniversary day of the policy, there shall be included in computing the t"
 ITA,12.2(5)~c1,continued,en,,,exceeds
 ITA,12.4~c1,continued,en,,,exceeds
+ITA,"120(4)""tax otherwise payable under this Part""",definition,en,tax otherwise payable under this Part,impôt payable par ailleurs en vertu de la présente partie,tax otherwise payable under this Part by an individual for a taxation year means
 ITA,"120(4)""tax otherwise payable under this Part""(b)~c1",continued,en,,,exceeds
+ITA,"120(4)""tax otherwise payable under this Part""~fr",definition,fr,tax otherwise payable under this Part,impôt qu’il est par ailleurs tenu de payer en vertu de la présente partie,impôt qu’il est par ailleurs tenu de payer en vertu de la présente partie ou imp
 ITA,120.2(1)(b)~c1,continued,en,,,exceeds
 ITA,120.2(3)(c)~c2,continued,en,,,that
 ITA,120.2(3)(c)~c3,continued,en,,,is of
@@ -298,6 +302,8 @@ ITA,"125(7)""specified partnership business limit""",definition,fr,specified par
 ITA,"125(7)""specified partnership business limit""~f1",formula,fr,,,(K/L) × M – Toù :Kreprésente le total des sommes dont chacune est la part qui re
 ITA,"125(7)""specified partnership business limit,""",definition,en,"specified partnership business limit,",plafond des affaires de société de personnes déterminé,"specified partnership business limit, of a person for a taxation year, at any pa"
 ITA,"125(7)""specified partnership business limit,""~f1",formula,en,,,(K/L) × M – TwhereKis the total of all amounts each of which is the person’s sha
+ITA,"125.2(1)""cost of labour""",definition,en,cost of labour,coût en main-d’oeuvre,"cost of labour, of a corporation for a taxation year, has the same meaning as in"
+ITA,"125.2(1)""cost of labour""~fr",definition,fr,cost of labour,coût en main-d’œuvre,"coût en main-d’œuvre En ce qui concerne une société pour une année d’imposition,"
 ITA,125.21~c1,continued,en,,,exceeds
 ITA,125.3(1)(a),paragraph,en,,,its Canadian surtax payable for the year
 ITA,125.3(1)(b),paragraph,en,,,"the amount that would, but for subsection 181.1(4), be its tax payable under Par"
@@ -315,12 +321,18 @@ ITA,"125.5(1)""Canadian labour expenditure""(c)(iv)",subparagraph,en,,,the expen
 ITA,"125.5(1)""Canadian labour expenditure""(c)~c1",continued,en,,,"the reimbursement made by the corporation in the year, or within 60 days after t"
 ITA,"125.5(1)""Canadian labour expenditure""~c1",continued,fr,,,La dépense de main-d’oeuvre d’une société qui n’est pas une société de productio
 ITA,"125.5(1)""eligible production corporation""~c1",continued,fr,,,"N’est pas une société de production admissible la société qui est, à un moment d"
+ITA,"125.6(1)""low threshold qualifying labour expenditure""",definition,en,low threshold qualifying labour expenditure,seuil inférieur de dépense de main-d’oeuvre admissible,low threshold qualifying labour expenditure of a taxpayer for a taxation year th
+ITA,"125.6(1)""low threshold qualifying labour expenditure""~fr",definition,fr,low threshold qualifying labour expenditure,seuil inférieur de dépense de main-d’œuvre admissible,seuil inférieur de dépense de main-d’œuvre admissible S’agissant de la dépense d
+ITA,"125.6(1)""qualifying labour expenditure""",definition,en,qualifying labour expenditure,dépense de main-d’oeuvre admissible,qualifying labour expenditure of a taxpayer for a taxation year in respect of an
+ITA,"125.6(1)""qualifying labour expenditure""~fr",definition,fr,qualifying labour expenditure,dépense de main-d’œuvre admissible,dépense de main-d’œuvre admissible S’agissant de la dépense de main-d’œuvre admi
 ITA,"125.7(1)""prior reference period""(a)(xvi)#2",subparagraph,fr,,,"pour la vingt-sixième période d’admissibilité, du mois de mars 2019,"
 ITA,"125.7(1)""prior reference period""(a)(xvii)#2",subparagraph,fr,,,"pour la vingt-septième période d’admissibilité, du mois d’avril 2019,"
 ITA,"125.7(1)""prior reference period""(a)(xviii)#2",subparagraph,fr,,,"pour la vingt-huitième période d’admissibilité, du mois de mai 2019;"
 ITA,"125.7(1)""prior reference period""(a)(xxvi)",subparagraph,en,,,"for the twenty-sixth qualifying period, March 2019,"
 ITA,"125.7(1)""prior reference period""(a)(xxvii)",subparagraph,en,,,"for the twenty-seventh qualifying period, April 2019, and"
 ITA,"125.7(1)""prior reference period""(a)(xxviii)",subparagraph,en,,,"for the twenty-eighth qualifying period, May 2019;"
+ITA,"125.7(1)""top-up revenue reduction percentage""",definition,en,top-up revenue reduction percentage,pourcentage compensatoire de baisse de revenue,"top-up revenue reduction percentage, of an eligible entity for a qualifying peri"
+ITA,"125.7(1)""top-up revenue reduction percentage""~fr",definition,fr,top-up revenue reduction percentage,pourcentage compensatoire de baisse de revenu,pourcentage compensatoire de baisse de revenu Relativement à une entité détermin
 ITA,"126(1.1)(f)""revenu exonéré d’impôt""",definition,fr,,revenu exonéré d’impôt,« revenu exonéré d’impôt Le revenu d’un contribuable provenant d’une source situ
 ITA,"126(1.1)(f)""revenu exonéré d’impôt""(a)",paragraph,fr,,,"le contribuable a droit, par l’effet d’une entente ou convention globale pour l’"
 ITA,"126(1.1)(f)""revenu exonéré d’impôt""(b)",paragraph,fr,,,aucun impôt sur le revenu ou sur les bénéfices auquel l’entente ou la convention
@@ -366,6 +378,8 @@ ITA,127(11.6)~c1,continued,en,,,the amount of the expenditure incurred by the ta
 ITA,127(15)(d),paragraph,en,,,an agreement amending the agreement has been filed in accordance with subsection
 ITA,127(15)~c1,continued,fr,,,La convention ou la convention modifiée est réputée ne pas avoir été présentée a
 ITA,127(19)~c1,continued,en,,,the particular amount shall be applied to reduce each qualified expenditure othe
+ITA,"127(2)""income for the year from logging operations in the province""",definition,en,income for the year from logging operations in the province,revenu pour l’année tiré des opérations forestières dans la province,income for the year from logging operations in the province has the meaning assi
+ITA,"127(2)""income for the year from logging operations in the province""~fr",definition,fr,income for the year from logging operations in the province,revenu pour l’année tiré d’opérations forestières dans la province,revenu pour l’année tiré d’opérations forestières dans la province S’entend au s
 ITA,"127(2)""revenu pour l’année tiré des opérations forestières dans la province""",definition,fr,,revenu pour l’année tiré des opérations forestières dans la province,"revenu pour l’année tiré des opérations forestières dans la province[Abrogée, 20"
 ITA,127(20)(b)(i),subparagraph,fr,,,elle a été engagée par le cessionnaire au cours de son année d’imposition qui s’
 ITA,127(20)(b)(ii),subparagraph,fr,,,il est raisonnable de considérer qu’elle se rapporte aux activités de recherche 
@@ -781,8 +795,10 @@ ITA,"146(1)""spousal or common-law partner plan""(a)",paragraph,en,,,a registere
 ITA,"146(1)""spousal or common-law partner plan""(a)(i)",subparagraph,en,,,"to which the taxpayer has, at a time when the taxpayer’s spouse or common-law pa"
 ITA,"146(1)""spousal or common-law partner plan""(a)(ii)",subparagraph,en,,,that has received a payment out of or a transfer from a registered retirement sa
 ITA,"146(1)""spousal or common-law partner plan""(b)",paragraph,en,,,a registered retirement income fund that has received a payment out of or a tran
+ITA,"146(1)""spousal plan""",definition,en,spousal plan,,"spousal plan[Repealed, 2001, c. 17, s. 246]"
 ITA,"146(1)""spousal plan""(a)",paragraph,fr,,,soit un régime enregistré d’épargne-retraite auquel le contribuable a versé une 
 ITA,"146(1)""spousal plan""(b)",paragraph,fr,,,soit un fonds enregistré de revenu de retraite auquel un montant est versé ou tr
+ITA,"146(1)""spousal plan""~fr",definition,fr,spousal plan,régime au profit de l’époux ou conjoint de fait,régime au profit de l’époux ou conjoint de fait Quant à un contribuable :
 ITA,"146(1)""tax-paid amount""(b)(i)",subparagraph,en,,,the plan is a deposit with a depositary referred to in clause (b)(iii)(B) of the
 ITA,"146(1)""tax-paid amount""(b)(ii)",subparagraph,en,,,"an amount is received at any time out of or under the plan by the person,"
 ITA,"146(1)""tax-paid amount""(b)~c1",continued,en,,,the portion of the amount that can reasonably be considered to relate to interes
@@ -859,8 +875,10 @@ ITA,146.4(10)(b)~c1,continued,en,,,exceeds
 ITA,146.4(10)(c)(i)(C),clause,en,,,the fair market value of the property held by the plan trust immediately after t
 ITA,146.4(10)(c)(i)~c1,continued,en,,,exceeds
 ITA,146.4(8)(d)~c1,continued,en,,,exceeds
+ITA,"146.6(1)""annual FHSA limit""",definition,en,annual FHSA limit,plafond annuel au titre du CELIAPP),annual FHSA limit of a taxpayer for a taxation year is the least of
 ITA,"146.6(1)""annual FHSA limit""(c)(i)",subparagraph,en,,,"the taxpayer’s maximum participation period has ended, or"
 ITA,"146.6(1)""annual FHSA limit""(c)(ii)",subparagraph,en,,,the taxpayer has died. (plafond annuel au titre du CELIAPP)
+ITA,"146.6(1)""annual FHSA limit""~fr",definition,fr,annual FHSA limit,plafond annuel au titre du CELIAPP,plafond annuel au titre du CELIAPP Relativement à un contribuable pour une année
 ITA,"146.6(1)""first home savings account or FHSA""",definition,fr,first home savings account or FHSA,compte d’épargne libre d’impôt pour l’achat d’une première propriété,compte d’épargne libre d’impôt pour l’achat d’une première propriété ou CELIAPP 
 ITA,"146.6(1)""first home savings account""",definition,en,first home savings account,CELIAPP,first home savings account or FHSA means a qualifying arrangement registered wit
 ITA,"146.6(1)""net RRSP-to-FHSA transfer amount""~c1",continued,en,,,exceeds
@@ -926,6 +944,8 @@ ITA,"149.1(1)""compte de gains en capital""",definition,fr,,compte de gains en c
 ITA,"149.1(1)""don désigné""",definition,fr,,don désigné,"don désigné[Abrogée, 2010, ch. 25, art. 37]"
 ITA,"149.1(1)""enduring property""",definition,en,enduring property,,"enduring property[Repealed, 2010, c. 25, s. 37]"
 ITA,"149.1(1)""entrusted shares percentage""",definition,en,entrusted shares percentage,,"entrusted shares percentage[Repealed, 2009, c. 2, s. 55]"
+ITA,"149.1(1)""ineligible individual""",definition,en,ineligible individual,particulier non admissable,"ineligible individual, at any time, means an individual who has been"
+ITA,"149.1(1)""ineligible individual""~fr",definition,fr,ineligible individual,particulier non admissible,"particulier non admissible À un moment donné, particulier qui a été, selon le ca"
 ITA,"149.1(1)""non-qualified investment""(d)",paragraph,en,,,"a limited-dividend housing company to which paragraph 149(1)(n) applies,"
 ITA,"149.1(1)""non-qualified investment""(e)",paragraph,en,,,a corporation all of the property of which is used by a registered charity in it
 ITA,"149.1(1)""non-qualified investment""(f)",paragraph,en,,,a corporation all of the issued shares of which are held by the foundation; (pla
@@ -1474,7 +1494,11 @@ ITA,247(3)(a)(i)~c1,continued,en,,,exceeds the total of
 ITA,247(3)(a)~c1,continued,fr,,,sur le total des montants suivants :
 ITA,247(3)~c1,continued,en,,,is greater than
 ITA,247(5)~c2,continued,en,,,and where the income and loss of the partnership from its activities are nil for
+ITA,"248(1)""DRA share""",definition,en,DRA share,AMTD,"DRA share, of a person or partnership, means a share"
+ITA,"248(1)""DRA share""~fr",definition,fr,DRA share,action de mécanisme de transfert de dividendes,"action de mécanisme de transfert de dividendes ou AMTD S’entend, à l’égard d’une"
 ITA,"248(1)""FHSA""",definition,fr,FHSA,compte d’épargne libre d’impôt pour l’achat d’une première propriété,compte d’épargne libre d’impôt pour l’achat d’une première propriété ou CELIAPP 
+ITA,"248(1)""Nova Scotia offshore area""",definition,en,Nova Scotia offshore area,zone extracôtière de la Nouvelle-écosse,Nova Scotia offshore area has the meaning assigned to the expression offshore ar
+ITA,"248(1)""Nova Scotia offshore area""~fr",definition,fr,Nova Scotia offshore area,zone extracôtière de la Nouvelle-Écosse,zone extracôtière de la Nouvelle-Écosse A le sens du terme zone extracôtière de 
 ITA,"248(1)""PRPP""",definition,fr,PRPP,régime de pension agréé collectif,régime de pension agréé collectif ou RPAC S’entend au sens du paragraphe 147.5(1
 ITA,"248(1)""RDSP""",definition,fr,RDSP,régime enregistré d’épargne-invalidité,régime enregistré d’épargne-invalidité ou REEI S’entend au sens du paragraphe 14
 ITA,"248(1)""RESP""",definition,fr,RESP,régime enregistré d’épargne-études,régime enregistré d’épargne-études ou REEE S’entend au sens du paragraphe 146.1(
@@ -1508,8 +1532,10 @@ ITA,"248(1)""automobile""(e)(iii)(B)",clause,en,,,at least 30 kilometres outside
 ITA,"248(1)""automobile""~c1",continued,en,,,but does not include
 ITA,"248(1)""bourse reconnue en instruments financiers dérivés""",definition,fr,,bourse reconnue en instruments financiers dérivés,"bourse reconnue en instruments financiers dérivés[Abrogée, 2026, ch. 3, art. 94]"
 ITA,"248(1)""business number""~c1",continued,en,,,"and of which the Minister has notified the corporation, partnership, association"
+ITA,"248(1)""business""",definition,en,business,commerce,"business includes a profession, calling, trade, manufacture or undertaking of an"
 ITA,"248(1)""business""#2",definition,fr,business,commerce,commerce A le même sens que entreprise. (business)
 ITA,"248(1)""business""#3",definition,fr,business,entreprise,"entreprise Sont compris parmi les entreprises les professions, métiers, commerce"
+ITA,"248(1)""business""~fr",definition,fr,business,affaires,affaires S’entend au sens de entreprise. (business)
 ITA,"248(1)""chaîne d’arrangements de capitaux propres synthétiques""",definition,fr,,chaîne d’arrangements de capitaux propres synthétiques,"chaîne d’arrangements de capitaux propres synthétiques[Abrogée, 2026, ch. 3, art"
 ITA,"248(1)""cost amount""(e)~c1",continued,en,,,"the amount the taxpayer has a right to receive,"
 ITA,"248(1)""cumulative eligible capital""",definition,en,cumulative eligible capital,,"cumulative eligible capital[Repealed, 2016, c. 12, s. 63]"
@@ -1521,6 +1547,8 @@ ITA,"248(1)""dépense en capital admissible""",definition,fr,,dépense en capita
 ITA,"248(1)""eligible capital amount""",definition,en,eligible capital amount,,"eligible capital amount[Repealed, 2016, c. 12, s. 63]"
 ITA,"248(1)""eligible capital expenditure""",definition,en,eligible capital expenditure,,"eligible capital expenditure[Repealed, 2016, c. 12, s. 63]"
 ITA,"248(1)""eligible capital property""",definition,en,eligible capital property,,"eligible capital property[Repealed, 2016, c. 12, s. 63]"
+ITA,"248(1)""employed""",definition,en,employed,employé,employed means performing the duties of an office or employment; (employé (être)
+ITA,"248(1)""employed""~fr",definition,fr,employed,employé (être),employé (être) Qui accomplit les fonctions que comporte une charge ou un emploi.
 ITA,"248(1)""exercice""",definition,fr,,exercice,"exercice[Abrogée, 1996, ch. 21, art. 60]"
 ITA,"248(1)""facteur fiscal provincial""",definition,fr,,facteur fiscal provincial,"facteur fiscal provincial[Abrogée, 2008, ch. 28, art. 34]"
 ITA,"248(1)""fiducie de fonds commun de placement déterminée""",definition,fr,,fiducie de fonds commun de placement déterminée,"fiducie de fonds commun de placement déterminée[Abrogée, 2026, ch. 3, art. 94]"
@@ -1590,7 +1618,9 @@ ITA,"248(1)""majority interest partner""(b)",paragraph,fr,,,"la part qui lui rev
 ITA,"248(1)""majority-interest partner""",definition,en,majority-interest partner,associé détenant une participation majoritaire,"majority-interest partner, of a particular partnership at any time, means a pers"
 ITA,"248(1)""majority-interest partner""(a)",paragraph,en,,,whose share of the particular partnership’s income from all sources for the last
 ITA,"248(1)""majority-interest partner""(b)",paragraph,en,,,"whose share, if any, together with the shares of every person with whom the taxp"
+ITA,"248(1)""mineral resource""",definition,en,mineral resource,ressource minérale,mineral resource means
 ITA,"248(1)""mineral resource""#2",definition,fr,mineral resource,ressource minérale,ressource minérale A le même sens que matières minérales. (mineral resource)
+ITA,"248(1)""mineral resource""~fr",definition,fr,mineral resource,matières minérales,matières minérales
 ITA,"248(1)""minerals""",definition,en,minerals,,"minerals[Repealed, 1994, c. 21, s. 109]"
 ITA,"248(1)""mining reclamation trust""",definition,en,mining reclamation trust,,"mining reclamation trust[Repealed, 1998, c. 19, s. 66]"
 ITA,"248(1)""minéraux""",definition,fr,,minéraux,"minéraux[Abrogée, 1994, ch. 21, art. 109]"
@@ -1636,6 +1666,8 @@ ITA,"248(1)""specified member""~c1",continued,en,,,"on a regular, continuous and
 ITA,"248(1)""specified mutual fund trust""",definition,en,specified mutual fund trust,,"specified mutual fund trust[Repealed, 2026, c. 3, s. 94]"
 ITA,"248(1)""specified synthetic equity arrangement""",definition,en,specified synthetic equity arrangement,,"specified synthetic equity arrangement[Repealed, 2026, c. 3, s. 94]"
 ITA,"248(1)""synthetic equity arrangement chain""",definition,en,synthetic equity arrangement chain,,"synthetic equity arrangement chain[Repealed, 2026, c. 3, s. 94]"
+ITA,"248(1)""synthetic equity arrangement""",definition,en,synthetic equity arrangement,arrangement de capitaux propres synthétiques,synthetic equity arrangement in respect of a DRA share of a person or partnershi
+ITA,"248(1)""synthetic equity arrangement""~fr",definition,fr,synthetic equity arrangement,arrangements de capitaux propres synthétiques,arrangements de capitaux propres synthétiques Relativement à une action qui est 
 ITA,"248(1)""tax-indifferent investor""",definition,en,tax-indifferent investor,,"tax-indifferent investor[Repealed, 2026, c. 3, s. 94]"
 ITA,"248(1)""taxable RFI share""(a)(i)",subparagraph,en,,,"fixed,"
 ITA,"248(1)""taxable RFI share""(a)(ii)",subparagraph,en,,,"limited to a maximum, or"
@@ -1735,6 +1767,8 @@ ITA,250(6.05)~d1(b)(i),subparagraph,fr,,,"soit toute société liée au titulair
 ITA,250(6.05)~d1(b)(ii),subparagraph,fr,,,"soit toute personne, à l’exception d’une société, ou société de personnes affili"
 ITA,250(6.05)~d1(c),paragraph,fr,,,"si le titulaire n’est pas une société, toute personne ou société de personnes qu"
 ITA,"251.2(1)""fonds de placement de portefeuille""",definition,fr,,fonds de placement de portefeuille,"fonds de placement de portefeuille[Abrogée, 2016, ch. 12, art. 65]"
+ITA,"251.2(1)""majority-interest beneficiary""",definition,en,majority-interest beneficiary,bénéficiaires détenant une participation majoritaire,majority-interest beneficiary has the same meaning as in subsection 251.1(3) rea
+ITA,"251.2(1)""majority-interest beneficiary""~fr",definition,fr,majority-interest beneficiary,bénéficiaire détenant une participation majoritaire,bénéficiaire détenant une participation majoritaire S’entend au sens qu’il aurai
 ITA,"251.2(1)""portfolio investment fund""",definition,en,portfolio investment fund,,"portfolio investment fund[Repealed, 2016, c. 12, s. 65]"
 ITA,253~c1,continued,en,,,"the person shall be deemed, in respect of the activity or disposition, to have b"
 ITA,256(1.2)(c)(i),subparagraph,en,,,shares of the capital stock of the corporation having a fair market value of mor
@@ -1774,17 +1808,25 @@ ITA,"270(1)""NFE""",definition,fr,NFE,entité non financière,"entité non finan
 ITA,"270(1)""NFE""(a)",paragraph,fr,,,réside au Canada et n’est pas une institution financière canadienne;
 ITA,"270(1)""NFE""(b)",paragraph,fr,,,est une entité non-résidente et n’est pas une institution financière. (non-finan
 ITA,"270(1)""anti-money laundering and know your customer procedures""",definition,en,anti-money laundering and know your customer procedures,procédures AML/KYC,anti-money laundering and know your customer procedures or AML/KYC procedures me
+ITA,"270(1)""equity or debt interest""",definition,en,equity or debt interest,titre de participation ou d’intérêt,"equity or debt interest includes, in the case of a partnership that is a financi"
+ITA,"270(1)""equity or debt interest""~fr",definition,fr,equity or debt interest,titre de participation ou de créance,titre de participation ou de créance Relativement à une société de personnes qui
 ITA,"270(1)""group cash value insurance contract""",definition,en,group cash value insurance contract,contrat d’assurance de groupe avec valeur de rachat,group cash value insurance contract means a cash value insurance contract that
 ITA,"270(1)""group cash value insurance contract""(a)",paragraph,en,,,"provides coverage on individuals who are associated through an employer, trade a"
 ITA,"270(1)""group cash value insurance contract""(b)",paragraph,en,,,charges a premium for each member of the group (or member of a class within the 
 ITA,"270(1)""group cash value insur­ance contract""",definition,fr,group cash value insur­ance contract,contrat d’assurance de groupe avec valeur de rachat,contrat d’assurance de groupe avec valeur de rachat Contrat d’assurance avec val
 ITA,"270(1)""group cash value insur­ance contract""(a)",paragraph,fr,,,"des particuliers qui sont affiliés par l’entremise d’un employeur, d’une associa"
 ITA,"270(1)""group cash value insur­ance contract""(b)",paragraph,fr,,,une prime est exigée pour chaque membre du groupe (ou chaque membre d’une catégo
+ITA,"270(1)""high value account""",definition,en,high value account,compe de valeur élevée,high value account means a preexisting individual account with an aggregate bala
+ITA,"270(1)""high value account""~fr",definition,fr,high value account,compte de valeur élevée,compte de valeur élevée Compte de particulier préexistant dont le solde ou la va
 ITA,"270(1)""non-financial entity""",definition,en,non-financial entity,ENF,non-financial entity or NFE means an entity if
 ITA,"270(1)""non-financial entity""(a)",paragraph,en,,,"in the case of an entity that is resident in Canada, it is not a Canadian financ"
 ITA,"270(1)""non-financial entity""(b)",paragraph,en,,,"in the case of a non-resident entity, it is not a financial institution. (entité"
+ITA,"270(1)""participating jurisdiction financial institution""",definition,en,participating jurisdiction financial institution,institution financière d’une jurisdiction partenaire,participating jurisdiction financial institution means
+ITA,"270(1)""participating jurisdiction financial institution""~fr",definition,fr,participating jurisdiction financial institution,institution financière d’une juridiction partenaire,institution financière d’une juridiction partenaire
 ITA,28(1)(b)~c1,continued,en,,,exceeds
 ITA,28(1.1)~c1,continued,en,,,and the taxpayer shall be deemed to have purchased the inventory at the time it 
+ITA,"282(1)""excluded platform operator""",definition,en,excluded platform operator,opérateur de platforme exclu,excluded platform operator means a platform operator that demonstrates to the sa
+ITA,"282(1)""excluded platform operator""~fr",definition,fr,excluded platform operator,opérateur de plateforme exclu,opérateur de plateforme exclu S’entend d’un opérateur de plateforme qui démontre
 ITA,29(1)(b)~c1,continued,en,,,is multiplied by
 ITA,29(2)(b)~c1,continued,en,,,is multiplied by
 ITA,3(b)~c1,continued,en,,,exceeds
@@ -1900,10 +1942,14 @@ ITA,44(1)(e)(iii)~c1,continued,en,,,"as a deduction, not exceeding the lesser of
 ITA,"44.1(1)""action ordinaire""",definition,fr,,action ordinaire,"action ordinaire[Abrogée, 2026, ch. 3, art. 8]"
 ITA,"44.1(1)""common share""",definition,en,common share,,"common share[Repealed, 2026, c. 3, s. 8]"
 ITA,"44.1(1)""coût admissible""",definition,fr,,coût admissible,"coût admissible[Abrogée, 2003, ch. 15, art. 70]"
+ITA,"44.1(1)""eligible pooling arrangement""",definition,en,eligible pooling arrangement,arrangement admissible de mis en commun,eligible pooling arrangement in respect of an individual means an agreement in w
+ITA,"44.1(1)""eligible pooling arrangement""~fr",definition,fr,eligible pooling arrangement,arrangement admissible de mise en commun,"arrangement admissible de mise en commun En ce qui concerne un particulier, conv"
+ITA,"44.1(1)""eligible small business corporation share""",definition,en,eligible small business corporation share,société admissible exploitant une petite entreprise,eligible small business corporation share of an individual means a share issued 
 ITA,"44.1(1)""eligible small business corporation share""#2",definition,en,eligible small business corporation share,action déterminée de petite entreprise,eligible small business corporation share of an individual means a common share 
 ITA,"44.1(1)""eligible small business corporation share""#2(a)",paragraph,en,,,"at the time the share was issued, the corporation was an eligible small business"
 ITA,"44.1(1)""eligible small business corporation share""#2(b)",paragraph,en,,,"immediately before and after the share was issued, the total carrying value of t"
 ITA,"44.1(1)""eligible small business corporation share""(c)",paragraph,en,,,a combination of assets described in paragraphs (a) and (b). (société admissible
+ITA,"44.1(1)""eligible small business corporation share""~fr",definition,fr,eligible small business corporation share,action déterminée de petite entreprise,action déterminée de petite entreprise S’agissant d’une action déterminée de pet
 ITA,"44.1(1)""eligible small business corporation""",definition,fr,eligible small business corporation,société admissible exploitant une petite entreprise,société admissible exploitant une petite entreprise Sous réserve du paragraphe (
 ITA,"44.1(1)""eligible small business corporation""(a)",paragraph,fr,,,soit des actifs utilisés principalement dans le cadre d’une entreprise exploitée
 ITA,"44.1(1)""eligible small business corporation""(b)",paragraph,fr,,,soit des actions émises par d’autres sociétés admissibles exploitant une petite 
@@ -2400,6 +2446,8 @@ ITA,88(2)(b)(ii)~c1,continued,en,,,"as the case may be, shall be deemed not to b
 ITA,"89(1)""capital dividend account""(a)(i.1)(A)~c1",continued,en,,,exceeds
 ITA,"89(1)""capital dividend account""(a)~c1",continued,en,,,exceeds
 ITA,"89(1)""capital dividend account""(f)(i)~c1",continued,en,,,exceeds
+ITA,"89(1)""general rate factor""",definition,en,general rate factor,facteur du taux géneral,general rate factor of a corporation for a taxation year is the total of
+ITA,"89(1)""general rate factor""~fr",definition,fr,general rate factor,facteur du taux général,facteur du taux général Le facteur du taux général applicable à une société pour
 ITA,"89(1)""paid-up capital""(b)~c2",continued,en,,,exceeds
 ITA,91(4)(a)~c1,continued,en,,,is multiplied by
 ITA,91(5)(b)~c1,continued,en,,,exceeds
@@ -2412,6 +2460,8 @@ ITA,93.1(1)~c1,continued,en,,,is of
 ITA,93.1(2)(a)~c1,continued,en,,,is of
 ITA,93.1(6)(b)(ii)~c1,continued,en,,,is of
 ITA,93.2(2)(c)~c1,continued,en,,,is of
+ITA,"93.4(1)""foreign accrual business income""",definition,en,foreign accrual business income,"revenu étranger accumulé, tiré d’une entreprise)","foreign accrual business income, of a foreign affiliate of a taxpayer, for any t"
+ITA,"93.4(1)""foreign accrual business income""~fr",definition,fr,foreign accrual business income,"revenu étranger accumulé, tiré d’une entreprise","revenu étranger accumulé, tiré d’une entreprise S’agissant du revenu étranger ac"
 ITA,"94(1)""resident beneficiary""(a)",paragraph,en,,,the person is resident in Canada; and
 ITA,"94(1)""resident beneficiary""(b)",paragraph,en,,,there is a connected contributor to the trust. (bénéficiaire résident)
 ITA,94.1(1)(f)~c1,continued,en,,,is multiplied by
