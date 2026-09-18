@@ -20,6 +20,7 @@ CATALOGUES = [
     "bilingual_gaps.csv",
     "alignment_unverified.csv",
     "definition_join_suspects.csv",
+    "alignment_positional.csv",
 ]
 
 

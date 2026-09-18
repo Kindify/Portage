@@ -2,14 +2,14 @@
 
 ## Where things stand
 
-**Phase 0 is complete.** The Income Tax Act and the Income Tax Regulations are
-built in both languages, from the official Justice Laws XML, with 41 tests
-passing and all four round trips exact.
+**Phase 0 is built and tested; it is not yet released.** Both instruments, both
+languages, 46 tests passing, all four round trips exact.
 
-What remains for Phase 1: the `cross_references` table, and then the Finance
-Canada tax expenditure linkage.
-
----
+The one thing standing between here and v0.1.0 is the eighty hand spot checks.
+Every automated guard in this project reads the same four XML files the build
+reads, so none of them can catch a file being misread the same way twice. The
+spot checks are the only evidence from outside that loop, and the tag should
+mean "checked", not "built".
 
 ## What Phase 0 delivers
 
@@ -72,16 +72,65 @@ symmetric bilingual join - and the three-version history of the definition rule.
 
 ---
 
-## Phase 1
+## Release - v0.1.0
 
-1. **`cross_references`, tagged only.** `XRefExternal` and `DefinitionRef`,
-   every row `method = 'tagged'`, unresolved targets reported rather than
-   dropped. This is the last item in CLAUDE.md's Phase 0 list; it is being
-   carried into Phase 1 because the source has no markup for internal
-   references, which is where most of the value would be.
-2. **Internal references**, as a separate table with
-   `method = 'extracted'`, its own validation and its own precision report.
-3. **Finance Canada tax expenditure linkage.**
+**Not tagged yet.** It is waiting on the eighty hand spot checks, which is the
+right order: the tag should mean "checked", not "built". When
+`tests/spot_checks/RESULTS.md` is filled in and the README's Methods section
+records the date and outcome, the tag can go on.
+
+Release assets, when it does:
+
+- `portage.sqlite` - the built database
+- the six catalogue CSVs from `data/`
+- `README.md`
+- `tests/spot_checks/RESULTS.md`, so the verification travels with the data
+
+---
+
+## Phase 1 - the tax expenditure report
+
+Link each provision to what it costs. This is the point of the project: Phase 0
+made the Act navigable, Phase 1 attaches the money.
+
+**Source:** the 2026 *Report on Federal Tax Expenditures*, Department of Finance
+Canada, **Parts 3 to 7**, English and French.
+
+### Scope
+
+1. **Parse Parts 3 to 7 into structured records**, both languages. One record per
+   tax expenditure, carrying at minimum: its identifier, its title in both
+   languages, its description, the cost estimates with their years, and whatever
+   the report states about the legal authority for it.
+2. **Resolve every legal reference to a `citation_path`.** This is where Phase 0
+   pays off - a reference to "paragraph 110(1)(d)" has to land on the row whose
+   `citation_path` is `110(1)(d)`, and either it resolves or it does not.
+3. **Report which references fail to resolve.** Catalogued, not dropped, with a
+   fixture, exactly as in Phase 0. An unresolved reference is a finding about
+   either the report or our data, and both are worth knowing.
+
+### What to settle before writing any code
+
+- **What format is the report published in?** PDF, HTML, spreadsheet? A PDF of
+  tables is a different project from an HTML document. Inspect the real source
+  and write it up in `docs/source-notes.md` before assuming anything - the same
+  rule that kept Phase 0 out of trouble.
+- **What licence does Finance Canada publish it under?** Quote it verbatim.
+- **How are legal references written in the report?** They will be prose
+  ("paragraph 110(1)(d) of the Act"), which means extraction by pattern - the
+  technique Phase 0 deliberately avoided. It is defensible here because a
+  reference that fails to resolve is *visible*, where a mis-parsed structure is
+  not. But it needs the same treatment as internal cross-references: a `method`
+  column, a catalogue, and a precision sample.
+- **Does a tax expenditure map to one provision or several?** If a mapping needs
+  a tax opinion, CLAUDE.md says it does not go in the data.
+
+### Still outstanding from Phase 0
+
+`cross_references`, tagged only - `XRefExternal` and `DefinitionRef`, every row
+`method = 'tagged'`. Carried forward because the source has no markup for
+internal references, which is where most of the value would be. Phase 1 should
+probably do this first, since resolving references is the same machinery.
 
 ---
 

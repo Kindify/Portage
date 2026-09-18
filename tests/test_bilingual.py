@@ -74,8 +74,11 @@ def _divergence_from_source(act="ITA"):
         recs, _ = parse(path, act, "u")
         out = defaultdict(list)
         for r in recs:
-            if bool(r["is_addressable"]) is addressable and r["parent_path"]:
-                out[r["parent_path"]].append(r["citation_path"])
+            if bool(r["is_addressable"]) is not addressable or not r["parent_path"]:
+                continue
+            if r["level"] == "definition":
+                continue  # keyed by term, not position
+            out[r["parent_path"]].append(r["citation_path"])
         return {k: tuple(v) for k, v in out.items()}
 
     result = {}
@@ -203,3 +206,61 @@ def test_join_suspects_are_split_not_dropped(conn):
         assert fr is not None, "french record missing for %s" % path
         assert en["text_en"] and not en["text_fr"], path
         assert fr["text_fr"] and not fr["text_en"], path
+
+
+def test_every_row_has_an_alignment_status(conn):
+    missing = conn.execute(
+        "SELECT COUNT(*) FROM sections WHERE alignment IS NULL").fetchone()[0]
+    assert missing == 0
+
+
+def test_alignment_status_agrees_with_the_data(conn):
+    """The status must describe what is actually on the row."""
+    both = "text_en IS NOT NULL AND text_fr IS NOT NULL"
+    bad = conn.execute(
+        "SELECT COUNT(*) FROM sections WHERE alignment='single' AND " + both
+    ).fetchone()[0]
+    assert bad == 0, "rows marked single that carry both languages"
+
+    bad = conn.execute(
+        "SELECT COUNT(*) FROM sections WHERE alignment IN "
+        "('verified','positional','unverified') AND NOT (" + both + ")"
+    ).fetchone()[0]
+    assert bad == 0, "rows marked as joined that do not carry both languages"
+
+    bad = conn.execute(
+        "SELECT COUNT(*) FROM sections WHERE alignment='split' "
+        "AND same_path_counterpart IS NULL").fetchone()[0]
+    assert bad == 0, "split rows must point at their counterpart"
+
+
+def test_positional_rows_are_exactly_the_ordinal_keyed_joins(conn):
+    """'positional' means joined on a key this project invented.
+
+    A verified row must never be one whose path ends in an ordinal we assigned,
+    and a positional row must always be one - otherwise the status is telling a
+    reader something the key does not support.
+    """
+    from portage.build import ORDINAL_KEYS
+
+    like = " OR ".join("citation_path LIKE '%" + k + "%'" for k in ORDINAL_KEYS)
+    leaked = conn.execute(
+        "SELECT citation_path FROM sections WHERE alignment='verified' AND ("
+        + like + ")").fetchall()
+    assert leaked == [], (
+        "rows called verified although they are joined on an ordinal we "
+        "assigned: %s" % [r[0] for r in leaked[:5]])
+
+    wrong = conn.execute(
+        "SELECT citation_path FROM sections WHERE alignment='positional' AND NOT ("
+        + like + ")").fetchall()
+    assert wrong == [], [r[0] for r in wrong[:5]]
+
+
+def test_definitions_are_never_positional_when_they_have_a_term(conn):
+    """A definition with a real term is keyed by it, not by position."""
+    bad = conn.execute(
+        "SELECT citation_path FROM sections WHERE level='definition' "
+        "AND alignment='positional' AND defined_term_en IS NOT NULL "
+        "AND citation_path NOT LIKE '%~d%'").fetchall()
+    assert bad == [], [r[0] for r in bad[:5]]

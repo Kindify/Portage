@@ -64,6 +64,7 @@ CREATE TABLE sections (
     history_note    TEXT,
     bilingual_gap   INTEGER NOT NULL DEFAULT 0,
     alignment_unverified INTEGER NOT NULL DEFAULT 0,
+    alignment       TEXT,
     same_path_counterpart TEXT,
     source_url      TEXT,
     source_url_fr   TEXT,
@@ -72,6 +73,7 @@ CREATE TABLE sections (
 CREATE INDEX idx_sections_parent ON sections(parent_id);
 CREATE INDEX idx_sections_path   ON sections(act, citation_path);
 CREATE INDEX idx_sections_order  ON sections(act, order_index);
+CREATE INDEX idx_sections_align  ON sections(act, alignment);
 
 CREATE VIRTUAL TABLE sections_fts_en USING fts5(
     citation_path, heading_en, text_en, content=''
@@ -125,8 +127,16 @@ def _unverified_alignments(en_records, fr_records):
     def children(records, addressable):
         out = defaultdict(list)
         for r in records:
-            if bool(r["is_addressable"]) is addressable and r["parent_path"]:
-                out[r["parent_path"]].append(r["citation_path"])
+            if bool(r["is_addressable"]) is not addressable or not r["parent_path"]:
+                continue
+            # Definitions are excluded from the fragment comparison. They are
+            # keyed by defined term, not by position, so a subsection holding a
+            # different *set* of definitions in each language says nothing about
+            # whether a term present in both is the same definition. That
+            # question is answered by the symmetric join rule instead.
+            if r["level"] == "definition":
+                continue
+            out[r["parent_path"]].append(r["citation_path"])
         return {k: tuple(v) for k, v in out.items()}
 
     # Addressable children and non-addressable fragments are compared
@@ -147,6 +157,44 @@ def _unverified_alignments(en_records, fr_records):
     return out
 
 
+#: Path suffixes that mark a key this project derived rather than read from a
+#: <Label>. A key ending in one of these carries no independent meaning, so a
+#: cross-language join on it is positional.
+ORDINAL_KEYS = ("~c", "~f", "~h", "~t", "~d")
+
+
+def _set_alignment(conn):
+    """Record how each row's two languages came to be on the same row.
+
+    verified   - joined on a key read from the source: a <Label> path whose
+                 siblings match in both files, or a defined term that both files
+                 agree about (see the symmetric join rule).
+    positional - joined on an ordinal this project assigned, which carries no
+                 meaning of its own. The two texts occupy the same position
+                 inside the same provision; that is all that is known.
+    unverified - joined, but the provision's children differ between the files,
+                 so even the position is not evidence.
+    split      - deliberately not joined: one half of a pair separated because
+                 the two languages structure the provision differently.
+    single     - present in one language only.
+    """
+    conn.execute("UPDATE sections SET alignment='single'")
+    conn.execute(
+        "UPDATE sections SET alignment='split' WHERE same_path_counterpart IS NOT NULL")
+    conn.execute(
+        "UPDATE sections SET alignment='verified' "
+        "WHERE text_en IS NOT NULL AND text_fr IS NOT NULL "
+        "AND same_path_counterpart IS NULL")
+    like = " OR ".join("citation_path LIKE '%" + k + "%'" for k in ORDINAL_KEYS)
+    conn.execute(
+        "UPDATE sections SET alignment='positional' "
+        "WHERE alignment='verified' AND (" + like + ")")
+    # The stronger warning wins where both apply.
+    conn.execute(
+        "UPDATE sections SET alignment='unverified' "
+        "WHERE alignment_unverified=1 AND text_en IS NOT NULL AND text_fr IS NOT NULL")
+
+
 def _write_catalogue(path, rows, header):
     """Anomalies are catalogued, not counted - see docs/decisions.md.
 
@@ -163,7 +211,7 @@ def _write_catalogue(path, rows, header):
 
 
 SPOT_CHECK_SEED = 20260918
-SPOT_CHECKS_DIR = ROOT / "tests"
+SPOT_CHECKS_DIR = ROOT / "tests" / "spot_checks"
 
 
 def _first_sentence(text):
@@ -173,6 +221,23 @@ def _first_sentence(text):
     m = re.search(r"(?<=[.;:])\s", text)
     cut = m.start() if m and m.start() < 400 else min(len(text), 300)
     return text[:cut + 1].strip()
+
+
+def _spot_check_sample(conn, act, lang):
+    """The seeded twenty for one instrument and language, in document order."""
+    text_col, head_col = "text_%s" % lang, "heading_%s" % lang
+    rows = conn.execute(
+        "SELECT citation_path, level, COALESCE(%s,''), COALESCE(%s,'') "
+        "FROM sections WHERE act=? AND is_addressable=1 "
+        "AND citation_path NOT LIKE '%%~%%' AND citation_path NOT LIKE '%%#%%' "
+        "AND %s IS NOT NULL AND %s != '' "
+        "ORDER BY COALESCE(order_index, order_index_fr)"
+        % (head_col, text_col, text_col, text_col), (act,)).fetchall()
+    if not rows:
+        return []
+    sample = random.Random(SPOT_CHECK_SEED).sample(rows, min(20, len(rows)))
+    sample.sort(key=lambda r: rows.index(r))
+    return sample
 
 
 def _write_spot_checks(conn, act, lang, consolidation_date):
@@ -189,20 +254,10 @@ def _write_spot_checks(conn, act, lang, consolidation_date):
     names = {"ITA": ("Income Tax Act", "acts/I-3.3"),
              "ITR": ("Income Tax Regulations", "regulations/C.R.C.,_c._945")}
     title, slug = names[act]
-    text_col = "text_%s" % lang
-    head_col = "heading_%s" % lang
 
-    rows = conn.execute(
-        "SELECT citation_path, level, COALESCE(%s,''), COALESCE(%s,'') "
-        "FROM sections WHERE act=? AND is_addressable=1 "
-        "AND citation_path NOT LIKE '%%~%%' AND citation_path NOT LIKE '%%#%%' "
-        "AND %s IS NOT NULL AND %s != '' "
-        "ORDER BY COALESCE(order_index, order_index_fr)"
-        % (head_col, text_col, text_col, text_col), (act,)).fetchall()
-    if not rows:
+    sample = _spot_check_sample(conn, act, lang)
+    if not sample:
         return
-    sample = random.Random(SPOT_CHECK_SEED).sample(rows, min(20, len(rows)))
-    sample.sort(key=lambda r: rows.index(r))
 
     site = "https://laws-lois.justice.gc.ca/%s/%s/" % (
         "eng" if lang == "en" else "fra", slug)
@@ -232,6 +287,89 @@ def _write_spot_checks(conn, act, lang, consolidation_date):
         "",
     ]
     out = SPOT_CHECKS_DIR / ("spot_checks_%s_%s.md" % (act.lower(), lang))
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text("\n".join(lines), encoding="utf-8")
+
+
+def _write_spot_check_results_template(conn):
+    """Create tests/spot_checks/RESULTS.md, pre-filled, if it does not exist.
+
+    Never overwritten. Once Matt starts recording results the file is his; a
+    build that clobbered it would destroy the only check in this project that
+    does not compare the XML against itself.
+    """
+    out = SPOT_CHECKS_DIR / "RESULTS.md"
+    if out.exists():
+        return
+    names = {"ITA": "Income Tax Act", "ITR": "Income Tax Regulations"}
+    sites = {
+        ("ITA", "en"): "https://laws-lois.justice.gc.ca/eng/acts/I-3.3/",
+        ("ITA", "fr"): "https://laws-lois.justice.gc.ca/fra/acts/I-3.3/",
+        ("ITR", "en"): "https://laws-lois.justice.gc.ca/eng/regulations/C.R.C.,_c._945/",
+        ("ITR", "fr"): "https://laws-lois.justice.gc.ca/fra/regulations/C.R.C.,_ch._945/",
+    }
+    lines = [
+        "# Spot check results",
+        "",
+        "Hand verification of the build against the official Justice Laws site.",
+        "",
+        "This is the only check in the project that does not compare the XML "
+        "against itself.",
+        "Every automated guard - the round trip, the uniqueness test, the "
+        "symmetric join -",
+        "reads the same four files the build reads. If those files were "
+        "misread in the same",
+        "way twice, only a human looking at the published text would notice.",
+        "",
+        "**How to use this file.** Open the matching `spot_checks_*.md` beside "
+        "the official",
+        "page, find each citation, and compare the first sentence. Record "
+        "`pass`, `fail` or",
+        "`partial` below, with a note for anything that is not a clean pass. "
+        "Put the date you",
+        "checked each block in its heading.",
+        "",
+        "This file is **never overwritten by the build**. It is yours.",
+        "",
+    ]
+    for act in ("ITA", "ITR"):
+        for lang in ("en", "fr"):
+            rows = _spot_check_sample(conn, act, lang)
+            if not rows:
+                continue
+            lines += [
+                "---",
+                "",
+                "## %s - %s" % (names[act], "English" if lang == "en" else "French"),
+                "",
+                "Source list: `spot_checks_%s_%s.md`  " % (act.lower(), lang),
+                "Official site: <%s>  " % sites[(act, lang)],
+                "**Checked on:** _(date)_  ",
+                "**Result:** _(x of %d pass)_" % len(rows),
+                "",
+                "| # | Citation | Result | Notes |",
+                "|---|---|---|---|",
+            ]
+            for i, (path, _level, _heading, _text) in enumerate(rows, 1):
+                lines.append("| %d | `%s` |  |  |" % (i, path))
+            lines.append("")
+    lines += [
+        "---",
+        "",
+        "## Summary",
+        "",
+        "| Instrument | Language | Checked on | Pass | Fail | Partial |",
+        "|---|---|---|---|---|---|",
+        "| Income Tax Act | English |  |  |  |  |",
+        "| Income Tax Act | French |  |  |  |  |",
+        "| Income Tax Regulations | English |  |  |  |  |",
+        "| Income Tax Regulations | French |  |  |  |  |",
+        "",
+        "Once every block is filled in, update the Hand verification paragraph "
+        "in README's",
+        "Methods section with the date and the outcome.",
+        "",
+    ]
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text("\n".join(lines), encoding="utf-8")
 
@@ -414,6 +552,20 @@ def build(db_path=DB_PATH):
             gaps.append((act, row[0], row[1], row[2], row[3], row[4],
                          " ".join(row[5].split())[:80]))
 
+    _set_alignment(conn)
+
+    positional_rows = [
+        (r[0], r[1], r[2], r[3], r[4])
+        for r in conn.execute(
+            "SELECT act, citation_path, level, parent_path, "
+            "SUBSTR(COALESCE(text_en,''),1,70) FROM sections "
+            "WHERE alignment='positional' ORDER BY act, citation_path")
+    ]
+    n_pos = _write_catalogue(
+        DATA / "alignment_positional.csv",
+        [(a, p_, l, pp, " ".join(t.split())) for a, p_, l, pp, t in positional_rows],
+        ["act", "citation_path", "level", "parent_path", "text_en_start"])
+
     conn.execute(
         """INSERT INTO sections_fts_en (rowid, citation_path, heading_en, text_en)
            SELECT id, citation_path, COALESCE(heading_en,''), COALESCE(text_en,'')
@@ -448,6 +600,7 @@ def build(db_path=DB_PATH):
         for lang in ("en", "fr"):
             _write_spot_checks(conn, src["act"], lang,
                                all_meta[src["act"]]["en"]["consolidation_date"])
+    _write_spot_check_results_template(conn)
 
     rows = conn.execute("SELECT COUNT(*) FROM sections").fetchone()[0]
     addressable = conn.execute(
@@ -473,6 +626,7 @@ def build(db_path=DB_PATH):
         "rows_bilingual_gaps": str(n_gap),
         "rows_alignment_unverified": str(n_unv),
         "rows_definition_join_suspects": str(n_sus),
+        "rows_alignment_positional": str(n_pos),
         "rows_label_anomalies": str(n_anom),
         "rows_definition_key_fallbacks": str(n_fb),
         "phase": "0",
@@ -500,7 +654,7 @@ def build(db_path=DB_PATH):
     return {"rows": rows, "addressable": addressable, "both_languages": both,
             "bilingual_gaps": n_gap, "label_anomalies": n_anom,
             "definition_fallbacks": n_fb, "alignment_unverified": n_unv,
-            "definition_join_suspects": n_sus}
+            "definition_join_suspects": n_sus, "alignment_positional": n_pos}
 
 
 if __name__ == "__main__":

@@ -280,6 +280,38 @@ The two addressability classes are computed separately because they are
 independent: a subsection whose continued-text fragments differ in number says
 nothing about whether its paragraphs correspond.
 
+### Alignment status
+
+Every row records **how its two languages came to be on the same row**, in the
+`alignment` column. The point of the column is that "both languages are present"
+is not one fact but several, with different strengths of evidence behind them.
+
+| Status | Meaning | Rows |
+|---|---|---|
+| `verified` | Joined on a key read from the source: a `<Label>` path whose siblings match in both files, or a defined term both files agree about | 42,181 |
+| `positional` | Joined on an **ordinal this project assigned** (`~c`, `~f`, `~h`, `~t`, `~d`). The two texts occupy the same position inside the same provision. That is all that is known | 2,900 |
+| `unverified` | Joined, but the provision's children differ between the files, so even the position is not evidence | 196 |
+| `split` | Deliberately **not** joined - one half of a pair separated because the languages structure the provision differently. Carries `same_path_counterpart` | 938 |
+| `single` | Present in one language only | 2,817 |
+
+**Why `positional` is separate from `verified`.** Continued text, formulas and
+headings have no label, so their keys are ordinals we assigned - `6(1)(f)~c1` is
+simply "the first continued fragment under 6(1)(f)". Pairing the English `~c1`
+with the French `~c1` assumes the two languages put their fragments in the same
+order. They usually do, but the source never says so, and this is the same
+species of assumption that ordinals failed at for definitions - where each file
+turned out to alphabetise in its own language. The consequences are smaller
+(fragments are not citable, and each language round-trips in its own order), but
+the reader is entitled to know which joins rest on a real key and which rest on
+counting.
+
+**Definitions are excluded from the positional class** when they have a defined
+term, because the term *is* a real key, tested for symmetry. Only the handful
+that fall back to a `~d` ordinal are positional.
+
+The positional rows are listed in `data/alignment_positional.csv` against a
+committed fixture.
+
 ### What happens to a divergent path
 
 | | Addressable children | Non-addressable fragments |

@@ -524,3 +524,52 @@ exercised the rule. A rule validated against one document is validated against
 one document.
 
 ---
+
+## 2026-09-18 - Alignment status: positional joins are named, not hidden
+
+**Decided (Matt):** every row records how its two languages came to be together,
+in an `alignment` column: `verified`, `positional`, `unverified`, `split`,
+`single`. Fragment pairs joined on an ordinal this project assigned are
+`positional`, explicitly distinct from `verified`.
+
+**Why.** "Both languages are present" is not one fact. A row where English
+`87(4)` meets French `87(4)` is joined on a label read from the source. A row
+where English `6(1)(f)~c1` meets French `6(1)(f)~c1` is joined on an ordinal we
+invented, and rests on the assumption that both languages put their continued
+fragments in the same order. The source never says they do. It is usually true,
+and the consequences are smaller than for a citable provision, but a reader is
+entitled to know which joins rest on a key and which rest on counting.
+
+This is the same species of assumption that ordinals failed at for definitions,
+where each file turned out to alphabetise in its own language. That failure is
+the reason to name this one rather than leave it implicit.
+
+**Definitions are excluded** from the positional class when they have a defined
+term, because the term is a real key and is separately tested for symmetry. Only
+the handful falling back to a `~d` ordinal are positional. Correcting this also
+fixed a mistake in the divergence test: it had been comparing definition *sets*
+between languages and flagging 2,369 definitions as unverified, when a subsection
+holding different definitions in each language says nothing about whether a term
+present in both is the same definition.
+
+**Distribution:** verified 42,181, positional 2,900, single 2,817, split 938,
+unverified 196. `data/alignment_positional.csv` lists the positional rows against
+a committed fixture.
+
+---
+
+## 2026-09-18 - The spot-check results file is never overwritten by the build
+
+**Decided (Matt):** `tests/spot_checks/RESULTS.md` is generated pre-filled with
+all eighty citations if it does not exist, and **never** regenerated afterwards.
+
+**Why:** it is the only check in the project that does not compare the XML
+against itself. Every automated guard reads the same four files the build reads;
+if those were misread the same way twice, nothing here would catch it. A build
+that clobbered the hand-recorded results would destroy the one independent piece
+of evidence the project has.
+
+**And the README does not claim it is done until it is.** The Methods section
+carries an explicit "not yet completed" status rather than an empty promise.
+
+---

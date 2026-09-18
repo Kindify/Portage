@@ -172,7 +172,22 @@ rest are unjoined and catalogued. This caught 44.1(1) "eligible small business
 corporation share" - a term the Act defines twice - where the join had paired one
 definition's English text with the other's French text.
 
-Alongside these, five catalogue files are written by every build and diffed
+**4. Hand verification against the official site.** The three guards above all
+read the same four XML files the build reads. If those files were misread the
+same way twice, no automated check in this project would notice. The only test
+that leaves that loop is a person comparing the build against the published text
+on <https://laws-lois.justice.gc.ca>.
+
+Twenty citations per instrument per language - eighty in total - are drawn by a
+seeded sample into `tests/spot_checks/`, and the results are recorded by hand in
+`tests/spot_checks/RESULTS.md`.
+
+> **Status: not yet completed.** The sample and the results template exist; the
+> checks are in progress. This paragraph will record the date and the outcome
+> once they are done. Until then, no claim is made that the data has been
+> verified against the official site.
+
+Alongside these, six catalogue files are written by every build and diffed
 line-by-line against committed fixtures. Anomalies are catalogued, never counted:
 a total stays the same while a case moves silently from one provision to another,
 so the tests compare the list, not its length.
@@ -235,6 +250,15 @@ file alphabetises definitions in its own language, so position means nothing
 across languages. Where no English term is published the key falls back to the
 French term, and where neither exists to an ordinal; both cases are listed in
 `data/definition_key_fallbacks.csv`.
+
+**Not every bilingual pair rests on the same evidence.** The `alignment` column
+says how each row's two languages came to be together: `verified` (joined on a
+key read from the source - a label path or a defined term both files agree
+about), `positional` (joined on an ordinal this project assigned, so all that is
+known is that the two texts sit in the same place inside the same provision),
+`unverified`, `split`, or `single`. Continued text, formulas and headings have no
+labels, so they are `positional`. **For the strongest subset, filter
+`alignment = 'verified'`** - 42,181 rows.
 
 **Some citation paths are ours, not Justice Canada's.** The published XML
 sometimes repeats a label or a defined term inside one provision - the French
