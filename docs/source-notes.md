@@ -438,3 +438,109 @@ for Matt, not for me. Recorded as an open question in `PLAN.md`.
 | Consolidation date in file | no | yes (`lims:pit-date`) |
 | Internal cross-references | no | **no** (untagged text) - open question |
 | Download size for our two instruments | 185 MB | 38.6 MB |
+
+---
+
+## 3. Bilingual paragraph divergence - investigation (2026-09-18)
+
+Session 1 flagged that paragraph-level element counts differ between the English
+and French files (13,215 vs 12,933 `Paragraph` elements in the Act). This is the
+result of a timeboxed investigation into why.
+
+**Conclusion: the divergence is real bilingual drafting, not a parsing bug and
+not missing content. Alignment must never be forced.**
+
+### Method
+
+Built a citation path for every addressable element in both files by walking
+`<Label>` nesting only - no text heuristics. Normalised French labels to English
+form (`a)` -> `(a)`) and French range connectors to English (`et` -> `and`,
+`à` -> `to`), per decision 6. Compared the two sets of paths.
+
+### Results
+
+| | |
+|---|---|
+| EN paths | 28,089 |
+| FR paths | 27,548 |
+| Paths present in **both** | 27,348 (96.67% of the union) |
+| EN-only (French text will be null) | 741 |
+| FR-only (English text will be null) | 200 |
+| Union - i.e. expected `sections` rows for the Act | **28,289** |
+| Rows carrying `bilingual_gap = 1` | **941 (3.33%)** |
+| Sections with any divergence | 157 of 785 (20%) |
+| Sections fully aligned | 628 of 785 (80%) |
+
+### Cause 1: range labels (resolved by normalisation)
+
+Some `<Subsection>` labels are ranges covering several provisions at once, and
+the connector word is language-specific:
+
+```
+EN <Label>(10) and (11)</Label>      FR <Label>(10) et (11)</Label>
+EN <Label>(14.01) to (14.1)</Label>  FR <Label>(14.01) à (14.1)</Label>
+```
+
+Normalising `et` -> `and` and `à` -> `to` resolved **41 of the 42** subsection
+mismatches. This is an artifact of language, not a structural difference, and
+the normalisation rule belongs in the parser.
+
+### Cause 2: malformed labels in the source XML (13 cases, all catalogued)
+
+A small number of `<Label>` elements in the published XML are not clean labels.
+These are quirks of the source, and they are listed in full so the parser can
+handle them explicitly rather than silently:
+
+| Path | EN raw label | FR raw label | What it is |
+|---|---|---|---|
+| `12.4` | `(b` | `b)` | missing closing bracket in the English source |
+| `142.7(3)` | `“85` | `« 85` | an opening quotation mark used as a label |
+| `181.7` | `“(a)` | `« a)` | quotation mark prefixed to the label |
+| `190.21` | `“(a)` | `« a)` | same |
+| `191(1)` | - | `i` | bare, unbracketed French label |
+| `163.1(c)`, `51.1(c)`, `67.3(c)`, `67.3(d)` | `(c)` / `(d)` | - | English paragraphs with no French counterpart at that path |
+
+These need a decision in session 2 or later, but they are 13 cases out of
+28,289 and none of them is ambiguous once looked at directly.
+
+### Cause 3: genuine bilingual drafting divergence (the large majority)
+
+The remaining ~900 paths are cases where English and French express the same law
+with **different paragraph structure**. This is not a defect. Section 51(1) is
+the clearest example:
+
+```
+EN 51(1) direct paragraphs:  (a) (b) (c) (d) (d.1) (d.2) (e) (f)     [8]
+FR 51(1) direct paragraphs:  a)  b)  b.1) b.2) c)   d)               [6]
+```
+
+and the content is offset, not merely relettered:
+
+```
+EN (a): "a capital property of the taxpayer that is another share of the
+         corporation (in this section referred to as a "convertible property"), or"
+
+FR a):  "sauf pour l'application des paragraphes 20(21) et 44.1(6) et (7) et de
+         l'alinéa 94(2)m), l'échange est réputé ne pas constituer une disposition
+         du bien..."
+```
+
+English breaks the opening *conditions* out into lettered paragraphs (a)-(c) and
+then states the *rules* in (d) onward. French keeps the conditions in the
+subsection's opening `<Text>` and letters only the rules. Same law, different
+architecture. English `51(1)(a)` and French `51(1)a)` are **not** translations of
+each other, and a parser that paired them by position would produce exactly the
+kind of mis-attribution CLAUDE.md exists to prevent.
+
+Section 7 shows the same thing one level down: paragraph counts match (40 = 40)
+and `7(1)(a)`-`(e)` align perfectly, but subparagraph counts are 36 against 20.
+
+### What this means for the build
+
+The rule recorded in `docs/decisions.md` - join on `citation_path`, keep the
+record with the other language null, set `bilingual_gap = 1`, never force
+alignment - is the right one, and this investigation is the evidence for it.
+Expect roughly **941 rows (3.3%) with `bilingual_gap = 1`** in the Act, spread
+across 157 sections. Those rows are a feature of the law, not a failure of the
+build, and the acceptance tests should assert the count rather than drive it
+to zero.
