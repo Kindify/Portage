@@ -481,3 +481,46 @@ an artefact of this dataset, not of the law, and a reader who cites
 README says this in as many words.
 
 ---
+
+## 2026-09-18 - Split divergent addressable rows; flag only fragments
+
+**Decided (Matt, option (c)):** where a provision's set of children differs
+between the two language files, **addressable** children that share a path are
+**split** - the English record keeps the path, the French record moves to
+`<path>~fr`, both carry `bilingual_gap = 1`, and each points at the other through
+`same_path_counterpart`. **Fragments** stay joined and carry
+`alignment_unverified = 1`.
+
+**Why the asymmetry.** Addressable rows are the ones a person cites. A citation
+that returns two unrelated texts is the failure this project exists to prevent,
+and 51(1)(a) - an opening condition in English, a rule in French - is exactly
+that. Fragments are continued text and formula groups: not citable, and each
+language round-trips in its own order, so the risk is smaller and a flag is
+proportionate.
+
+**Verified:** no row under 51(1) carries `text_en` and `text_fr` together, which
+is asserted by a test rather than checked once by hand. 51(1) *itself* stays
+joined - the subsection does correspond in both languages; only its internal
+division differs.
+
+The exact criterion is written out in `docs/citation-path-rule.md` section 6.
+
+---
+
+## 2026-09-18 - Range connectors apply at section level too
+
+**Decided:** the ` et ` -> ` and ` and ` à ` -> ` to ` normalisation applies to
+section labels as well as to labels below section level.
+
+**Why:** the Regulations number sections `3000 to 3002` / `3000 à 3002` and
+`7302 and 7303` / `7302 et 7303`. The Act has no section-level ranges, so the
+original rule did not cover them, and the two languages failed to join - the
+provisions appeared French-only.
+
+**How it was caught:** the section-count test expected 499 and found 501. Worth
+noting because the test that caught it was written for a different purpose
+entirely, and because the failure was visible only once a *second instrument*
+exercised the rule. A rule validated against one document is validated against
+one document.
+
+---

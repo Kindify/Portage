@@ -9,14 +9,20 @@ navigable at the subsection level.
 
 ## Status
 
-**Phase 0, session 3.** The **Income Tax Act in both languages** is built.
-`python -m portage.build` produces `portage.sqlite` - 36,778 rows, 31,766
-addressable provisions, 33,963 verified bilingual pairs - and both the English
-and French round trips reproduce their source files character-for-character with
-no normalisation applied.
+**Phase 0 complete.** Both instruments, both languages.
+`python -m portage.build` produces `portage.sqlite`:
 
-Not yet done: the Income Tax Regulations, and the `cross_references` table.
-See `PLAN.md`.
+| | |
+|---|---|
+| Income Tax Act | 37,136 rows |
+| Income Tax Regulations | 11,896 rows |
+| total | **49,032 rows**, 41,817 addressable provisions |
+| consolidation date | 2026-06-18 |
+| round trip, all four files | **exact, zero normalisation** |
+| tests | 41 passing |
+
+Still to come in Phase 1: the `cross_references` table, and internal
+(untagged) references. See `PLAN.md`.
 
 ## What this is
 
@@ -134,6 +140,56 @@ determined and is not something this project takes a position on. The project
 itself is non-commercial. Both clauses are quoted above and in
 `docs/source-notes.md` so anyone can read them directly.
 
+## Methods - how the data was checked
+
+Three independent guards. Each catches a different class of error, and this
+session proved that none of them subsumes the others.
+
+**1. Round-trip against a separate reconstruction.** Concatenating every record
+in document order must reproduce the source file character-for-character. No
+normalisation is applied - not even the "minimal whitespace normalization" the
+project's own brief allows for. The comparison target is built by a deliberately
+different method from the parser (a mixed-content walk over `.text` and `.tail`),
+and a second test accounts for every character against the raw XML by a third
+route.
+
+This matters because the first version of the round-trip **passed while the
+database was missing text**. The parser and the check shared a blind spot - both
+skipped every `<Label>` - so the formula variable names vanished and the test
+could not see it. A verification that reuses the logic it is verifying only
+proves that logic is self-consistent.
+
+**2. Uniqueness on the shipped key.** Uniqueness is tested against
+`citation_path` as written to the database, after every disambiguation rule, and
+never against a structural proxy. An earlier proxy check reported *zero*
+duplicate terms per parent element while the shipped paths collided three ways in
+English and eleven in French - the parent element and the parent path are not the
+same thing.
+
+**3. Symmetric bilingual join.** An English and a French record are joined only
+if both files agree about both terms. 2,021 of 2,046 definition joins pass. The
+rest are unjoined and catalogued. This caught 44.1(1) "eligible small business
+corporation share" - a term the Act defines twice - where the join had paired one
+definition's English text with the other's French text.
+
+Alongside these, five catalogue files are written by every build and diffed
+line-by-line against committed fixtures. Anomalies are catalogued, never counted:
+a total stays the same while a case moves silently from one provision to another,
+so the tests compare the list, not its length.
+
+### The rule that keys definitions went through three versions
+
+Each passed its own check and was then shown wrong by a *different* measurement.
+Recorded because the shape of that sequence is the point.
+
+| Version | Rule | Result | What exposed it |
+|---|---|---|---|
+| 1 | first defined term anywhere in the subtree | 3 collisions in English, 11 in French | the search returned cross-references to *other* definitions |
+| 2 | term and equivalent both from the opening `<Text>` | 1,219 French definitions reported no English term, against ~130 expected | the equivalent is published after the paragraphs, not in the opening text |
+| 3 | own term from the opening `<Text>`; equivalent = last match in the subtree | 0 collisions, 2,046 joins | held - then the symmetry check unjoined a further 25 |
+
+Full detail in `docs/citation-path-rule.md` and `docs/source-notes.md`.
+
 ## Known limits
 
 Read these before using the data. Each is a deliberate boundary, not a bug, and
@@ -150,7 +206,8 @@ as a complete reference graph.
 **Schedules and amendments-not-in-force are not captured.** The `sections` table
 covers the enacted `<Body>`. The file also contains three `<Schedule>` elements -
 "RELATED PROVISIONS" (16 sections), "AMENDMENTS NOT IN FORCE" (6 sections) and
-"Listed Corporations" (no sections) - and none of them is in the database.
+"Listed Corporations" (no sections) - and the Regulations have ten. None of them
+is in the database.
 Amendments not in force are, by definition, not the law as consolidated, and
 mixing them into the same table would let a reader retrieve a provision that is
 not in effect without noticing. "Listed Corporations" is genuinely part of the
@@ -194,6 +251,11 @@ applies to any path containing `~`. All such cases are listed in
 paired only if both files agree about both terms. 2,021 of 2,046 pass; the 25
 that do not are unjoined and listed in `data/definition_join_suspects.csv`,
 with the French record at `<path>~fr`.
+
+**Table structure is not modelled.** The Regulations contain five tables (157
+rows, 314 cells). Their text is preserved exactly and in document order, but
+which cell belongs to which row and column is not recorded - a table reads as a
+run of text fragments.
 
 **This is a dated snapshot, not a consolidation service.** `meta` records
 `consolidation_date` and `retrieved_date` separately.

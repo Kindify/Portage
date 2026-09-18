@@ -665,3 +665,75 @@ catalogued in `data/definition_join_suspects.csv`.
 most likely to get wrong, and each check passed until a *different* measurement
 was taken - collisions, then coverage against an independent estimate, then
 symmetry. No single check would have caught all three.
+
+---
+
+## 6. The Income Tax Regulations (2026-09-18)
+
+Parsed with the same walker as the Act, with **no changes to the parser**. Both
+round trips were exact on the first run. One change was needed to the *label*
+rule - see below.
+
+| | ITR en | ITR fr |
+|---|---|---|
+| records | 11,706 | 11,529 |
+| sections (Body) | 499 | 499 |
+| subsections | 1,519 | 1,519 |
+| paragraphs | 4,008 | 4,009 |
+| definitions | 489 | 494 |
+| round trip | exact | exact |
+| collisions | 0 | 0 |
+
+Root element is `<Regulation>` rather than `<Statute>`; `lims:pit-date` is
+2026-06-18, the same consolidation date as the Act. The file has **ten**
+`<Schedule>` elements to the Act's three, plus an `<Order>` element before the
+Body. As with the Act, only `<Body>` is parsed.
+
+### Vocabulary the Regulations use that the Act does not
+
+The Regulations contain **CALS table markup**, which the Act does not use at all:
+
+| Element | Count (en) |
+|---|---|
+| `TableGroup` | 5 |
+| `table`, `tgroup`, `tbody` | 5 each |
+| `thead` | 3 |
+| `row` | 157 |
+| `entry` | 314 |
+| `colspec` | 10 |
+| `Caption` | 1 |
+
+**These needed no special handling.** None of them is an addressable level, and
+the walker's structural rules already cover them: it descends through the table
+wrappers and emits each `<entry>`'s text as an ordered fragment. Table *text* is
+preserved exactly and in document order - verified by the round trip and by
+checking that specific cell contents ("First Home Savings Account Statement",
+"T4FHSA") appear in the rebuilt text. Table *structure* - which cell is in which
+row and column - is **not** modelled. That is a real limitation, stated in
+README's Known limits.
+
+This is the payoff from the `_is_text_leaf` rule written in session 2: it is a
+structural test rather than a list of element names, so an element vocabulary
+nobody had seen was captured rather than silently dropped.
+
+### Vocabulary in the Act but not the Regulations
+
+`LeaderRightJustified` (13) and `XRefInternal` (1).
+
+**Correction to an earlier note.** Session 1 recorded zero `XRefInternal`
+elements. That count was taken on the English Act only. The **French** Act has
+exactly one. It does not change the decision to ship tagged cross-references
+only - one tagged internal reference out of thousands is not a usable index - but
+the earlier statement was too absolute.
+
+### The one rule change: range labels at section level
+
+The Regulations number sections `3000 to 3002` and `7302 and 7303` in English,
+`3000 à 3002` and `7302 et 7303` in French. The Act has no section-level ranges,
+so the label rule translated range connectors only *below* section level. The
+result was two sections that looked French-only.
+
+Caught by the section-count test, which expected 499 and found 501. Fixed by
+applying the connector rule at section level too, with a pattern that recognises
+a numeric range. `1100A` - a section label with a trailing letter, also new in
+the Regulations - was already handled.

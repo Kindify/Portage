@@ -19,8 +19,10 @@ _BRACKETED = re.compile(r"^\([0-9A-Za-z][0-9A-Za-z.]*\)$")
 _BARE = re.compile(r"^([0-9A-Za-z][0-9A-Za-z.]*)\)$")
 #: An unmatched opening bracket: (b
 _UNMATCHED = re.compile(r"^\(([0-9A-Za-z][0-9A-Za-z.]*)$")
-#: A bare section-style number: 87  110.6
+#: A bare section-style number: 87  110.6  1100A
 _NUMERIC = re.compile(r"^[0-9][0-9A-Za-z.]*$")
+#: A section-level range, after connector normalisation: "3000 to 3002"
+_RANGE = re.compile(r"^[0-9][0-9A-Za-z.]*(?: (?:to|and) [0-9][0-9A-Za-z.]*)+$")
 
 
 def _collapse(text):
@@ -48,6 +50,12 @@ def normalise(raw, level):
         s = s.rstrip(".")
         if _NUMERIC.match(s):
             return s, False, ""
+        # Range connectors apply at section level too. The Regulations number
+        # sections "3000 to 3002" in English and "3000 à 3002" in French; without
+        # this the two never join and the provision looks French-only.
+        ranged = re.sub(r"\s+et\s+", " and ", re.sub(r"\s+à\s+", " to ", s))
+        if _RANGE.match(ranged):
+            return ranged, False, ""
         stripped = s.strip(QUOTES).strip()
         if stripped != s and _NUMERIC.match(stripped):
             return stripped, True, "stray quotation mark"

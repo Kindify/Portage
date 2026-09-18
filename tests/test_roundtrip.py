@@ -9,19 +9,21 @@ import pytest
 
 from portage.parse import source_text
 
-from conftest import ITA_EN, ITA_FR
+from conftest import SOURCE_FILES
+
+CASES = [(act, lang, xml) for (act, lang), xml in SOURCE_FILES.items()]
+IDS = ["%s-%s" % (act, lang) for act, lang, _ in CASES]
 
 
-@pytest.mark.parametrize(
-    "col,order,xml",
-    [("text_en", "order_index", ITA_EN), ("text_fr", "order_index_fr", ITA_FR)],
-    ids=["english", "french"],
-)
-def test_roundtrip_is_exact(conn, col, order, xml):
+@pytest.mark.parametrize("act,lang,xml", CASES, ids=IDS)
+def test_roundtrip_is_exact(conn, act, lang, xml):
+    col = "text_%s" % lang
+    order = "order_index" if lang == "en" else "order_index_fr"
     rebuilt = "".join(
         r[0] for r in conn.execute(
             "SELECT COALESCE(%s,'') FROM sections "
-            "WHERE act='ITA' AND %s IS NOT NULL ORDER BY %s" % (col, order, order)
+            "WHERE act=? AND %s IS NOT NULL ORDER BY %s" % (col, order, order),
+            (act,)
         )
     )
     expected = source_text(xml)
@@ -36,9 +38,8 @@ def test_roundtrip_is_exact(conn, col, order, xml):
         )
 
 
-@pytest.mark.parametrize("xml,col", [(ITA_EN, "text_en"), (ITA_FR, "text_fr")],
-                         ids=["english", "french"])
-def test_no_text_is_silently_dropped(conn, xml, col):
+@pytest.mark.parametrize("act,lang,xml", CASES, ids=IDS)
+def test_no_text_is_silently_dropped(conn, act, lang, xml):
     """Guards the failure mode that actually happened in session 2.
 
     The parser and the round-trip target once shared a blind spot - both skipped
@@ -50,6 +51,7 @@ def test_no_text_is_silently_dropped(conn, xml, col):
 
     from portage.parse import METADATA, OWNERS
 
+    col = "text_%s" % lang
     body = etree.parse(str(xml)).getroot().find("Body")
     all_text = len("".join(body.itertext()))
     in_columns = 0
@@ -61,6 +63,7 @@ def test_no_text_is_silently_dropped(conn, xml, col):
                 in_columns += len("".join(el.itertext()))
 
     stored = conn.execute(
-        "SELECT SUM(LENGTH(COALESCE(%s,''))) FROM sections WHERE act='ITA'" % col
+        "SELECT SUM(LENGTH(COALESCE(%s,''))) FROM sections WHERE act=?" % col,
+        (act,)
     ).fetchone()[0]
     assert stored == all_text - in_columns

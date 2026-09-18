@@ -27,6 +27,15 @@ SOURCES = [
         "fr": {"xml": DATA / "ITA-fra.xml",
                "url": "https://laws-lois.justice.gc.ca/fra/XML/I-3.3.xml"},
     },
+    {
+        "act": "ITR",
+        "name": "Income Tax Regulations",
+        "citation": "CRC, c 945",
+        "en": {"xml": DATA / "ITR-eng.xml",
+               "url": "https://laws-lois.justice.gc.ca/eng/XML/C.R.C.,_c._945.xml"},
+        "fr": {"xml": DATA / "ITR-fra.xml",
+               "url": "https://laws-lois.justice.gc.ca/fra/XML/C.R.C.,_ch._945.xml"},
+    },
 ]
 
 SCHEMA = """
@@ -55,6 +64,7 @@ CREATE TABLE sections (
     history_note    TEXT,
     bilingual_gap   INTEGER NOT NULL DEFAULT 0,
     alignment_unverified INTEGER NOT NULL DEFAULT 0,
+    same_path_counterpart TEXT,
     source_url      TEXT,
     source_url_fr   TEXT,
     UNIQUE (act, citation_path)
@@ -119,17 +129,22 @@ def _unverified_alignments(en_records, fr_records):
                 out[r["parent_path"]].append(r["citation_path"])
         return {k: tuple(v) for k, v in out.items()}
 
-    suspect = set()
     # Addressable children and non-addressable fragments are compared
     # separately. A subsection whose continued-text fragments differ in number
     # says nothing about whether its paragraphs correspond, and vice versa.
+    # They are also resolved differently: addressable rows are split so each
+    # language stands alone, fragments are joined but flagged. See
+    # docs/citation-path-rule.md section 6.
+    out = {}
     for addressable in (True, False):
+        suspect = set()
         en_kids = children(en_records, addressable)
         fr_kids = children(fr_records, addressable)
         for parent in set(en_kids) & set(fr_kids):
             if en_kids[parent] != fr_kids[parent]:
                 suspect |= set(en_kids[parent]) & set(fr_kids[parent])
-    return suspect
+        out["split" if addressable else "flagged"] = suspect
+    return out
 
 
 def _write_catalogue(path, rows, header):
@@ -148,7 +163,7 @@ def _write_catalogue(path, rows, header):
 
 
 SPOT_CHECK_SEED = 20260918
-SPOT_CHECKS = ROOT / "tests" / "spot_checks.md"
+SPOT_CHECKS_DIR = ROOT / "tests"
 
 
 def _first_sentence(text):
@@ -160,34 +175,48 @@ def _first_sentence(text):
     return text[:cut + 1].strip()
 
 
-def _write_spot_checks(conn, meta):
-    """Acceptance test 4: 20 citation paths for Matt to check by hand.
+def _write_spot_checks(conn, act, lang, consolidation_date):
+    """Acceptance test 4: citation paths for Matt to check by hand.
 
-    The sample is seeded, so it is the same 20 on every build. An unseeded
-    sample would change every run and there would be nothing to check against.
-    Change SPOT_CHECK_SEED to draw a fresh set.
+    One file per instrument per language. The sample is seeded, so it is the
+    same set on every build - an unseeded sample would change every run and
+    there would be nothing stable to check against. Change SPOT_CHECK_SEED to
+    draw a fresh set.
+
+    Paths containing `~` or `#` are excluded: those are keys we derived, and
+    they cannot be looked up on the Justice Laws site.
     """
+    names = {"ITA": ("Income Tax Act", "acts/I-3.3"),
+             "ITR": ("Income Tax Regulations", "regulations/C.R.C.,_c._945")}
+    title, slug = names[act]
+    text_col = "text_%s" % lang
+    head_col = "heading_%s" % lang
+
     rows = conn.execute(
-        "SELECT citation_path, level, heading_en, COALESCE(text_en,'') "
-        "FROM sections WHERE act='ITA' AND is_addressable=1 "
-        "AND citation_path NOT LIKE '%~%' ORDER BY order_index"
-    ).fetchall()
-    sample = random.Random(SPOT_CHECK_SEED).sample(rows, 20)
+        "SELECT citation_path, level, COALESCE(%s,''), COALESCE(%s,'') "
+        "FROM sections WHERE act=? AND is_addressable=1 "
+        "AND citation_path NOT LIKE '%%~%%' AND citation_path NOT LIKE '%%#%%' "
+        "AND %s IS NOT NULL AND %s != '' "
+        "ORDER BY COALESCE(order_index, order_index_fr)"
+        % (head_col, text_col, text_col, text_col), (act,)).fetchall()
+    if not rows:
+        return
+    sample = random.Random(SPOT_CHECK_SEED).sample(rows, min(20, len(rows)))
     sample.sort(key=lambda r: rows.index(r))
 
+    site = "https://laws-lois.justice.gc.ca/%s/%s/" % (
+        "eng" if lang == "en" else "fra", slug)
     lines = [
-        "# Spot checks",
+        "# Spot checks - %s (%s)" % (title, "English" if lang == "en" else "French"),
         "",
         "Twenty citation paths drawn from the build, for checking by hand against",
-        "<https://laws-lois.justice.gc.ca/eng/acts/I-3.3/>.",
+        "<%s>." % site,
         "",
         "Regenerated on every build. The sample is seeded (`SPOT_CHECK_SEED` in",
-        "`portage/build.py`), so it stays the same until someone changes the seed -",
-        "otherwise there would be nothing stable to check against.",
+        "`portage/build.py`), so it stays the same until someone changes the seed.",
         "",
-        "Paths containing `~` are excluded from the sample. Those are derived keys",
-        "for definitions and continued text, and cannot be looked up by hand on the",
-        "Justice Laws site - see the open question in PLAN.md.",
+        "Paths containing `~` or `#` are excluded from the sample - those are keys",
+        "this project derived, not citations Justice Canada would recognise.",
         "",
         "| # | Citation | Level | Heading | First sentence |",
         "|---|---|---|---|---|",
@@ -198,13 +227,13 @@ def _write_spot_checks(conn, meta):
         lines.append("| %d | `%s` | %s | %s | %s |" % (i, path, level, head, cell))
     lines += [
         "",
-        "Source: Income Tax Act, RSC 1985, c 1 (5th Supp), consolidation date %s."
-        % meta["consolidation_date"],
+        "Source: %s, consolidation date %s." % (title, consolidation_date),
         "Unofficial reproduction. Not an official version.",
         "",
     ]
-    SPOT_CHECKS.parent.mkdir(parents=True, exist_ok=True)
-    SPOT_CHECKS.write_text("\n".join(lines), encoding="utf-8")
+    out = SPOT_CHECKS_DIR / ("spot_checks_%s_%s.md" % (act.lower(), lang))
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text("\n".join(lines), encoding="utf-8")
 
 
 def build(db_path=DB_PATH):
@@ -248,6 +277,11 @@ def build(db_path=DB_PATH):
         # neighbouring record, never matched by position.
         en_paths = {r["citation_path"] for r in en_records}
         suspects = _definition_join_suspects(en_records, fr_records)
+        divergent = _unverified_alignments(en_records, fr_records)
+        # Addressable rows under a divergent parent are split so that neither
+        # language is presented as a translation of the other. Fragments are
+        # joined but flagged - they are not citable, so the risk is lower.
+        split_paths = divergent["split"]
         for path, (e, f, reason) in sorted(suspects.items()):
             join_suspects.append(
                 (act, path, e["defined_term_en"] or "", f["defined_term_en"] or "",
@@ -255,7 +289,22 @@ def build(db_path=DB_PATH):
 
         for rec in fr_records:
             path = rec["citation_path"]
-            if path in suspects:
+            if path in split_paths:
+                conn.execute(
+                    """INSERT INTO sections
+                       (act, citation_path, level, parent_path, order_index_fr,
+                        is_addressable, label_raw_fr, label_anomaly_fr,
+                        anomaly_reason_fr, heading_fr, text_fr,
+                        defined_term_en, defined_term_fr, bilingual_gap,
+                        same_path_counterpart, source_url_fr)
+                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,1,?,?)""",
+                    (act, path + "~fr", rec["level"], rec["parent_path"],
+                     rec["order_index"], rec["is_addressable"], rec["label_raw"],
+                     rec["label_anomaly"], rec["anomaly_reason"] or None,
+                     rec["heading_en"], rec["text_en"], rec["defined_term_en"],
+                     rec["defined_term_fr"], path, src["fr"]["url"]),
+                )
+            elif path in suspects:
                 # Not joined. The French record becomes its own row, marked so
                 # that its path is visibly derived rather than citable.
                 conn.execute(
@@ -264,13 +313,13 @@ def build(db_path=DB_PATH):
                         is_addressable, label_raw_fr, label_anomaly_fr,
                         anomaly_reason_fr, heading_fr, text_fr,
                         defined_term_en, defined_term_fr, bilingual_gap,
-                        source_url_fr)
-                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,1,?)""",
+                        same_path_counterpart, source_url_fr)
+                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,1,?,?)""",
                     (act, path + "~fr", rec["level"], rec["parent_path"],
                      rec["order_index"], rec["is_addressable"], rec["label_raw"],
                      1, suspects[path][2], rec["heading_en"], rec["text_en"],
                      rec["defined_term_en"], rec["defined_term_fr"],
-                     src["fr"]["url"]),
+                     path, src["fr"]["url"]),
                 )
             elif path in en_paths:
                 conn.execute(
@@ -308,18 +357,33 @@ def build(db_path=DB_PATH):
         # correspond. English 51(1)(a) is a condition; French 51(1)a) is a rule.
         # Joining them on the label alone is forcing alignment, so the pairing is
         # kept but marked unverified rather than asserted. See PLAN.md.
-        unverified = _unverified_alignments(en_records, fr_records)
-        for path in sorted(unverified):
+        conn.execute(
+            """UPDATE sections SET same_path_counterpart = citation_path || '~fr'
+               WHERE act=? AND citation_path || '~fr' IN (
+                   SELECT citation_path FROM sections WHERE act=?)""",
+            (act, act))
+
+        for path in sorted(divergent["flagged"]):
             conn.execute(
                 "UPDATE sections SET alignment_unverified=1 "
                 "WHERE act=? AND citation_path=?", (act, path))
-            row = conn.execute(
-                "SELECT level, parent_path, SUBSTR(COALESCE(text_en,''),1,70), "
-                "SUBSTR(COALESCE(text_fr,''),1,70) FROM sections "
-                "WHERE act=? AND citation_path=?", (act, path)).fetchone()
-            unverified_rows.append(
-                (act, path, row[0], row[1],
-                 " ".join(row[2].split()), " ".join(row[3].split())))
+        for resolution, paths in (("split", divergent["split"]),
+                                  ("flagged", divergent["flagged"])):
+            for path in sorted(paths):
+                row = conn.execute(
+                    "SELECT level, parent_path, SUBSTR(COALESCE(text_en,''),1,70), "
+                    "SUBSTR(COALESCE(text_fr,''),1,70) FROM sections "
+                    "WHERE act=? AND citation_path=?", (act, path)).fetchone()
+                fr_text = row[3]
+                if resolution == "split":
+                    other = conn.execute(
+                        "SELECT SUBSTR(COALESCE(text_fr,''),1,70) FROM sections "
+                        "WHERE act=? AND citation_path=?",
+                        (act, path + "~fr")).fetchone()
+                    fr_text = other[0] if other else ""
+                unverified_rows.append(
+                    (act, path, row[0], row[1], resolution,
+                     " ".join(row[2].split()), " ".join(fr_text.split())))
 
         conn.execute(
             """UPDATE sections SET parent_id = (
@@ -373,13 +437,17 @@ def build(db_path=DB_PATH):
          "term_fr_from_en_file", "term_fr_from_fr_file", "reason"])
     n_unv = _write_catalogue(
         DATA / "alignment_unverified.csv", unverified_rows,
-        ["act", "citation_path", "level", "parent_path", "text_en_start", "text_fr_start"])
+        ["act", "citation_path", "level", "parent_path", "resolution",
+         "text_en_start", "text_fr_start"])
     n_gap = _write_catalogue(
         DATA / "bilingual_gaps.csv", gaps,
         ["act", "citation_path", "level", "present_in",
          "defined_term_en", "defined_term_fr", "text_start"])
 
-    _write_spot_checks(conn, all_meta["ITA"]["en"])
+    for src in SOURCES:
+        for lang in ("en", "fr"):
+            _write_spot_checks(conn, src["act"], lang,
+                               all_meta[src["act"]]["en"]["consolidation_date"])
 
     rows = conn.execute("SELECT COUNT(*) FROM sections").fetchone()[0]
     addressable = conn.execute(
@@ -388,24 +456,16 @@ def build(db_path=DB_PATH):
         "SELECT COUNT(*) FROM sections WHERE text_en IS NOT NULL AND text_fr IS NOT NULL"
     ).fetchone()[0]
 
-    retrieved = {}
-    for src in SOURCES:
-        for lang in ("en", "fr"):
-            retrieved[lang] = dt.datetime.fromtimestamp(
-                src[lang]["xml"].stat().st_mtime, dt.timezone.utc).date().isoformat()
 
     meta_rows = {
         "source": "Justice Laws Website, Department of Justice Canada",
         "source_format": "XML consolidation",
-        "instruments": "Income Tax Act (RSC 1985, c 1 (5th Supp)) - English and French",
+        "instruments": "; ".join(
+            "%s (%s)" % (s_["name"], s_["citation"]) for s_ in SOURCES),
+        "languages": "en, fr",
         "consolidation_date": all_meta["ITA"]["en"]["consolidation_date"],
-        "consolidation_date_fr": all_meta["ITA"]["fr"]["consolidation_date"],
         "last_amended_date": all_meta["ITA"]["en"]["last_amended_date"],
         "currency_date": all_meta["ITA"]["en"]["currency_date"],
-        "retrieved_date": retrieved["en"],
-        "retrieved_date_fr": retrieved["fr"],
-        "source_url_ita_en": SOURCES[0]["en"]["url"],
-        "source_url_ita_fr": SOURCES[0]["fr"]["url"],
         "build_timestamp": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "rows_sections": str(rows),
         "rows_addressable": str(addressable),
@@ -416,9 +476,23 @@ def build(db_path=DB_PATH):
         "rows_label_anomalies": str(n_anom),
         "rows_definition_key_fallbacks": str(n_fb),
         "phase": "0",
-        "session": "3 - Income Tax Act, both languages",
+        "schema_version": "1",
+        "session": "4 - Act and Regulations, both languages",
         "official": "no - unofficial reproduction, not an official version",
     }
+    for src in SOURCES:
+        act = src["act"]
+        for lang in ("en", "fr"):
+            key = "%s_%s" % (act.lower(), lang)
+            meta_rows["source_url_" + key] = src[lang]["url"]
+            meta_rows["consolidation_date_" + key] = \
+                all_meta[act][lang]["consolidation_date"]
+            meta_rows["retrieved_date_" + key] = dt.datetime.fromtimestamp(
+                src[lang]["xml"].stat().st_mtime,
+                dt.timezone.utc).date().isoformat()
+        meta_rows["rows_" + act.lower()] = str(conn.execute(
+            "SELECT COUNT(*) FROM sections WHERE act=?", (act,)).fetchone()[0])
+
     conn.executemany("INSERT INTO meta (key,value) VALUES (?,?)", sorted(meta_rows.items()))
 
     conn.commit()

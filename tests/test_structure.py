@@ -28,6 +28,11 @@ def test_top_level_records_are_sections_or_headings(conn):
     assert sorted(r[0] for r in rows) == ["heading", "section"]
 
 
+import pytest
+
+ACTS = ["ITA", "ITR"]
+
+
 def test_sections_appear_in_source_order(conn):
     """Section numbers run forwards through the Act.
 
@@ -40,7 +45,8 @@ def test_sections_appear_in_source_order(conn):
     paths = [
         r[0] for r in conn.execute(
             "SELECT citation_path FROM sections "
-            "WHERE act='ITA' AND level='section' ORDER BY order_index"
+            "WHERE act='ITA' AND level='section' AND order_index IS NOT NULL "
+            "ORDER BY order_index"
         )
     ]
 
@@ -56,17 +62,19 @@ def test_sections_appear_in_source_order(conn):
     assert out_of_order == [], "sections out of source order: %s" % out_of_order[:5]
 
 
-def test_section_count_matches_the_enacted_body(conn):
-    """763 sections in the Body of the Act.
+@pytest.mark.parametrize("act,expected", [("ITA", 763), ("ITR", 499)])
+def test_section_count_matches_the_enacted_body(conn, act, expected):
+    """Sections in the <Body>, excluding Schedules.
 
-    The file contains 785 Section elements; the other 22 are inside Schedules -
-    "RELATED PROVISIONS" and "AMENDMENTS NOT IN FORCE" - which are appended
-    material rather than the enacted Body. See PLAN.md, carried forward.
+    The Act's file contains 785 Section elements; the other 22 are inside
+    Schedules - "RELATED PROVISIONS" and "AMENDMENTS NOT IN FORCE" - which are
+    appended material rather than enacted text. The Regulations have ten
+    Schedules, likewise excluded. See README, Known limits.
     """
     n = conn.execute(
-        "SELECT COUNT(*) FROM sections WHERE act='ITA' AND level='section'"
+        "SELECT COUNT(*) FROM sections WHERE act=? AND level='section'", (act,)
     ).fetchone()[0]
-    assert n == 763
+    assert n == expected
 
 
 def test_addressable_records_carry_a_label(conn):

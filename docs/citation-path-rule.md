@@ -248,3 +248,70 @@ filter on `is_addressable = 1`; the round-trip test reads every row.
 
 `UNIQUE (act, citation_path)`. Paths are unique within an instrument, not
 globally - the Act and the Regulations both have a section 200.
+
+---
+
+## 6. Divergent provisions: the `alignment_unverified` criterion
+
+Joining English to French on `citation_path` is not by itself enough to honour
+"never force alignment". Two records can share a path and not correspond.
+
+### The criterion, exactly
+
+For each parent path present in **both** language files, compare the **ordered
+tuple of its children's citation paths**, computed separately for addressable
+children and for non-addressable fragments:
+
+```
+children(parent, addressable) = tuple of child citation_paths,
+                                in document order,
+                                restricted to that addressability
+```
+
+If `children_en(parent, k) != children_fr(parent, k)` for a given parent and
+addressability `k`, then every child path in
+`set(children_en) ∩ set(children_fr)` for that parent and `k` is **divergent**.
+
+The test is entirely structural. It compares paths, never text, and makes no
+judgment about whether two provisions correspond - it identifies where a shared
+label is not *evidence* that they do.
+
+The two addressability classes are computed separately because they are
+independent: a subsection whose continued-text fragments differ in number says
+nothing about whether its paragraphs correspond.
+
+### What happens to a divergent path
+
+| | Addressable children | Non-addressable fragments |
+|---|---|---|
+| Count (ITA) | 333 | 2,408 |
+| Resolution | **split** | **flagged** |
+| English record | keeps the path | keeps the path |
+| French record | moves to `<path>~fr` | joined onto the same row |
+| `bilingual_gap` | 1 on both halves | 0 |
+| `alignment_unverified` | 0 | **1** |
+| `same_path_counterpart` | points at the other half | NULL |
+
+Addressable rows are split because they are the rows a person cites, and a
+citation returning two unrelated texts is the failure this project exists to
+prevent. Fragments are continued text and formulas - not citable, and each
+language round-trips in its own order - so the flag is proportionate there.
+
+Both classes are listed in `data/alignment_unverified.csv`, with a `resolution`
+column saying which treatment each received, diffed against a committed fixture.
+
+### The worked case: ITA 51(1)
+
+```
+EN 51(1) paragraphs:  (a) (b) (c) (d) (d.1) (d.2) (e) (f)
+FR 51(1) paragraphs:  a)  b)  b.1) b.2) c)   d)
+```
+
+The tuples differ, so `(a) (b) (c) (d)` - the four paths present in both - are
+divergent and are split. `(d.1) (d.2) (e) (f)` and `b.1) b.2)` were already gaps.
+The result is that **no row under 51(1) carries both `text_en` and `text_fr`**,
+which is asserted by a test. English `51(1)(a)` is one of the opening conditions;
+French `51(1)a)` is one of the rules. They share a label and nothing else.
+
+Note that `51(1)` *itself* remains joined. The subsection genuinely corresponds
+in both languages; only its internal division differs.

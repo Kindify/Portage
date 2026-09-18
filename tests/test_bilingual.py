@@ -1,3 +1,5 @@
+import pytest
+
 """Bilingual joining: never forced, and never silently asserted.
 
 Session 1 established that English and French genuinely structure some
@@ -20,13 +22,15 @@ def test_51_1_is_not_paired_across_the_divergence(conn):
     ).fetchall()
     assert rows, "no paragraphs found under 51(1)"
 
-    asserted = [
-        r["citation_path"] for r in rows
-        if not r["bilingual_gap"] and not r["alignment_unverified"]
+    both = [
+        r["citation_path"] for r in conn.execute(
+            "SELECT citation_path FROM sections WHERE act='ITA' "
+            "AND parent_path LIKE '51(1)%' AND level='paragraph' "
+            "AND text_en IS NOT NULL AND text_fr IS NOT NULL")
     ]
-    assert asserted == [], (
-        "these paths under 51(1) are presented as verified bilingual pairs, but "
-        "the two languages structure the provision differently: %s" % asserted
+    assert both == [], (
+        "51(1)(a) to (d) must never carry text_en and text_fr on the same row - "
+        "English (a) is a condition, French a) is a rule: %s" % both
     )
 
     paths = {r["citation_path"] for r in rows}
@@ -54,45 +58,75 @@ def test_single_language_rows_are_flagged(conn):
     ]
 
 
-def test_unverified_flag_covers_divergent_parents(conn):
-    """Every joined row under a divergent parent is flagged.
+def _divergence_from_source(act="ITA"):
+    """Derive the divergent paths straight from the two XML files.
 
-    Derived here straight from the two XML files rather than from the database,
-    so it does not simply restate the build's own logic back to itself.
+    Independent of the build, so these tests do not restate the build's own
+    logic back to itself.
     """
     from collections import defaultdict
 
     from portage.parse import parse
 
-    from conftest import ITA_EN, ITA_FR
+    from conftest import SOURCE_FILES
 
     def children(path, addressable):
-        recs, _ = parse(path, "ITA", "u")
+        recs, _ = parse(path, act, "u")
         out = defaultdict(list)
         for r in recs:
             if bool(r["is_addressable"]) is addressable and r["parent_path"]:
                 out[r["parent_path"]].append(r["citation_path"])
         return {k: tuple(v) for k, v in out.items()}
 
-    expected = set()
+    result = {}
     for addressable in (True, False):
-        en = children(ITA_EN, addressable)
-        fr = children(ITA_FR, addressable)
+        en = children(SOURCE_FILES[(act, "en")], addressable)
+        fr = children(SOURCE_FILES[(act, "fr")], addressable)
+        suspect = set()
         for parent in set(en) & set(fr):
             if en[parent] != fr[parent]:
-                expected |= set(en[parent]) & set(fr[parent])
+                suspect |= set(en[parent]) & set(fr[parent])
+        result["split" if addressable else "flagged"] = suspect
+    return result
 
+
+@pytest.mark.parametrize("act", ["ITA", "ITR"])
+def test_divergent_addressable_rows_are_split(conn, act):
+    """Each language stands alone, with a pointer to its counterpart."""
+    expected = _divergence_from_source(act)["split"]
+    assert expected, "expected some divergent addressable paths"
+
+    for path in sorted(expected):
+        en = conn.execute(
+            "SELECT text_en, text_fr, same_path_counterpart FROM sections "
+            "WHERE act=? AND citation_path=?", (act, path)).fetchone()
+        fr = conn.execute(
+            "SELECT text_en, text_fr, same_path_counterpart FROM sections "
+            "WHERE act=? AND citation_path=?", (act, path + "~fr")).fetchone()
+        assert en is not None and fr is not None, path
+        assert not (en["text_en"] and en["text_fr"]), (
+            "%s carries both languages on one row" % path)
+        assert not (fr["text_en"] and fr["text_fr"]), path
+        assert en["same_path_counterpart"] == path + "~fr", path
+        assert fr["same_path_counterpart"] == path, path
+
+
+@pytest.mark.parametrize("act", ["ITA", "ITR"])
+def test_only_fragments_keep_the_unverified_flag(conn, act):
+    div = _divergence_from_source(act)
     flagged = {
         r[0] for r in conn.execute(
             "SELECT citation_path FROM sections "
-            "WHERE act='ITA' AND alignment_unverified=1"
-        )
+            "WHERE act=? AND alignment_unverified=1", (act,))
     }
-    assert flagged == expected, (
-        "flag does not match the divergence in the source files: "
-        "%d missing, %d spurious"
-        % (len(expected - flagged), len(flagged - expected))
-    )
+    assert flagged == div["flagged"], (
+        "flag should cover exactly the divergent fragments: %d missing, %d spurious"
+        % (len(div["flagged"] - flagged), len(flagged - div["flagged"])))
+    addressable = conn.execute(
+        "SELECT COUNT(*) FROM sections "
+        "WHERE act=? AND alignment_unverified=1 AND is_addressable=1", (act,)
+    ).fetchone()[0]
+    assert addressable == 0, "addressable rows should be split, not flagged"
 
 
 def test_definitions_are_keyed_by_term_not_position(conn):
@@ -111,7 +145,8 @@ def test_definitions_are_keyed_by_term_not_position(conn):
     assert "entreprise exploitée activement" in (row["defined_term_fr"] or "")
 
 
-def test_definition_joins_are_symmetric(conn):
+@pytest.mark.parametrize("act", ["ITA", "ITR"])
+def test_definition_joins_are_symmetric(conn, act):
     """No joined definition may have the two files disagreeing about a term.
 
     Derived from the XML rather than from the build's own suspect list, so it
@@ -121,8 +156,10 @@ def test_definition_joins_are_symmetric(conn):
 
     from conftest import ITA_EN, ITA_FR
 
-    en_recs, _ = parse(ITA_EN, "ITA", "u")
-    fr_recs, _ = parse(ITA_FR, "ITA", "u")
+    from conftest import SOURCE_FILES
+
+    en_recs, _ = parse(SOURCE_FILES[(act, "en")], act, "u")
+    fr_recs, _ = parse(SOURCE_FILES[(act, "fr")], act, "u")
     en = {r["citation_path"]: r for r in en_recs if r["level"] == "definition"}
     fr = {r["citation_path"]: r for r in fr_recs if r["level"] == "definition"}
 
@@ -134,8 +171,8 @@ def test_definition_joins_are_symmetric(conn):
 
     joined = {
         r[0] for r in conn.execute(
-            "SELECT citation_path FROM sections WHERE act='ITA' AND level='definition' "
-            "AND text_en IS NOT NULL AND text_fr IS NOT NULL"
+            "SELECT citation_path FROM sections WHERE act=? AND level='definition' "
+            "AND text_en IS NOT NULL AND text_fr IS NOT NULL", (act,)
         )
     }
     leaked = joined & asymmetric
@@ -155,13 +192,13 @@ def test_join_suspects_are_split_not_dropped(conn):
         open(root / "data" / "definition_join_suspects.csv", encoding="utf-8")))
     assert rows, "expected some suspects"
     for row in rows:
-        path = row["citation_path"]
+        act, path = row["act"], row["citation_path"]
         en = conn.execute(
-            "SELECT text_en, text_fr FROM sections WHERE act='ITA' AND citation_path=?",
-            (path,)).fetchone()
+            "SELECT text_en, text_fr FROM sections WHERE act=? AND citation_path=?",
+            (act, path)).fetchone()
         fr = conn.execute(
-            "SELECT text_en, text_fr FROM sections WHERE act='ITA' AND citation_path=?",
-            (path + "~fr",)).fetchone()
+            "SELECT text_en, text_fr FROM sections WHERE act=? AND citation_path=?",
+            (act, path + "~fr")).fetchone()
         assert en is not None, "english record missing for %s" % path
         assert fr is not None, "french record missing for %s" % path
         assert en["text_en"] and not en["text_fr"], path
