@@ -345,19 +345,19 @@ WITH base AS (
 
         (SELECT MIN(COALESCE(t.bound_date, PRINTF('%04d', t.bound_year)))
            FROM provision_temporal_scope t
-           JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+           JOIN measure_resolved_provisions p ON p.section_id = t.cited_section_id
           WHERE p.measure_id = m.id AND t.bound_kind = 'end')      AS earliest_end_date,
         (SELECT MAX(COALESCE(t.bound_date, PRINTF('%04d', t.bound_year)))
            FROM provision_temporal_scope t
-           JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+           JOIN measure_resolved_provisions p ON p.section_id = t.cited_section_id
           WHERE p.measure_id = m.id AND t.bound_kind = 'end')      AS latest_end_date,
         (SELECT COUNT(*)
            FROM provision_temporal_scope t
-           JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+           JOIN measure_resolved_provisions p ON p.section_id = t.cited_section_id
           WHERE p.measure_id = m.id)                               AS temporal_rows,
         (SELECT COUNT(*)
            FROM provision_temporal_scope t
-           JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+           JOIN measure_resolved_provisions p ON p.section_id = t.cited_section_id
           WHERE p.measure_id = m.id AND t.bound_kind = 'step_down') AS step_down_rows
     FROM measures m
     JOIN measure_figure_basis b ON b.measure_id = m.id
@@ -538,7 +538,7 @@ threshold look like a finding. The reader supplies it -
 
 Empty until Phase 2 step 3 fills `provision_temporal_scope`.
 
-**Columns:** `measure_id`, `name_en`, `name_fr`, `act`, `citation_path`, `phrase`, `bound_kind`, `bound_date`, `end_year`, `method`
+**Columns:** `measure_id`, `name_en`, `name_fr`, `act`, `cited_citation_path`, `provision_citation_path`, `phrase`, `bound_kind`, `bound_date`, `end_year`, `method`
 
 **Rows in this build:** 0
 
@@ -546,14 +546,17 @@ Empty until Phase 2 step 3 fills `provision_temporal_scope`.
 CREATE VIEW v_end_bound_by_year AS
 SELECT p.measure_id,
        m.name_en, m.name_fr,
-       p.act, p.citation_path,
+       p.act,
+       p.citation_path AS cited_citation_path,
+       s.citation_path AS provision_citation_path,
        t.phrase,
        t.bound_kind,
        t.bound_date,
        COALESCE(t.bound_year, CAST(SUBSTR(t.bound_date,1,4) AS INTEGER)) AS end_year,
        t.method
 FROM provision_temporal_scope t
-JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+JOIN sections s ON s.id = t.section_id
+JOIN measure_resolved_provisions p ON p.section_id = t.cited_section_id
 JOIN measures m ON m.id = p.measure_id
 WHERE t.bound_kind = 'end';
 ```

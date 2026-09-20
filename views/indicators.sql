@@ -117,19 +117,19 @@ WITH base AS (
 
         (SELECT MIN(COALESCE(t.bound_date, PRINTF('%04d', t.bound_year)))
            FROM provision_temporal_scope t
-           JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+           JOIN measure_resolved_provisions p ON p.section_id = t.cited_section_id
           WHERE p.measure_id = m.id AND t.bound_kind = 'end')      AS earliest_end_date,
         (SELECT MAX(COALESCE(t.bound_date, PRINTF('%04d', t.bound_year)))
            FROM provision_temporal_scope t
-           JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+           JOIN measure_resolved_provisions p ON p.section_id = t.cited_section_id
           WHERE p.measure_id = m.id AND t.bound_kind = 'end')      AS latest_end_date,
         (SELECT COUNT(*)
            FROM provision_temporal_scope t
-           JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+           JOIN measure_resolved_provisions p ON p.section_id = t.cited_section_id
           WHERE p.measure_id = m.id)                               AS temporal_rows,
         (SELECT COUNT(*)
            FROM provision_temporal_scope t
-           JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+           JOIN measure_resolved_provisions p ON p.section_id = t.cited_section_id
           WHERE p.measure_id = m.id AND t.bound_kind = 'step_down') AS step_down_rows
     FROM measures m
     JOIN measure_figure_basis b ON b.measure_id = m.id

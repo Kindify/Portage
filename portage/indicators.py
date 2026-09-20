@@ -24,9 +24,10 @@ that would imply importance.
 """
 
 import csv
+import json
 import re
 
-from .finance import PAGES, SNAPSHOT, text_of, normalise_label
+from .finance import PAGES, ROOT, SNAPSHOT, text_of, normalise_label
 from .measures_build import _fold, _terms_in
 
 from lxml import html as LH
@@ -118,7 +119,15 @@ CREATE TABLE measure_figure_basis (
 -- It is created empty so the indicator views resolve to null until it exists.
 CREATE TABLE provision_temporal_scope (
     id              INTEGER PRIMARY KEY,
+    -- Where the phrase literally is. The verbatim test checks the phrase
+    -- against THIS row's text_en.
     section_id      INTEGER NOT NULL REFERENCES sections(id),
+    -- The provision Finance cited, which is how the bound reaches a measure.
+    -- Equal to section_id under the 'cited' scope; an ancestor under
+    -- 'cited_and_subtree', where a cited section's text lives in its
+    -- subsections. The indicator joins on this, so the scope choice does not
+    -- need a schema change.
+    cited_section_id INTEGER NOT NULL REFERENCES sections(id),
     phrase          TEXT    NOT NULL,     -- verbatim substring of text_en
     bound_kind      TEXT    NOT NULL,     -- 'start' | 'end' | 'step_down'
     bound_date      TEXT,
@@ -127,6 +136,7 @@ CREATE TABLE provision_temporal_scope (
 );
 
 CREATE INDEX idx_temporal_section ON provision_temporal_scope(section_id);
+CREATE INDEX idx_temporal_cited ON provision_temporal_scope(cited_section_id);
 CREATE INDEX idx_mobjcat_measure ON measure_objective_categories(measure_id);
 """
 
@@ -444,19 +454,19 @@ WITH base AS (
 
         (SELECT MIN(COALESCE(t.bound_date, PRINTF('%04d', t.bound_year)))
            FROM provision_temporal_scope t
-           JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+           JOIN measure_resolved_provisions p ON p.section_id = t.cited_section_id
           WHERE p.measure_id = m.id AND t.bound_kind = 'end')      AS earliest_end_date,
         (SELECT MAX(COALESCE(t.bound_date, PRINTF('%04d', t.bound_year)))
            FROM provision_temporal_scope t
-           JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+           JOIN measure_resolved_provisions p ON p.section_id = t.cited_section_id
           WHERE p.measure_id = m.id AND t.bound_kind = 'end')      AS latest_end_date,
         (SELECT COUNT(*)
            FROM provision_temporal_scope t
-           JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+           JOIN measure_resolved_provisions p ON p.section_id = t.cited_section_id
           WHERE p.measure_id = m.id)                               AS temporal_rows,
         (SELECT COUNT(*)
            FROM provision_temporal_scope t
-           JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+           JOIN measure_resolved_provisions p ON p.section_id = t.cited_section_id
           WHERE p.measure_id = m.id AND t.bound_kind = 'step_down') AS step_down_rows
     FROM measures m
     JOIN measure_figure_basis b ON b.measure_id = m.id
@@ -621,14 +631,17 @@ Empty until Phase 2 step 3 fills `provision_temporal_scope`.""",
 CREATE VIEW v_end_bound_by_year AS
 SELECT p.measure_id,
        m.name_en, m.name_fr,
-       p.act, p.citation_path,
+       p.act,
+       p.citation_path AS cited_citation_path,
+       s.citation_path AS provision_citation_path,
        t.phrase,
        t.bound_kind,
        t.bound_date,
        COALESCE(t.bound_year, CAST(SUBSTR(t.bound_date,1,4) AS INTEGER)) AS end_year,
        t.method
 FROM provision_temporal_scope t
-JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+JOIN sections s ON s.id = t.section_id
+JOIN measure_resolved_provisions p ON p.section_id = t.cited_section_id
 JOIN measures m ON m.id = p.measure_id
 WHERE t.bound_kind = 'end'
 """,
@@ -889,11 +902,61 @@ def build_indicators(conn, write_catalogue):
         [(m, e, f, en or "", fr or "") for m, e, f, en, fr in diffs],
         ["measure_id", "en_rows", "fr_rows", "resolved_en", "resolved_fr"])
 
+    # -- Temporal scope, from the committed extraction ----------------------
+    counts.update(load_temporal_scope(conn, ROOT / "data"))
+
     # -- The views ----------------------------------------------------------
     for _name, _prose, sql in VIEWS:
         conn.execute(sql)
     counts["views"] = len(VIEWS)
     return counts
+
+
+def load_temporal_scope(conn, data_dir):
+    """Load data/provision_temporal_scope.csv, if the batch script has run.
+
+    The API is never called from the build. The build reads what the batch
+    script committed, and re-checks the verbatim rule on the way in: a row
+    whose phrase is not a substring of its provision's text_en is dropped
+    here, not stored and then asserted about. The committed CSV is evidence,
+    not authority.
+    """
+    path = data_dir / "provision_temporal_scope.csv"
+    run_path = data_dir / "temporal_scope_run.json"
+    if not path.exists():
+        return {"provision_temporal_scope": 0, "temporal_scope_dropped": 0}
+
+    texts = dict(conn.execute(
+        "SELECT id, text_en FROM sections WHERE text_en IS NOT NULL"))
+    kept, dropped = 0, 0
+    with open(path, encoding="utf-8") as fh:
+        for row in csv.DictReader(fh):
+            sid = int(row["section_id"])
+            if row["phrase"] not in (texts.get(sid) or ""):
+                dropped += 1
+                continue
+            conn.execute(
+                """INSERT INTO provision_temporal_scope
+                   (section_id, cited_section_id, phrase, bound_kind,
+                    bound_date, bound_year, method)
+                   VALUES (?,?,?,?,?,?,'extracted_llm')""",
+                (sid, int(row["cited_section_id"]), row["phrase"],
+                 row["bound_kind"], row["bound_date"] or None,
+                 int(row["bound_year"]) if row["bound_year"] else None))
+            kept += 1
+
+    if run_path.exists():
+        run = json.loads(run_path.read_text(encoding="utf-8"))
+        conn.executemany(
+            "INSERT OR REPLACE INTO meta (key, value) VALUES (?,?)",
+            [("temporal_scope_model", str(run.get("model"))),
+             ("temporal_scope_effort", str(run.get("effort"))),
+             ("temporal_scope_prompt_sha256", str(run.get("prompt_sha256"))),
+             ("temporal_scope_run_date", str(run.get("run_date"))),
+             ("temporal_scope_scope", str(run.get("scope"))),
+             ("temporal_scope_batch_id", str(run.get("batch_id"))),
+             ("temporal_scope_method", "extracted_llm")])
+    return {"provision_temporal_scope": kept, "temporal_scope_dropped": dropped}
 
 
 def _field_rows(conn, field):

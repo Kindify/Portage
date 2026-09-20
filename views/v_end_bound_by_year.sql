@@ -13,13 +13,16 @@
 CREATE VIEW v_end_bound_by_year AS
 SELECT p.measure_id,
        m.name_en, m.name_fr,
-       p.act, p.citation_path,
+       p.act,
+       p.citation_path AS cited_citation_path,
+       s.citation_path AS provision_citation_path,
        t.phrase,
        t.bound_kind,
        t.bound_date,
        COALESCE(t.bound_year, CAST(SUBSTR(t.bound_date,1,4) AS INTEGER)) AS end_year,
        t.method
 FROM provision_temporal_scope t
-JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+JOIN sections s ON s.id = t.section_id
+JOIN measure_resolved_provisions p ON p.section_id = t.cited_section_id
 JOIN measures m ON m.id = p.measure_id
 WHERE t.bound_kind = 'end';

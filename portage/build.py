@@ -855,6 +855,10 @@ def build(db_path=DB_PATH):
         "rows_measure_reference_edition_diffs": str(
             indicator_counts["measure_reference_edition_diffs"]),
         "indicator_views": str(indicator_counts["views"]),
+        "rows_provision_temporal_scope": str(
+            indicator_counts["provision_temporal_scope"]),
+        "rows_temporal_scope_dropped": str(
+            indicator_counts["temporal_scope_dropped"]),
         "phase": "0 and 1 complete; 2 in progress",
         "schema_version": "1",
         "session": "4 - Act and Regulations, both languages",

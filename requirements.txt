@@ -7,3 +7,9 @@ lxml>=5.2            # parsing Justice Laws XML, structure-only
 pytest>=8.0          # acceptance tests
 
 # sqlite3 is in the Python standard library - nothing to install.
+
+# Phase 2 step 3 only, and only for scripts/extract_temporal_scope.py - the
+# batch script that extracts temporal scope. The build never imports it and
+# the tests never import it: the build reads the CSV that script committed.
+# Install it only when you are going to run the extraction.
+anthropic>=1.0

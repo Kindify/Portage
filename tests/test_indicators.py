@@ -9,7 +9,9 @@ so that it fails the first time a row arrives that breaks it.
 """
 
 import csv
+import json
 import pathlib
+import sys
 
 import pytest
 
@@ -205,6 +207,84 @@ def test_every_temporal_phrase_is_verbatim(conn):
         if not text or phrase not in text:
             bad.append((sid, phrase))
     assert not bad, "phrases that are not verbatim substrings: %s" % bad[:5]
+
+
+def test_the_prompt_doc_is_current():
+    """docs/temporal-scope-prompt.md must match the script.
+
+    The prompt is the one judgment this project delegates to a model, and it
+    is the thing Matt reads before the key is supplied. A doc that has drifted
+    from the script would be worse than no doc.
+    """
+    from scripts.extract_temporal_scope import prompt_doc
+
+    on_disk = (ROOT / "docs" / "temporal-scope-prompt.md").read_text(encoding="utf-8")
+    assert on_disk.splitlines() == prompt_doc().splitlines(), (
+        "docs/temporal-scope-prompt.md is stale - regenerate it from "
+        "scripts/extract_temporal_scope.py")
+
+
+def test_the_extraction_never_runs_from_the_build():
+    """CLAUDE.md: the API is called from a batch script, never from the build.
+
+    Asserted by import graph rather than by reading the code. It runs in a
+    fresh interpreter on purpose: inside this process a sibling test has
+    already imported the batch script, so checking this process's sys.modules
+    would prove nothing about what the build pulls in.
+    """
+    import subprocess
+
+    probe = (
+        "import sys, json;"
+        "import portage.build;"
+        "print(json.dumps(sorted("
+        "  m for m in sys.modules"
+        "  if m == 'anthropic' or m.startswith('anthropic.')"
+        "     or m.startswith('scripts'))))"
+    )
+    out = subprocess.run([sys.executable, "-c", probe], cwd=str(ROOT),
+                         capture_output=True, text=True, check=True)
+    leaked = json.loads(out.stdout.strip())
+    assert leaked == [], (
+        "importing portage.build pulled in %s - the build must never reach "
+        "the API or the batch script" % leaked)
+
+
+def test_temporal_bounds_carry_a_date_that_is_in_the_phrase(conn):
+    """Never infer a date the text does not state.
+
+    The phrase is verbatim (asserted above); this asserts the date came out of
+    that phrase rather than out of the model's own knowledge. Vacuous until
+    step 3 runs, like the rest.
+    """
+    import re
+
+    bad = []
+    for phrase, date, year in conn.execute(
+            "SELECT phrase, bound_date, bound_year FROM provision_temporal_scope"):
+        years = re.findall(r"\b(1[89]\d\d|20\d\d)\b", phrase)
+        if date is not None and date[:4] not in years:
+            bad.append((phrase, date))
+        if year is not None and str(year) not in years:
+            bad.append((phrase, year))
+    assert not bad, "bounds whose date is not in their phrase: %s" % bad[:5]
+
+
+def test_temporal_rows_are_reachable_from_the_provision_finance_cited(conn):
+    """cited_section_id must be the row itself or one of its ancestors."""
+    bad = []
+    for sid, cited in conn.execute(
+            "SELECT section_id, cited_section_id FROM provision_temporal_scope"):
+        node, seen = sid, set()
+        while node is not None and node not in seen:
+            if node == cited:
+                break
+            seen.add(node)
+            node = conn.execute(
+                "SELECT parent_id FROM sections WHERE id=?", (node,)).fetchone()[0]
+        else:
+            bad.append((sid, cited))
+    assert not bad, "rows whose cited_section_id is not an ancestor: %s" % bad[:5]
 
 
 def test_temporal_scope_records_its_provenance(conn):
