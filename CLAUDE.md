@@ -127,6 +127,10 @@ else for Phase 0 without saying why. Everything runs on a laptop with
 - Before writing code: inspect the real source data and describe its
   structure in `docs/source-notes.md`. Do not assume.
 - Small commits with plain-language messages.
+- Stage files explicitly by name. Never `git add -A` or `git add .`.
+  If untracked files exist at commit time, list them and ask before
+  including any. Twice a section written by Matt was swept into a commit
+  whose message said nothing about it.
 - When something is uncertain (source format, licence terms, an
   ambiguous citation), stop and ask rather than guess.
 - Log every design decision in `docs/decisions.md` with the date.
