@@ -45,7 +45,9 @@ MODEL = "claude-opus-5"
 EFFORT = "high"
 MAX_TOKENS = 4000
 SAMPLE_SIZE = 30
+RECALL_SAMPLE_SIZE = 20
 SAMPLE_SEED = 20260920
+RECALL_SAMPLE_SEED = 20260921
 
 #: Published rates, $ per million tokens, for the estimate only. The Batch API
 #: is half of these. Update with the model.
@@ -161,6 +163,20 @@ def prompt_sha256():
 # Scope
 # --------------------------------------------------------------------------
 
+#: The year token. The SAME expression filters the scope and verifies a
+#: returned bound, and that is the point: a bound is only valid if its year
+#: appears in the copied phrase, and the phrase is only valid if it is a
+#: substring of text_en. So a provision whose text contains no year token
+#: cannot yield a valid bound, and sending it would be spending money to be
+#: told nothing.
+#:
+#: Matt proposed \b(19|20)\d{2}\b. This is that, widened to 18xx so that the
+#: filter can never be narrower than the verifier - a narrower filter could
+#: drop a provision that would have passed. Checked on the corpus: both
+#: expressions select exactly the same 997 provisions, so the widening costs
+#: nothing today and keeps the guarantee if an 18xx date ever appears.
+_YEAR_IN = re.compile(r"\b(1[89]\d\d|20\d\d)\b")
+
 #: What "the cited provisions" means. CLAUDE.md says the extraction covers the
 #: provisions Finance cites; it does not say what to do when Finance cites a
 #: whole section whose text lives in its subsections, which is 99 of the 271
@@ -196,9 +212,42 @@ SCOPES = {
 }
 
 
-def provisions(conn, scope):
-    return [dict(id=r[0], cited_id=r[1], act=r[2], citation_path=r[3], text=r[4])
+def provisions(conn, scope, year_filter=True):
+    """(kept, filtered_out) provisions for a scope.
+
+    `year_filter` drops every provision whose text contains no four-digit
+    year. See _YEAR_IN: such a provision cannot produce a bound that survives
+    verification, so the only thing sending it can buy is an empty answer.
+    The provisions dropped are counted and catalogued, never discarded
+    silently - the recall sample exists because a filter that is wrong is
+    invisible in the output.
+    """
+    rows = [dict(id=r[0], cited_id=r[1], act=r[2], citation_path=r[3], text=r[4])
             for r in conn.execute(SCOPES[scope])]
+    if not year_filter:
+        return rows, []
+    kept = [r for r in rows if _YEAR_IN.search(r["text"])]
+    dropped = [r for r in rows if not _YEAR_IN.search(r["text"])]
+    return kept, dropped
+
+
+def write_filter_catalogue(scope, kept, dropped):
+    """data/temporal_scope_filtered.csv - counts, per instrument.
+
+    Written by --dry-run as well as by a real run: it is a property of the
+    corpus and the filter, not of anything the API said.
+    """
+    acts = sorted({p["act"] for p in kept} | {p["act"] for p in dropped})
+    rows = [(scope, act,
+             sum(1 for p in kept if p["act"] == act)
+             + sum(1 for p in dropped if p["act"] == act),
+             sum(1 for p in kept if p["act"] == act),
+             sum(1 for p in dropped if p["act"] == act))
+            for act in acts]
+    rows.append((scope, "ALL", len(kept) + len(dropped), len(kept), len(dropped)))
+    _write_csv(DATA / "temporal_scope_filtered.csv", rows,
+               ["scope", "act", "in_scope", "sent", "filtered_no_year_token"])
+    return rows
 
 
 def build_request(prov):
@@ -230,7 +279,6 @@ def build_request(prov):
 # Verification - run against every returned bound, before anything is stored
 # --------------------------------------------------------------------------
 
-_YEAR_IN = re.compile(r"\b(1[89]\d\d|20\d\d)\b")
 
 
 def split_bound(value):
@@ -403,7 +451,67 @@ def write_outputs(provs, messages, failures, scope, batch_id, run_date):
     (DATA / "temporal_scope_run.json").write_text(
         json.dumps(run, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     _write_sample(rows)
+    _write_recall_sample(provs, rows)
     return run
+
+
+def _write_recall_sample(provs, rows):
+    """Twenty provisions that contain a year and produced nothing.
+
+    The precision sample asks "is what came back right". This asks the
+    question precision cannot: "is what did not come back really absent".
+    Every provision here passed the year filter, so the filter is not the
+    reason it is empty - either the provision genuinely has no date-bounded
+    condition, or the extraction missed one. Only a person reading the text
+    can tell those apart, and a miss is invisible in every automated test in
+    this project.
+    """
+    import random
+
+    out = SPOT_CHECKS / "temporal-scope-recall.md"
+    if out.exists():
+        print("  %s exists - not regenerated" % out.name)
+        return
+    produced = {r[0] for r in rows}
+    empty = sorted((p for p in provs if p["id"] not in produced),
+                   key=lambda p: (p["act"], p["citation_path"]))
+    if not empty:
+        return
+    sample = random.Random(RECALL_SAMPLE_SEED).sample(
+        empty, min(RECALL_SAMPLE_SIZE, len(empty)))
+    sample.sort(key=lambda p: (p["act"], p["citation_path"]))
+
+    lines = [
+        "# Temporal scope - recall sample, round 1",
+        "",
+        "Twenty provisions that **contain a four-digit year and produced no",
+        "bound**, drawn with seed %d." % RECALL_SAMPLE_SEED,
+        "",
+        "The precision sample checks that what came back is right. This checks",
+        "the other direction, which no automated test in this project can: that",
+        "what did not come back is really absent. Every provision below passed",
+        "the year filter, so the filter is not why it is empty.",
+        "",
+        "For each: read the text and decide whether it states a date-bounded",
+        "condition - a start, an end, or a step-down - that the extraction",
+        "should have returned. A year that merely names a statute, a form, a",
+        "class or a document is **not** a bound, and an empty answer is correct",
+        "for it.",
+        "",
+        "Record results in `temporal-scope-recall-RESULTS.md`. Do not",
+        "regenerate this file.",
+        "",
+    ]
+    for i, prov in enumerate(sample, 1):
+        years = sorted(set(_YEAR_IN.findall(prov["text"])))
+        text = " ".join(prov["text"].split())
+        lines += ["## %d. %s %s" % (i, prov["act"], prov["citation_path"]), "",
+                  "years present: %s" % ", ".join(years), "",
+                  "> %s" % (text if len(text) <= 1200 else text[:1200] + " [...]"),
+                  "",
+                  "- [ ] correctly empty   - [ ] a bound was missed: ______", ""]
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text("\n".join(lines), encoding="utf-8")
 
 
 def _write_csv(path, rows, header):
@@ -454,7 +562,12 @@ def _write_sample(rows):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--scope", choices=sorted(SCOPES), default="cited")
+    ap.add_argument("--scope", choices=sorted(SCOPES),
+                    default="cited_and_subtree")
+    ap.add_argument("--no-year-filter", action="store_true",
+                    help="send provisions with no year token too; they "
+                         "cannot yield a valid bound, so this only "
+                         "exists to re-measure the filter")
     ap.add_argument("--dry-run", action="store_true",
                     help="build every request, print the prompt and the "
                          "estimate, call nothing, and exit")
@@ -466,11 +579,14 @@ def main(argv=None):
     if not DB_PATH.exists():
         sys.exit("portage.sqlite not found - run python -m portage.build first")
     conn = sqlite3.connect(DB_PATH)
-    provs = provisions(conn, args.scope)
+    provs, filtered = provisions(conn, args.scope,
+                                 year_filter=not args.no_year_filter)
+    write_filter_catalogue(args.scope, provs, filtered)
     if args.limit:
         provs = provs[:args.limit]
     requests = [build_request(p) for p in provs]
     est = estimate(conn, requests, provs)
+    est["filtered_no_year_token"] = len(filtered)
 
     if args.show_prompt or args.dry_run:
         print("=" * 72)
@@ -508,6 +624,7 @@ def main(argv=None):
     run_date = dt.datetime.now(dt.timezone.utc).date().isoformat()
     messages, failures, batch_id = submit_and_wait(requests)
     run = write_outputs(provs, messages, failures, args.scope, batch_id, run_date)
+    run["filtered_no_year_token"] = len(filtered)
     print(json.dumps(run, indent=2, sort_keys=True))
     print("\nWrote data/provision_temporal_scope.csv - commit it, then rebuild.")
     return 0
@@ -562,6 +679,43 @@ def prompt_doc():
         "",
         "Rejection is not silent and it is not a failure of the run: the rejects",
         "catalogue is the evidence that the rules were applied.",
+        "",
+        "## Scope, and the year filter",
+        "",
+        "The extraction covers **the provisions Finance cites, plus the",
+        "subtree of a cited provision that has no text of its own** (scope",
+        "`cited_and_subtree`). Finance cites 271 distinct provisions and 99 of",
+        "them are whole sections whose text lives in their subsections; under",
+        "the narrower reading, 129 of 247 measures would have had no text in",
+        "scope at all, including the reorganization deferral.",
+        "",
+        "That scope is 11,847 provisions with text. It is then **filtered to",
+        "provisions whose `text_en` contains a four-digit year token**,",
+        "`\\b(1[89]\\d\\d|20\\d\\d)\\b`, which leaves 997.",
+        "",
+        "The filter is safe because of the verification rules, not in spite of",
+        "them. A bound is only kept if the year it reports appears inside the",
+        "copied phrase, and the phrase is only kept if it is a substring of",
+        "`text_en`. So a provision whose text has no year token cannot produce",
+        "a bound that survives, and sending it could only ever buy an empty",
+        "answer. **The same regular expression does the filtering and the",
+        "verifying** - one constant, `_YEAR_IN` - so the filter can never be",
+        "narrower than the check it is justified by.",
+        "",
+        "Matt proposed `\\b(19|20)\\d{2}\\b`. The expression used widens that to",
+        "18xx so the filter cannot be narrower than the verifier. On this",
+        "corpus both select exactly the same 997 provisions, so the widening",
+        "costs nothing now and keeps the guarantee if an 1800s date appears.",
+        "",
+        "The provisions dropped are counted per instrument in",
+        "`data/temporal_scope_filtered.csv`, written by `--dry-run` too since",
+        "it is a property of the corpus rather than of any answer.",
+        "",
+        "**A filter that is wrong is invisible in the output**, which is what",
+        "the recall sample is for: twenty provisions that passed the filter and",
+        "still produced nothing, for a person to read. It sits beside the",
+        "thirty-row precision sample, and the two ask opposite questions - is",
+        "what came back right, and is what did not come back really absent.",
         "",
         "## System prompt",
         "",

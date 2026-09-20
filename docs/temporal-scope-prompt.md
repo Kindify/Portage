@@ -41,6 +41,43 @@ not in the phrase it copied, and the row is rejected into
 Rejection is not silent and it is not a failure of the run: the rejects
 catalogue is the evidence that the rules were applied.
 
+## Scope, and the year filter
+
+The extraction covers **the provisions Finance cites, plus the
+subtree of a cited provision that has no text of its own** (scope
+`cited_and_subtree`). Finance cites 271 distinct provisions and 99 of
+them are whole sections whose text lives in their subsections; under
+the narrower reading, 129 of 247 measures would have had no text in
+scope at all, including the reorganization deferral.
+
+That scope is 11,847 provisions with text. It is then **filtered to
+provisions whose `text_en` contains a four-digit year token**,
+`\b(1[89]\d\d|20\d\d)\b`, which leaves 997.
+
+The filter is safe because of the verification rules, not in spite of
+them. A bound is only kept if the year it reports appears inside the
+copied phrase, and the phrase is only kept if it is a substring of
+`text_en`. So a provision whose text has no year token cannot produce
+a bound that survives, and sending it could only ever buy an empty
+answer. **The same regular expression does the filtering and the
+verifying** - one constant, `_YEAR_IN` - so the filter can never be
+narrower than the check it is justified by.
+
+Matt proposed `\b(19|20)\d{2}\b`. The expression used widens that to
+18xx so the filter cannot be narrower than the verifier. On this
+corpus both select exactly the same 997 provisions, so the widening
+costs nothing now and keeps the guarantee if an 1800s date appears.
+
+The provisions dropped are counted per instrument in
+`data/temporal_scope_filtered.csv`, written by `--dry-run` too since
+it is a property of the corpus rather than of any answer.
+
+**A filter that is wrong is invisible in the output**, which is what
+the recall sample is for: twenty provisions that passed the filter and
+still produced nothing, for a person to read. It sits beside the
+thirty-row precision sample, and the two ask opposite questions - is
+what came back right, and is what did not come back really absent.
+
 ## System prompt
 
 ```text
