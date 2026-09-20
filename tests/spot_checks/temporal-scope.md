@@ -1,0 +1,249 @@
+# Temporal scope - precision sample, round 1
+
+Thirty extracted bounds, drawn with seed 20260920. For each: read the
+provision at laws-lois.justice.gc.ca and confirm that the phrase appears
+as shown and that the bound is what the phrase says. A phrase that is
+accurate but is not really a condition on the provision's operation is a
+failure, and is the kind this sample exists to find.
+
+Record results in `temporal-scope-RESULTS.md`. Do not regenerate this file.
+
+## 1. ITA 66.1(6)"Canadian exploration expense"(g.4)~f1
+
+> 100% if the expense is incurred before 2015
+
+- bound_kind: `step_down`
+- date: `-`  year: `2015`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 2. ITA 88(2.2)(a)(ii)
+
+> disposed of by the corporation after 1978
+
+- bound_kind: `start`
+- date: `-`  year: `1978`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 3. ITA 110.6(2)(a)~f1
+
+> began after 1987 and ended before 1990
+
+- bound_kind: `start`
+- date: `-`  year: `1987`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 4. ITA 118.1(29)
+
+> that ended after November 14, 2024
+
+- bound_kind: `start`
+- date: `2024-11-14`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 5. ITA 125.6(2)(c)
+
+> ends after 2026
+
+- bound_kind: `start`
+- date: `-`  year: `2026`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 6. ITA 125.6(2)(c)~f1
+
+> is the number of days in the taxation year that are after 2026 during which the taxpayer is a qualifying journalism organization
+
+- bound_kind: `step_down`
+- date: `-`  year: `2026`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 7. ITA 125.6(2)(c)~f1
+
+> is the number of days in the taxation year that are before 2027 during which the taxpayer is a qualifying journalism organization
+
+- bound_kind: `end`
+- date: `-`  year: `2027`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 8. ITA 125.7(1)"qualifying period"(c.92)
+
+> begins on March 14, 2021
+
+- bound_kind: `start`
+- date: `2021-03-14`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 9. ITA 127(9)"certified property"(a)(ii)
+
+> before 1989
+
+- bound_kind: `end`
+- date: `-`  year: `1989`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 10. ITA 127(9)"qualified property"(b)
+
+> acquired by the taxpayer after June 23, 1975
+
+- bound_kind: `start`
+- date: `1975-06-23`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 11. ITA 127(9)"specified percentage"(a)(iii)(C)(III)
+
+> on February 22, 1994
+
+- bound_kind: `start`
+- date: `1994-02-22`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 12. ITA 127(9)"specified percentage"(g)(ii)
+
+> after 1988, 45%,
+
+- bound_kind: `step_down`
+- date: `-`  year: `1988`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 13. ITA 127(9)"specified percentage"(j)(i)
+
+> before 2013, 10%
+
+- bound_kind: `step_down`
+- date: `-`  year: `2013`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 14. ITA 127(35)
+
+> after February 23, 1998
+
+- bound_kind: `start`
+- date: `1998-02-23`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 15. ITA 127.45(1)"specified percentage"(b)(i)
+
+> on or after March 28, 2023 and before January 1, 2034, 30%
+
+- bound_kind: `step_down`
+- date: `2034-01-01`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 16. ITA 127.48(1)"specified percentage"(b)(i)(A)
+
+> before 2034, 15%
+
+- bound_kind: `step_down`
+- date: `-`  year: `2034`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 17. ITA 129(3.1)(c)
+
+> that occurred before November 13, 1981
+
+- bound_kind: `end`
+- date: `1981-11-13`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 18. ITA 146(1)"retirement income"(a)
+
+> in the case of a plan entered into before March 14, 1957
+
+- bound_kind: `end`
+- date: `1957-03-14`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 19. ITA 146.1(1)"trust"(b)
+
+> the payment after 1997 of accumulated income payments
+
+- bound_kind: `start`
+- date: `-`  year: `1997`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 20. ITA 147(10.3)(a)
+
+> any amount contributed after December 1, 1982
+
+- bound_kind: `start`
+- date: `1982-12-01`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 21. ITA 153(1.03)"eligible employer"(b)
+
+> has, on March 18, 2020, a business number
+
+- bound_kind: `start`
+- date: `2020-03-18`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 22. ITA 212(13)(f)
+
+> entered into or issued or modified after March 31, 1977
+
+- bound_kind: `start`
+- date: `1977-03-31`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 23. ITR 1100(1)(c)(i)(C)(I)
+
+> before 2030
+
+- bound_kind: `end`
+- date: `-`  year: `2030`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 24. ITR 1100(2)~f1
+
+> nil, for property that became available for use by the taxpayer after 2029
+
+- bound_kind: `step_down`
+- date: `-`  year: `2029`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 25. ITR 1100(2)~f1
+
+> property acquired before 2025 that is included in any of Classes 54 to 56
+
+- bound_kind: `end`
+- date: `-`  year: `2025`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 26. ITR 1100(2.1)(b)
+
+> before November 13, 1981
+
+- bound_kind: `end`
+- date: `1981-11-13`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 27. ITR 1104(2)"certified feature film"
+
+> the photography or art work was commenced before May 26, 1976
+
+- bound_kind: `end`
+- date: `1976-05-26`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 28. ITR 1104(2)"eligible liquefaction equipment"(a)
+
+> acquired by the taxpayer after February 19, 2015
+
+- bound_kind: `start`
+- date: `2015-02-19`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 29. ITR 1104(3.1)"immediate expensing property"(b)(i)
+
+> before 2025
+
+- bound_kind: `end`
+- date: `-`  year: `2025`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 30. ITR 2400(8)
+
+> taxation year that included September 30, 2006
+
+- bound_kind: `start`
+- date: `2006-09-30`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct

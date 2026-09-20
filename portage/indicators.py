@@ -137,6 +137,15 @@ CREATE TABLE provision_temporal_scope (
     bound_date      TEXT,
     bound_year      INTEGER,
     bound_precision TEXT,                 -- 'day' | 'month' | 'year'
+    -- How the stored phrase was located in text_en. 'exact' where the model's
+    -- string was already a literal substring; 'whitespace_normalized' where
+    -- it matched only after folding exotic spaces. Either way the stored
+    -- phrase is the source's own bytes.
+    phrase_match    TEXT,
+    -- Which batch produced this row. Two batches made this dataset and they
+    -- ran under different output ceilings, so a single run-level field would
+    -- have been a false claim about half the rows.
+    batch_id        TEXT,
     method          TEXT    NOT NULL      -- 'extracted_llm'
 );
 
@@ -944,25 +953,37 @@ def load_temporal_scope(conn, data_dir):
             conn.execute(
                 """INSERT INTO provision_temporal_scope
                    (section_id, cited_section_id, phrase, bound_kind,
-                    bound_date, bound_year, bound_precision, method)
-                   VALUES (?,?,?,?,?,?,?,'extracted_llm')""",
+                    bound_date, bound_year, bound_precision, phrase_match,
+                    batch_id, method)
+                   VALUES (?,?,?,?,?,?,?,?,?,'extracted_llm')""",
                 (sid, int(row["cited_section_id"]), row["phrase"],
                  row["bound_kind"], row["bound_date"] or None,
                  int(row["bound_year"]) if row["bound_year"] else None,
-                 row.get("bound_precision") or None))
+                 row.get("bound_precision") or None,
+                 row.get("phrase_match") or None,
+                 row.get("batch_id") or None))
             kept += 1
 
     if run_path.exists():
         run = json.loads(run_path.read_text(encoding="utf-8"))
+        batches = run.get("batches") or []
+        rows_meta = [
+            ("temporal_scope_model", str(run.get("model"))),
+            ("temporal_scope_effort", str(run.get("effort"))),
+            ("temporal_scope_prompt_sha256", str(run.get("prompt_sha256"))),
+            ("temporal_scope_run_date", str(run.get("run_date"))),
+            ("temporal_scope_scope", str(run.get("scope"))),
+            ("temporal_scope_method", "extracted_llm"),
+            # Every batch that produced a row, and the ceiling each ran under.
+            ("temporal_scope_batch_ids",
+             "; ".join(str(b.get("batch_id")) for b in batches)),
+            ("temporal_scope_batch_count", str(len(batches))),
+            ("temporal_scope_batch_max_tokens",
+             "; ".join("%s=%s" % (b.get("batch_id"), b.get("max_tokens"))
+                       for b in batches)),
+        ]
         conn.executemany(
-            "INSERT OR REPLACE INTO meta (key, value) VALUES (?,?)",
-            [("temporal_scope_model", str(run.get("model"))),
-             ("temporal_scope_effort", str(run.get("effort"))),
-             ("temporal_scope_prompt_sha256", str(run.get("prompt_sha256"))),
-             ("temporal_scope_run_date", str(run.get("run_date"))),
-             ("temporal_scope_scope", str(run.get("scope"))),
-             ("temporal_scope_batch_id", str(run.get("batch_id"))),
-             ("temporal_scope_method", "extracted_llm")])
+            "INSERT OR REPLACE INTO meta (key, value) VALUES (?,?)", rows_meta)
     return {"provision_temporal_scope": kept, "temporal_scope_dropped": dropped}
 
 

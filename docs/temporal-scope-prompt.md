@@ -12,7 +12,7 @@ and because Matt reads it before the key is supplied.
 |---|---|
 | model | `claude-opus-5` |
 | effort | `high`, adaptive thinking |
-| max_tokens | 4000 |
+| max_tokens | 16000 |
 | transport | Batch API, one request per provision, keyed by `custom_id` |
 | prompt sha256 | `105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e` |
 
@@ -25,7 +25,22 @@ the hash changes, which is how `meta` says a run was a different run.
 Every returned bound is verified in `verify()` before it is written,
 and again by the build when the CSV is loaded:
 
-- the phrase must be a verbatim substring of the provision's `text_en`;
+- the phrase must be a verbatim substring of the provision's `text_en`.
+  **The model's phrase is used only to locate it.** What is stored is
+  the substring taken back out of `text_en` - the published bytes,
+  never the model's retyping of them - and `phrase_match` records how
+  it was found: `exact` where the model's string was already a literal
+  substring, `whitespace_normalized` where it matched only after
+  folding exotic space characters.
+
+  The folding is one-for-one, so every offset is preserved and the
+  slice is exact. It exists because Justice Laws sets a thin space
+  (U+2009) before a currency amount and an en space (U+2002) inside a
+  flattened formula: the TFSA dollar limit is published as
+  `for 2009 to 2012, $5,000`, and a model that types a plain space
+  there has read the provision correctly. Six real bounds were being
+  thrown away for that alone. **Only whitespace is folded** - a phrase
+  differing in any other character is still rejected.
 - `bound_kind` must be one of `start`, `end`, `step_down`;
 - `bound_value` must be `YYYY-MM-DD`, `YYYY-MM` or `YYYY`, and **the
   year in it must appear inside the phrase**. The model returns one

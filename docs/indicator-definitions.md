@@ -83,7 +83,7 @@ resolve differently in the two editions, and they are catalogued in
 | `v_not_costed` | 10 | Measures where Finance published a cost table and no year in it carries a number. |
 | `v_withheld` | 9 | Measures with at least one cost cell published as "X", which Finance's own legend defines as withheld for confidentiality. |
 | `v_no_beneficiary_count` | 172 | Measures with no parsed beneficiary count, with the published sentence in both languages. |
-| `v_end_bound_by_year` | 0 | One row per extracted end bound on a provision a measure cites, with the year as a column. |
+| `v_end_bound_by_year` | 800 | One row per extracted end bound on a provision a measure cites, with the year as a column. |
 | `v_last_change_by_year` | 247 | One row per measure with the latest year Finance lists in its implementation and recent history field, as a column for the reader to filter on. |
 | `v_objective_internal` | 70 | Measures every one of whose objective categories Finance's Part 3 lists under "Objectives that are internal to the tax system". |
 | `v_overlapping_programs` | 208 | Measures where Finance's "other relevant government programs" field names something. |
@@ -540,7 +540,7 @@ Empty until Phase 2 step 3 fills `provision_temporal_scope`.
 
 **Columns:** `measure_id`, `name_en`, `name_fr`, `act`, `cited_citation_path`, `provision_citation_path`, `phrase`, `bound_kind`, `bound_date`, `bound_precision`, `end_year`, `method`
 
-**Rows in this build:** 0
+**Rows in this build:** 800
 
 ```sql
 CREATE VIEW v_end_bound_by_year AS

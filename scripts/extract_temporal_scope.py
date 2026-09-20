@@ -43,7 +43,7 @@ SPOT_CHECKS = ROOT / "tests" / "spot_checks"
 
 MODEL = "claude-opus-5"
 EFFORT = "high"
-MAX_TOKENS = 4000
+MAX_TOKENS = 16000
 SAMPLE_SIZE = 30
 RECALL_SAMPLE_SIZE = 20
 SAMPLE_SEED = 20260920
@@ -193,6 +193,50 @@ def prompt_sha256():
 #: nothing today and keeps the guarantee if an 18xx date ever appears.
 _YEAR_IN = re.compile(r"\b(1[89]\d\d|20\d\d)\b")
 
+#: Space characters Justice Laws uses that a model reliably types back as a
+#: plain space. The thin space before a currency amount is the one that
+#: matters - "for 2009 to 2012,\u2009$5,000" is how the TFSA dollar limit is
+#: published, and a model returning a normal space there is reading the text
+#: correctly and typing it conventionally.
+_SPACE_VARIANTS = "\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000\u2060\ufeff"
+_SPACE_TABLE = {ord(ch): " " for ch in _SPACE_VARIANTS}
+
+
+def locate_phrase(phrase, text):  # noqa: D401 - see below
+    """(source_substring, match_kind), or (None, None).
+
+    `match_kind` is 'exact' where the model's phrase is already a literal
+    substring, and 'whitespace_normalized' where it matched only after
+    folding exotic space characters. In both cases the string returned is
+    **taken out of `text`**, so what gets stored is the published bytes and
+    never the model's retyping of them.
+    """
+    """The source's own substring matching `phrase`, or None.
+
+    A phrase is compared after folding exotic space characters to a plain
+    space - a **one-for-one** substitution, so every offset is preserved and
+    the slice taken back out of `text` is the published bytes, not the
+    model's retyping of them.
+
+    This does not weaken the verbatim rule; it is what makes the rule
+    survivable. What gets stored is always a literal substring of `text_en`,
+    and the test that asserts so is untouched. Without it, five real bounds in
+    the TFSA dollar limit were being thrown away because Justice Laws sets a
+    thin space before a dollar sign.
+
+    Only whitespace is folded. A phrase that differs in any other character is
+    still rejected, which is what caught the formula fragment whose words run
+    together with no spaces at all.
+    """
+    if not phrase:
+        return None, None
+    if phrase in text:
+        return phrase, "exact"
+    index = text.translate(_SPACE_TABLE).find(phrase.translate(_SPACE_TABLE))
+    if index < 0:
+        return None, None
+    return text[index:index + len(phrase)], "whitespace_normalized"
+
 #: What "the cited provisions" means. CLAUDE.md says the extraction covers the
 #: provisions Finance cites; it does not say what to do when Finance cites a
 #: whole section whose text lives in its subsections, which is 99 of the 271
@@ -266,13 +310,13 @@ def write_filter_catalogue(scope, kept, dropped):
     return rows
 
 
-def build_request(prov):
+def build_request(prov, max_tokens=MAX_TOKENS):
     """One Batch API request. custom_id carries the provision id back."""
     return {
         "custom_id": "p%d" % prov["id"],
         "params": {
             "model": MODEL,
-            "max_tokens": MAX_TOKENS,
+            "max_tokens": max_tokens,
             "system": SYSTEM_PROMPT,
             "thinking": {"type": "adaptive"},
             "output_config": {
@@ -325,8 +369,10 @@ def verify(bound, text):
     phrase = bound.get("phrase") or ""
     if not phrase.strip():
         return False, "empty phrase"
-    if phrase not in text:
+    located, _kind = locate_phrase(phrase, text)
+    if located is None:
         return False, "phrase is not a verbatim substring of text_en"
+    phrase = located
     if bound.get("bound_kind") not in ("start", "end", "step_down"):
         return False, "bound_kind is not one of start, end, step_down"
 
@@ -404,7 +450,7 @@ def _count(_conn, text):
 # Run
 # --------------------------------------------------------------------------
 
-def submit_and_wait(requests, poll_seconds=30):
+def submit_and_wait(requests, max_tokens, poll_seconds=30):
     """Submit one batch and block until it ends. Returns {custom_id: message}.
 
     The Batch API is used because this is the textbook case for it - a few
@@ -419,6 +465,8 @@ def submit_and_wait(requests, poll_seconds=30):
     client = anthropic.Anthropic()
     batch = client.messages.batches.create(requests=requests)
     print("batch %s submitted, %d requests" % (batch.id, len(requests)))
+    append_ledger(batch.id, max_tokens, len(requests),
+                  dt.datetime.now(dt.timezone.utc).date().isoformat())
 
     while True:
         batch = client.messages.batches.retrieve(batch.id)
@@ -436,37 +484,127 @@ def submit_and_wait(requests, poll_seconds=30):
     return out, failures, batch.id
 
 
+BATCH_LEDGER = DATA / "temporal_scope_batches.csv"
+LEDGER_HEADER = ["batch_id", "max_tokens", "provisions_submitted",
+                 "submitted_date", "source"]
+
+
+def read_ledger():
+    """{batch_id: {...}} - what each batch was actually submitted with.
+
+    A resume cannot ask the API what ceiling a batch ran under, and guessing
+    from the current default is how run.json came to claim 16000 for a batch
+    submitted at 4000. The ledger is written at submit time so the answer is
+    recorded rather than reconstructed; batches that predate it carry
+    source='recorded_by_hand'.
+    """
+    if not BATCH_LEDGER.exists():
+        return {}
+    with open(BATCH_LEDGER, encoding="utf-8") as fh:
+        return {r["batch_id"]: r for r in csv.DictReader(fh)}
+
+
+def append_ledger(batch_id, max_tokens, n, date):
+    ledger = read_ledger()
+    ledger[batch_id] = {"batch_id": batch_id, "max_tokens": str(max_tokens),
+                        "provisions_submitted": str(n),
+                        "submitted_date": date, "source": "submitted"}
+    _write_csv(BATCH_LEDGER,
+               [tuple(ledger[k][c] for c in LEDGER_HEADER) for k in sorted(ledger)],
+               LEDGER_HEADER)
+
+
+def fetch_results(batch_id):
+    """Results for a batch that already ran. Submits nothing, spends nothing.
+
+    A batch that ended server-side is retrievable for days afterwards, so a
+    crash in our own writing code is never a reason to pay for the work
+    twice.
+    """
+    import anthropic
+
+    client = anthropic.Anthropic()
+    batch = client.messages.batches.retrieve(batch_id)
+    print("batch %s: %s %s" % (batch.id, batch.processing_status,
+                               batch.request_counts))
+    if batch.processing_status != "ended":
+        raise SystemExit(
+            "batch %s has not ended (%s) - wait and resume again"
+            % (batch_id, batch.processing_status))
+
+    out, failures = {}, []
+    for result in client.messages.batches.results(batch_id):
+        if result.result.type == "succeeded":
+            out[result.custom_id] = result.result.message
+        else:
+            failures.append((result.custom_id, result.result.type))
+    return out, failures, batch.id
+
+
 def parse_message(message):
-    """The JSON object out of a response, or None if the model refused."""
-    if getattr(message, "stop_reason", None) == "refusal":
-        return None
+    """(parsed, stop_reason, text_head, failure) for one response.
+
+    `parsed` is the JSON object, or None. `failure` is None on success and a
+    short reason otherwise. Nothing here raises: one response that came back
+    truncated or refused must not cost us the other 996, which is exactly
+    what happened when this function let json.loads throw.
+    """
+    stop = getattr(message, "stop_reason", None)
+    text = ""
     for block in message.content:
         if block.type == "text":
-            return json.loads(block.text)
-    return None
+            text = block.text or ""
+            break
+    head = " ".join(text.split())[:200]
+
+    if stop == "refusal":
+        details = getattr(message, "stop_details", None)
+        return None, stop, head, "refusal (%s)" % getattr(details, "category", None)
+    if not text:
+        return None, stop, head, "no text block in the response"
+    try:
+        return json.loads(text), stop, head, None
+    except ValueError as exc:
+        reason = "truncated at max_tokens" if stop == "max_tokens" else "unparseable JSON"
+        return None, stop, head, "%s: %s" % (reason, exc)
 
 
-def write_outputs(provs, messages, failures, scope, batch_id, run_date):
-    """The committed data, the rejects catalogue, the run record, the sample."""
+def write_outputs(provs, messages, failures, scope, batch_id, run_date,
+                  merge=False, max_tokens=MAX_TOKENS, resumed=False):
+    """The committed data, the catalogues, the run record, the samples.
+
+    `merge` keeps rows for provisions this run did not cover, so that an
+    `--only` rerun of a handful of citations repairs those rows instead of
+    replacing the whole corpus with them.
+    """
     by_id = {p["id"]: p for p in provs}
-    rows, rejects = [], []
+    rows, rejects, broken = [], [], []
+    parsed_ok = set()
 
     for custom_id, message in sorted(messages.items()):
         pid = int(custom_id[1:])
-        prov = by_id[pid]
-        parsed = parse_message(message)
-        if parsed is None:
-            rejects.append((prov["act"], prov["citation_path"], "",
-                            "", "", "model returned no parseable object"))
+        prov = by_id.get(pid)
+        if prov is None:
+            broken.append(("?", "p%d" % pid, "", "",
+                           "custom_id not in the current scope - the database "
+                           "or the scope changed since the batch was submitted"))
             continue
+        parsed, stop, head, failure = parse_message(message)
+        if failure is not None:
+            broken.append((prov["act"], prov["citation_path"],
+                           str(stop), head, failure))
+            continue
+        parsed_ok.add(pid)
         for bound in parsed.get("bounds", []):
             ok, reason = verify(bound, prov["text"])
             date, year, precision = split_bound(bound.get("bound_value"))
             if ok:
+                # The source's own bytes, not the model's retyping of them.
+                phrase, match = locate_phrase(bound["phrase"], prov["text"])
                 rows.append((pid, prov["cited_id"], prov["act"],
-                             prov["citation_path"], bound["phrase"],
+                             prov["citation_path"], phrase,
                              bound["bound_kind"], date or "", year or "",
-                             precision))
+                             precision, match, batch_id))
             else:
                 rejects.append((prov["act"], prov["citation_path"],
                                 bound.get("phrase", ""),
@@ -475,30 +613,78 @@ def write_outputs(provs, messages, failures, scope, batch_id, run_date):
 
     for custom_id, kind in failures:
         pid = int(custom_id[1:])
-        prov = by_id[pid]
-        rejects.append((prov["act"], prov["citation_path"], "", "", "",
-                        "batch request %s" % kind))
+        prov = by_id.get(pid)
+        broken.append(((prov or {}).get("act", "?"),
+                       (prov or {}).get("citation_path", "p%d" % pid),
+                       "batch_" + kind, "", "batch request %s" % kind))
+
+    # Only provisions this run read successfully are replaced. A response
+    # that failed must never delete rows an earlier batch produced - that is
+    # how a re-verify would quietly destroy good data.
+    covered = parsed_ok
+    rows = _merge(DATA / "provision_temporal_scope.csv", rows, covered,
+                  "section_id") if merge else rows
+    touched = {by_id[i]["citation_path"] for i in parsed_ok if i in by_id}
+    rejects = _merge_simple(DATA / "temporal_scope_rejects.csv", rejects,
+                            touched, 1) if merge else rejects
+    broken = _merge_simple(DATA / "temporal_scope_failures.csv", broken,
+                           touched, 1) if merge else broken
+
+    # A provision that failed in this run but still holds rows from another
+    # batch is not an outstanding failure; it was already repaired.
+    if merge:
+        repaired = {(r[2], r[3]) for r in rows}
+        broken = [b for b in broken if (b[0], b[1]) not in repaired]
 
     rows.sort(key=lambda r: (r[2], r[3], r[4]))
     _write_csv(DATA / "provision_temporal_scope.csv", rows,
                ["section_id", "cited_section_id", "act", "citation_path",
                 "phrase", "bound_kind", "bound_date", "bound_year",
-                "bound_precision"])
+                "bound_precision", "phrase_match", "batch_id"])
     _write_csv(DATA / "temporal_scope_rejects.csv", sorted(rejects),
                ["act", "citation_path", "phrase", "bound_kind", "bound_value",
                 "reason"])
+    # Responses that produced nothing usable. Kept apart from rejects: a
+    # reject is a bound the rules threw out, which is the system working; a
+    # failure is a response we could not read at all, which is not.
+    _write_csv(DATA / "temporal_scope_failures.csv", sorted(broken),
+               ["act", "citation_path", "stop_reason", "text_head_200",
+                "reason"])
 
+    truncated = [b for b in broken if b[2] == "max_tokens"]
+    ledger = read_ledger()
+    contributing = sorted({r[10] for r in rows if r[10]})
+    batches = []
+    for bid in contributing:
+        entry = ledger.get(bid, {})
+        batches.append({
+            "batch_id": bid,
+            "max_tokens": (int(entry["max_tokens"])
+                           if entry.get("max_tokens") else None),
+            "provisions_submitted": (int(entry["provisions_submitted"])
+                                     if entry.get("provisions_submitted") else None),
+            "submitted_date": entry.get("submitted_date"),
+            "source": entry.get("source", "unrecorded"),
+            "rows_from_this_batch": sum(1 for r in rows if r[10] == bid),
+        })
     run = {
         "model": MODEL,
         "effort": EFFORT,
+        # Every batch that contributed a row, each with the ceiling it was
+        # actually submitted under. A single max_tokens field was a false
+        # provenance claim the moment two batches produced one dataset.
+        "batches": batches,
         "prompt_sha256": prompt_sha256(),
         "run_date": run_date,
         "scope": scope,
-        "batch_id": batch_id,
+        "batch_id_this_run": batch_id,
         "provisions_sent": len(provs),
         "responses": len(messages),
         "rows_accepted": len(rows),
         "rows_rejected": len(rejects),
+        "responses_unreadable": len(broken),
+        "responses_truncated_at_max_tokens": len(truncated),
+        "truncated_citations": sorted("%s %s" % (b[0], b[1]) for b in truncated),
     }
     (DATA / "temporal_scope_run.json").write_text(
         json.dumps(run, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -521,8 +707,7 @@ def _write_recall_sample(provs, rows):
     import random
 
     out = SPOT_CHECKS / "temporal-scope-recall.md"
-    if out.exists():
-        print("  %s exists - not regenerated" % out.name)
+    if _sample_is_frozen(out):
         return
     produced = {r[0] for r in rows}
     empty = sorted((p for p in provs if p["id"] not in produced),
@@ -566,6 +751,56 @@ def _write_recall_sample(provs, rows):
     out.write_text("\n".join(lines), encoding="utf-8")
 
 
+def _sample_is_frozen(out):
+    """True where a sample has been hand-checked and must not be regenerated.
+
+    The rule is the RESULTS file, not the sample file. A sample whose results
+    a person has recorded is evidence, and regenerating it would orphan the
+    results that cite it - that is the Phase 1 protocol and it stands. But a
+    sample with no results beside it is a draft: a trial run's sample, or one
+    drawn before a fix. Keying the guard on the sample's own existence froze
+    those too, which is how a 25-provision trial nearly became the hand-check
+    sample for a 997-provision run.
+    """
+    results = out.with_name(out.stem + "-RESULTS.md")
+    if results.exists():
+        print("  %s exists - %s not regenerated" % (results.name, out.name))
+        return True
+    if out.exists():
+        print("  %s regenerated (no %s yet)" % (out.name, results.name))
+    return False
+
+
+def _merge(path, new_rows, covered_ids, id_field):
+    """Existing rows for provisions this run did not cover, plus the new ones."""
+    if not path.exists():
+        return new_rows
+    kept = []
+    with open(path, encoding="utf-8") as fh:
+        reader = csv.reader(fh)
+        next(reader, None)
+        for row in reader:
+            if int(row[0]) not in covered_ids:
+                kept.append((int(row[0]), int(row[1])) + tuple(row[2:]))
+                while len(kept[-1]) < 11:   # a CSV written before these columns
+                    kept[-1] = kept[-1] + ("",)
+    return kept + new_rows
+
+
+def _merge_simple(path, new_rows, covered_paths, path_col):
+    """Same, for the catalogues, which are keyed by citation path."""
+    if not path.exists():
+        return new_rows
+    kept = []
+    with open(path, encoding="utf-8") as fh:
+        reader = csv.reader(fh)
+        next(reader, None)
+        for row in reader:
+            if len(row) > path_col and row[path_col] not in covered_paths:
+                kept.append(tuple(row))
+    return kept + new_rows
+
+
 def _write_csv(path, rows, header):
     with open(path, "w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh, lineterminator="\n")
@@ -576,14 +811,14 @@ def _write_csv(path, rows, header):
 def _write_sample(rows):
     """Thirty rows for Matt, seeded, and never overwritten once results exist.
 
-    Same protocol as the Phase 1 reference samples: regenerating a sample
-    would orphan the results that cite it.
+    Same protocol as the Phase 1 reference samples: once results have been
+    recorded beside it, regenerating the sample would orphan them. Until then
+    it is a draft and is rewritten on every run - see _sample_is_frozen.
     """
     import random
 
     out = SPOT_CHECKS / "temporal-scope.md"
-    if out.exists():
-        print("  %s exists - not regenerated" % out.name)
+    if _sample_is_frozen(out):
         return
     sample = sorted(random.Random(SAMPLE_SEED).sample(rows, min(SAMPLE_SIZE, len(rows))))
     lines = [
@@ -598,12 +833,16 @@ def _write_sample(rows):
         "Record results in `temporal-scope-RESULTS.md`. Do not regenerate this file.",
         "",
     ]
-    for i, (_sid, _cid, act, path, phrase, kind, date, year, prec) in enumerate(sample, 1):
+    # Indexed, not unpacked: a row gains a column now and then, and a sample
+    # writer that breaks on that is a sample not written.
+    for i, row in enumerate(sample, 1):
+        act, path, phrase, kind = row[2], row[3], row[4], row[5]
+        date, year, prec, match = row[6], row[7], row[8], row[9]
         lines += ["## %d. %s %s" % (i, act, path), "",
                   "> %s" % phrase, "",
                   "- bound_kind: `%s`" % kind,
-                  "- date: `%s`  year: `%s`  precision: `%s`"
-                  % (date or "-", year or "-", prec),
+                  "- date: `%s`  year: `%s`  precision: `%s`  match: `%s`"
+                  % (date or "-", year or "-", prec, match),
                   "- [ ] phrase appears verbatim   - [ ] bound is correct", ""]
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text("\n".join(lines), encoding="utf-8")
@@ -626,6 +865,20 @@ def main(argv=None):
                          "estimate, call nothing, and exit")
     ap.add_argument("--limit", type=int,
                     help="send only the first N provisions, for a trial run")
+    ap.add_argument("--resume", metavar="BATCH_ID",
+                    help="fetch the results of a batch that already ran and "
+                         "redo verification and the writes. Submits nothing.")
+    ap.add_argument("--only", metavar="CITATIONS",
+                    help="comma-separated citation paths to rerun, e.g. "
+                         "'18(3.4),127(9)' or 'ITR 1100(1)'. Implies merge: "
+                         "rows for every other provision are kept.")
+    ap.add_argument("--submitted-max-tokens", type=int,
+                    help="with --resume, the ceiling that batch was actually "
+                         "submitted under, for a batch predating the ledger")
+    ap.add_argument("--max-tokens", type=int, default=MAX_TOKENS,
+                    help="output ceiling per call (default %d). A ceiling, "
+                         "not a reservation - raising it costs nothing for "
+                         "responses that do not need it." % MAX_TOKENS)
     ap.add_argument("--show-prompt", action="store_true")
     args = ap.parse_args(argv)
 
@@ -635,9 +888,23 @@ def main(argv=None):
     provs, filtered = provisions(conn, args.scope,
                                  year_filter=not args.no_year_filter)
     write_filter_catalogue(args.scope, provs, filtered)
+
+    if args.only:
+        wanted = {w.strip() for w in args.only.split(",") if w.strip()}
+        chosen = [p for p in provs
+                  if p["citation_path"] in wanted
+                  or "%s %s" % (p["act"], p["citation_path"]) in wanted]
+        found = {p["citation_path"] for p in chosen} | {
+            "%s %s" % (p["act"], p["citation_path"]) for p in chosen}
+        missing = sorted(wanted - found)
+        if missing:
+            sys.exit("--only named provisions that are not in scope: %s"
+                     % ", ".join(missing))
+        provs = chosen
+        print("--only: %d provision(s); rows for the rest are kept" % len(provs))
     if args.limit:
         provs = provs[:args.limit]
-    requests = [build_request(p) for p in provs]
+    requests = [build_request(p, args.max_tokens) for p in provs]
     est = estimate(conn, requests, provs)
     est["filtered_no_year_token"] = len(filtered)
 
@@ -669,15 +936,28 @@ def main(argv=None):
         print("--dry-run: nothing was sent. No client was constructed.")
         return 0
 
+    if args.resume:
+        print("--resume %s: fetching an existing batch. Nothing is submitted."
+              % args.resume)
+
     if not (os.environ.get("ANTHROPIC_API_KEY")
             or os.environ.get("ANTHROPIC_AUTH_TOKEN")
             or (pathlib.Path.home() / ".config" / "anthropic").exists()):
         sys.exit("No credentials found. Set ANTHROPIC_API_KEY or run `ant auth login`.")
 
     run_date = dt.datetime.now(dt.timezone.utc).date().isoformat()
-    messages, failures, batch_id = submit_and_wait(requests)
-    run = write_outputs(provs, messages, failures, args.scope, batch_id, run_date)
+    if args.resume:
+        if args.submitted_max_tokens and args.resume not in read_ledger():
+            append_ledger(args.resume, args.submitted_max_tokens, 0,
+                          "unknown")
+        messages, failures, batch_id = fetch_results(args.resume)
+    else:
+        messages, failures, batch_id = submit_and_wait(requests, args.max_tokens)
+    run = write_outputs(provs, messages, failures, args.scope, batch_id,
+                        run_date, merge=bool(args.only or args.resume),
+                        max_tokens=args.max_tokens, resumed=bool(args.resume))
     run["filtered_no_year_token"] = len(filtered)
+    run["resumed"] = bool(args.resume)
     print(json.dumps(run, indent=2, sort_keys=True))
     print("\nWrote data/provision_temporal_scope.csv - commit it, then rebuild.")
     return 0
@@ -717,7 +997,22 @@ def prompt_doc():
         "Every returned bound is verified in `verify()` before it is written,",
         "and again by the build when the CSV is loaded:",
         "",
-        "- the phrase must be a verbatim substring of the provision's `text_en`;",
+        "- the phrase must be a verbatim substring of the provision's `text_en`.",
+        "  **The model's phrase is used only to locate it.** What is stored is",
+        "  the substring taken back out of `text_en` - the published bytes,",
+        "  never the model's retyping of them - and `phrase_match` records how",
+        "  it was found: `exact` where the model's string was already a literal",
+        "  substring, `whitespace_normalized` where it matched only after",
+        "  folding exotic space characters.",
+        "",
+        "  The folding is one-for-one, so every offset is preserved and the",
+        "  slice is exact. It exists because Justice Laws sets a thin space",
+        "  (U+2009) before a currency amount and an en space (U+2002) inside a",
+        "  flattened formula: the TFSA dollar limit is published as",
+        "  `for 2009 to 2012,\u2009$5,000`, and a model that types a plain space",
+        "  there has read the provision correctly. Six real bounds were being",
+        "  thrown away for that alone. **Only whitespace is folded** - a phrase",
+        "  differing in any other character is still rejected.",
         "- `bound_kind` must be one of `start`, `end`, `step_down`;",
         "- `bound_value` must be `YYYY-MM-DD`, `YYYY-MM` or `YYYY`, and **the",
         "  year in it must appear inside the phrase**. The model returns one",

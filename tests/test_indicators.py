@@ -295,6 +295,27 @@ def test_temporal_precision_matches_the_stored_bound(conn):
     assert not bad, "rows whose precision does not match their bound: %s" % bad[:5]
 
 
+def test_phrase_match_describes_how_the_phrase_was_found(conn):
+    """The stored phrase is always the source's bytes; this says how it was
+    located. A row marked `exact` must contain no exotic space, and one marked
+    `whitespace_normalized` must contain at least one - otherwise the column
+    is decoration rather than provenance.
+    """
+    from scripts.extract_temporal_scope import _SPACE_VARIANTS
+
+    bad = []
+    for phrase, match in conn.execute(
+            "SELECT phrase, phrase_match FROM provision_temporal_scope"):
+        has_odd = any(ch in phrase for ch in _SPACE_VARIANTS)
+        if match == "exact" and has_odd:
+            bad.append(("exact but contains an exotic space", phrase))
+        elif match == "whitespace_normalized" and not has_odd:
+            bad.append(("normalized but contains none", phrase))
+        elif match not in ("exact", "whitespace_normalized"):
+            bad.append(("phrase_match is %r" % match, phrase))
+    assert not bad, "rows whose phrase_match does not describe them: %s" % bad[:5]
+
+
 def test_temporal_rows_are_reachable_from_the_provision_finance_cited(conn):
     """cited_section_id must be the row itself or one of its ancestors."""
     bad = []
@@ -317,10 +338,21 @@ def test_temporal_scope_records_its_provenance(conn):
     n = conn.execute("SELECT COUNT(*) FROM provision_temporal_scope").fetchone()[0]
     if n == 0:
         pytest.skip("provision_temporal_scope is empty - Phase 2 step 3")
-    keys = {r[0] for r in conn.execute("SELECT key FROM meta")}
+    meta = dict(conn.execute("SELECT key, value FROM meta"))
     for required in ("temporal_scope_model", "temporal_scope_prompt_sha256",
-                     "temporal_scope_run_date"):
-        assert required in keys, "meta is missing %s" % required
+                     "temporal_scope_run_date", "temporal_scope_batch_ids",
+                     "temporal_scope_batch_max_tokens"):
+        assert required in meta, "meta is missing %s" % required
+        assert meta[required] not in ("", "None"), "%s is empty" % required
+
+    # Every batch a row claims must be one meta names, and every batch meta
+    # names must have produced rows. Two batches made this dataset under
+    # different output ceilings; a row that cannot say which is unprovenanced.
+    named = {b.strip() for b in meta["temporal_scope_batch_ids"].split(";")}
+    used = {r[0] for r in conn.execute(
+        "SELECT DISTINCT batch_id FROM provision_temporal_scope")}
+    assert None not in used, "rows with no batch_id"
+    assert used == named, "batches in rows %s but meta names %s" % (used, named)
 
 
 # -- 6. The views run, and return what the fixture records ------------------

@@ -13,6 +13,21 @@ data/*
 !data/finance/
 data/finance/*
 !data/finance/2026/
+
+# The temporal scope extraction is the second exception, and for a different
+# reason. Everything else under data/ is a build artifact that `python -m
+# portage.build` regenerates from a documented source. These are not: they are
+# the output of a model, called once from a batch script, and there is no way
+# to reproduce them except by calling the API again and getting different
+# answers. CLAUDE.md requires that output to be committed as data. The run
+# record and the batch ledger are committed with it, because a row without the
+# batch, model, prompt hash and ceiling that produced it is unprovenanced.
+!data/provision_temporal_scope.csv
+!data/temporal_scope_rejects.csv
+!data/temporal_scope_failures.csv
+!data/temporal_scope_filtered.csv
+!data/temporal_scope_run.json
+!data/temporal_scope_batches.csv
 *.parquet
 *.xml
 *.zip
