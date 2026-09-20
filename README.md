@@ -190,10 +190,12 @@ inside definitions by label path only, while Portage citation paths include the
 defined term in quotation marks so that paths stay unique.
 
 One query raised during checking was followed up and found to be nothing: the
-label on subsection 1206(1) of the French Regulations. The published XML gives
-it as `(1)`, the official site displays `(1)`, and Portage stores `label_raw_fr`
-as `(1)` unaltered. No `(01)` appears anywhere in section 1206 in either
-language, no label was changed, and there is nothing to catalogue.
+French Regulations row `1206(1)"stated percentage"(a)(ii)`, noted as displaying
+on the site as `1206(01)(a)(ii)`. The published XML puts that definition inside
+subsection `(1)`, the official page renders it under `(1)`, and Portage stores
+`label_raw_fr` as `(1)` unaltered. No label in section 1206 contains a zero in
+either language, no label was changed, and there is nothing to catalogue - the
+underlying difference is the same definition-path convention noted above.
 
 The samples that were checked are preserved as `verified_2026-09_*.md`. Sample
 generation has since been changed to exclude rows whose first sentence is under
