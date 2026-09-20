@@ -2,14 +2,12 @@
 
 ## Where things stand
 
-**Phase 0 is built and tested; it is not yet released.** Both instruments, both
-languages, 46 tests passing, all four round trips exact.
+**Phase 0 is released as `v0.1.0`.** Both instruments, both languages, 47 tests
+passing, all four round trips exact, and forty citations verified by hand against
+the official site on 18 and 19 September 2026 with no mismatches.
 
-The one thing standing between here and v0.1.0 is the eighty hand spot checks.
-Every automated guard in this project reads the same four XML files the build
-reads, so none of them can catch a file being misread the same way twice. The
-spot checks are the only evidence from outside that loop, and the tag should
-mean "checked", not "built".
+Next: Phase 1, the tax expenditure report. Scope and rules are in `CLAUDE.md`;
+what follows is the working plan for getting there.
 
 ## What Phase 0 delivers
 
@@ -72,65 +70,77 @@ symmetric bilingual join - and the three-version history of the definition rule.
 
 ---
 
-## Release - v0.1.0
+## Released - v0.1.0
 
-**Not tagged yet.** It is waiting on the eighty hand spot checks, which is the
-right order: the tag should mean "checked", not "built". When
-`tests/spot_checks/RESULTS.md` is filled in and the README's Methods section
-records the date and outcome, the tag can go on.
-
-Release assets, when it does:
-
-- `portage.sqlite` - the built database
-- the six catalogue CSVs from `data/`
-- `README.md`
-- `tests/spot_checks/RESULTS.md`, so the verification travels with the data
+Tagged. Assets assembled in `dist/v0.1.0/` with `SHA256SUMS.txt`, ready to
+upload wherever the project is published (there is no git remote yet):
+`portage.sqlite`, the six catalogue CSVs, `README.md`, and the spot-check
+results with the four verified samples.
 
 ---
 
 ## Phase 1 - the tax expenditure report
 
-Link each provision to what it costs. This is the point of the project: Phase 0
-made the Act navigable, Phase 1 attaches the money.
+Rules, table definitions and acceptance tests are in `CLAUDE.md`. This is the
+sequencing and the things to settle first.
 
-**Source:** the 2026 *Report on Federal Tax Expenditures*, Department of Finance
-Canada, **Parts 3 to 7**, English and French.
+### Step 1 - tagged cross-references (finishes Phase 0's last item)
 
-### Scope
+Build `cross_references` from `XRefExternal`, `XRefInternal` and `DefinitionRef`,
+`method = 'tagged'`, resolving `DefinitionRef` to definition records. This is the
+resolution machinery Phase 1 reuses, which is why it comes first.
 
-1. **Parse Parts 3 to 7 into structured records**, both languages. One record per
-   tax expenditure, carrying at minimum: its identifier, its title in both
-   languages, its description, the cost estimates with their years, and whatever
-   the report states about the legal authority for it.
-2. **Resolve every legal reference to a `citation_path`.** This is where Phase 0
-   pays off - a reference to "paragraph 110(1)(d)" has to land on the row whose
-   `citation_path` is `110(1)(d)`, and either it resolves or it does not.
-3. **Report which references fail to resolve.** Catalogued, not dropped, with a
-   fixture, exactly as in Phase 0. An unresolved reference is a finding about
-   either the report or our data, and both are worth knowing.
+**One thing to know going in:** `XRefInternal` is effectively absent. The English
+Act has none and the French Act has exactly one. So the tagged table will be
+`XRefExternal` (1,112 in the Act) plus `DefinitionRef` (1,158), and it will not
+contain provision-to-provision references. That is the gap Phase 1's pattern
+extraction fills, in the report's reference field rather than in the Act's prose.
 
-### What to settle before writing any code
+`DefinitionRef` resolution is the interesting part: it should land on the
+definition records keyed by defined term, which is exactly what session 3 built.
+Expect it to exercise the `~fr`, `#2` and fallback paths.
 
-- **What format is the report published in?** PDF, HTML, spreadsheet? A PDF of
-  tables is a different project from an HTML document. Inspect the real source
-  and write it up in `docs/source-notes.md` before assuming anything - the same
-  rule that kept Phase 0 out of trouble.
-- **What licence does Finance Canada publish it under?** Quote it verbatim.
-- **How are legal references written in the report?** They will be prose
-  ("paragraph 110(1)(d) of the Act"), which means extraction by pattern - the
-  technique Phase 0 deliberately avoided. It is defensible here because a
-  reference that fails to resolve is *visible*, where a mis-parsed structure is
-  not. But it needs the same treatment as internal cross-references: a `method`
-  column, a catalogue, and a precision sample.
-- **Does a tax expenditure map to one provision or several?** If a mapping needs
-  a tax opinion, CLAUDE.md says it does not go in the data.
+### Step 2 - inspect the report before parsing it
 
-### Still outstanding from Phase 0
+`docs/source-notes.md` first, as in Phase 0. The questions to answer against the
+real pages, not from assumption:
 
-`cross_references`, tagged only - `XRefExternal` and `DefinitionRef`, every row
-`method = 'tagged'`. Carried forward because the source has no markup for
-internal references, which is where most of the value would be. Phase 1 should
-probably do this first, since resolving references is the same machinery.
+- Are Parts 3 to 7 clean HTML, or tables inside a PDF? This decides the shape of
+  the whole phase.
+- Does the same data exist on open.canada.ca under the OGL? If so, prefer those
+  terms and quote both.
+- Confirm the actual field set per measure against `CLAUDE.md`'s expected list.
+  Fields absent for a measure are null, never empty string or zero.
+- What does the French edition's URL structure look like, from the language
+  toggle?
+- What distinct tokens appear in cost cells? `S`, `n.a.`, and the
+  no-estimate wording are known; the fixture in `data/cost_tokens.csv` has to
+  start from what is actually there.
+
+### Step 3 - write the reference grammar down before implementing it
+
+`docs/reference-rule.md`, the same discipline as `docs/citation-path-rule.md`.
+Pattern extraction is permitted here because failure is visible - a reference
+either resolves to an existing `citation_path` or it does not - but the grammar
+still gets written first: section, subsection, paragraph, subparagraph, clause;
+ranges with "to"; lists with "and"; "of the Act" against "of the Regulations";
+Part and Schedule references. Anything the grammar does not cover is stored
+unresolved with its raw text. Never dropped, never guessed.
+
+### Step 4 - parse, resolve, catalogue, test
+
+Five tables (`measures`, `measure_references`, `measure_costs`,
+`measure_history`, `measure_beneficiary_counts`) and eight acceptance tests, all
+specified in `CLAUDE.md`.
+
+The bilingual join is the part Phase 0 has already taught us about: measures are
+alphabetical in each language, so **position means nothing across editions** -
+the same trap as definitions. Join on the language-independent content, the
+reference set plus the cost values. Anything that does not join uniquely is
+catalogued and both singles survive.
+
+**Resolution rate is reported, not asserted.** A build that resolves 100% is
+suspicious, not good.
 
 ---
 
@@ -161,6 +171,8 @@ the project is non-commercial.
 
 ---
 
-## Not in Phase 0
+## Not in Phase 1
 
-Embeddings, a web front end, an MCP server, indicator publishing. Later phases.
+From `CLAUDE.md`: interacting provisions Finance does not list; any indicator,
+ranking or score; temporal scope extraction from the Act's text; any front end.
+Also still out: embeddings and an MCP server.
