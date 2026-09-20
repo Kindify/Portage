@@ -383,3 +383,47 @@ with the whole field as `raw_text`. Never dropped, never guessed.
 `data/unresolved_references.csv` against a committed fixture. **A build that
 resolved 100% would be evidence of a bug**, because the Excise Tax Act
 references and the Schedule references cannot resolve by construction.
+
+---
+
+## 4. Two things the open data CSV cannot settle
+
+### It cannot pair measures across languages
+
+The open data release publishes the cost tables in both languages, and if the
+two files listed measures in the same order that order would be a pairing
+supplied by Finance itself - better evidence than any signature we compute.
+
+**It does not.** Checked directly against the committed snapshot: of 523 data
+rows in each file, only **208 (39.8%)** carry the same eight year-values at the
+same position, and the first row is *10% Temporary Wage Subsidy for Employers*
+in English against *Abattement d'impôt du Québec* in French. Each file is
+alphabetical **in its own language** - the same phenomenon as the definitions in
+Phase 0, the part pagination in section 7 of the source notes, and the measure
+order in the pages themselves.
+
+So there is no `join_method = 'ogl_csv_order'`. Every pair is joined by content -
+reference set plus cost values - and the 36 measures that do not join uniquely
+stay in `data/measure_join_gaps.csv` as singles.
+
+### Number of beneficiaries is prose, and is read as prose
+
+The field is a sentence: *"About 328,000 employers claimed this subsidy in
+2020."* There is no markup separating the count from the year from the
+commentary, so a year and a count can only be read by pattern.
+
+The rule is deliberately narrow. A row is populated **only** where the field
+contains exactly one `<number> … in <year>` pair. Two pairs, or none, leaves
+`year` and `count` NULL. `raw_value` always holds the published sentence, and
+every row carries `method`: `'pattern'` where a count was read, `'none'` where
+it was not.
+
+**75 of 458 rows are populated.** The other 383 say things like *"No data is
+available."* or *"The number of corporations affected by this measure is not
+published in order to preserve taxpayer confidentiality."* - sentences with no
+count in them at all. Extracted rows are catalogued in
+`data/beneficiary_counts_extracted.csv` against a fixture, so any change in what
+the pattern reads is visible.
+
+This field is the weakest thing in Phase 1 and is marked as such. Unlike a
+reference, a wrong count does not announce itself by failing to resolve.

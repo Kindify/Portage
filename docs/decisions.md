@@ -902,3 +902,54 @@ in the open data CSV and **all 559 match**. This is the only check on Phase 1's
 figures that does not read the pages we parsed.
 
 ---
+
+## 2026-09-19 - The open data CSVs cannot pair measures across languages
+
+**Checked, and the answer is no.** If the English and French open data CSVs
+listed measures in the same row order, that order would be a pairing supplied by
+Finance - better evidence than any signature we compute. Of 523 data rows in
+each file, only **208 (39.8%)** carry the same eight year-values at the same
+position, and row 0 is *10% Temporary Wage Subsidy for Employers* in English
+against *Abattement d'impôt du Québec* in French.
+
+Each file is alphabetical **in its own language**. That is now the fifth place
+this pattern has appeared: definitions in Phase 0, page pagination, measure
+order in the pages, and now the open data. It should be the default assumption
+about any bilingual Government of Canada publication.
+
+So there is no `join_method = 'ogl_csv_order'`. All pairing is by content, and
+the 36 unjoined measures stand as singles in `data/measure_join_gaps.csv`.
+
+---
+
+## 2026-09-19 - Schedule forms are named as such, not as "no provision"
+
+**Reclassified.** "Part V of Schedule V to the Excise Tax Act" was landing in
+`no_provision`, which read as though the grammar had failed to parse it. It had
+not: the provision *is* named, in a structure this dataset does not model.
+Those rows are now `schedule_or_class`.
+
+`no_provision` falls from 56 to 12, and `schedule_or_class` rises to 68. No row
+changed from resolved to unresolved or back - this is a labelling fix, and the
+point of it is that a status should say what actually happened.
+
+---
+
+## 2026-09-19 - Beneficiary counts: method='pattern', and honest about the rest
+
+**Decided (Matt).** Every `measure_beneficiary_counts` row carries `method` -
+`'pattern'` where a year and count were read from the prose, `'none'` where they
+were not - and `raw_value` always keeps the published sentence.
+
+The rule is narrow on purpose: populate only where the field contains exactly
+one `<number> … in <year>` pair. 75 of 458 rows qualify. The other 383 are
+sentences like "No data is available." with no count in them.
+
+**This is the weakest field in the dataset and is labelled as such in README.**
+Everywhere else in this project, a bad extraction announces itself - a reference
+fails to resolve, a round-trip diverges, a catalogue diff fires. A wrong
+beneficiary count does none of that. The narrow rule and the fixture
+(`data/beneficiary_counts_extracted.csv`) are what stand in for that missing
+signal.
+
+---

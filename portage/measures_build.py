@@ -88,7 +88,10 @@ CREATE TABLE measure_beneficiary_counts (
     lang            TEXT NOT NULL,
     year            INTEGER,
     count           INTEGER,
-    raw_value       TEXT NOT NULL
+    raw_value       TEXT NOT NULL,
+    -- 'pattern' where a year and count were read out of the prose,
+    -- 'none' where they were not. raw_value is always the published text.
+    method          TEXT NOT NULL
 );
 
 CREATE INDEX idx_mref_measure ON measure_references(measure_id, status);
@@ -132,10 +135,10 @@ def _beneficiary_rows(text):
         return []
     hits = _COUNT.findall(text)
     if len(hits) != 1:
-        return [(None, None, text)]
+        return [(None, None, text, "none")]
     number, year = hits[0]
     digits = re.sub(r"[,   ]", "", number)
-    return [(int(year), int(digits), text)]
+    return [(int(year), int(digits), text, "pattern")]
 
 
 def _cost_signature(costs):
@@ -173,6 +176,12 @@ def _classify(row, known_paths, instrument):
         return "not_in_consolidation"
     reason = row["reason"] or ""
     if "Schedule, Class or Part" in reason:
+        return "schedule_or_class"
+    # "Part V of Schedule V to the Excise Tax Act" names a structure this
+    # dataset does not model, which is a truer label than "no provision
+    # recognised" - the provision is named, we simply hold no Schedules.
+    if re.search(r"\b(Schedule|Class(?:es)?|Part\s+[IVXL]|annexe|cat[\xe9e]gorie|"
+                 r"partie\s+[IVXL])\b", row.get("raw_text") or "", re.I):
         return "schedule_or_class"
     if "not held by this dataset" in reason:
         return "instrument_not_held"
@@ -226,7 +235,8 @@ def build_measures(conn, write_catalogue):
             gaps.append((measure["slug"], "fr", measure["name"][:90],
                          "no unique English match on reference set and cost values"))
 
-    label_rows, cost_token_rows, unresolved, no_refs = Counter(), Counter(), [], []
+    label_rows, cost_token_rows = Counter(), Counter()
+    unresolved, no_refs, beneficiary_rows = [], [], []
 
     for en_m, fr_m in pairs:
         columns, values = [], []
@@ -294,13 +304,16 @@ def build_measures(conn, write_catalogue):
                      cost["year_header"], cost["value_millions"],
                      cost["value_kind"], cost["raw_value"]))
 
-            for year, count, raw in _beneficiary_rows(
+            for year, count, raw, method in _beneficiary_rows(
                     m["fields"]["number_of_beneficiaries"]):
                 conn.execute(
                     """INSERT INTO measure_beneficiary_counts
-                       (measure_id, lang, year, count, raw_value)
-                       VALUES (?,?,?,?,?)""",
-                    (measure_id, lang, year, count, raw))
+                       (measure_id, lang, year, count, raw_value, method)
+                       VALUES (?,?,?,?,?,?)""",
+                    (measure_id, lang, year, count, raw, method))
+                if method == "pattern":
+                    beneficiary_rows.append(
+                        (m["name"][:80], lang, year, count, raw[:130]))
 
         en_items = _history_items("en", en_m["part"], en_m["slug"]) if en_m else []
         fr_items = _history_items("fr", fr_m["part"], fr_m["slug"]) if fr_m else []
@@ -347,6 +360,9 @@ def build_measures(conn, write_catalogue):
     counts["measures_without_references"] = write_catalogue(
         "measures_without_references.csv", sorted(no_refs),
         ["measure", "lang", "legal_reference"])
+    counts["beneficiary_counts_extracted"] = write_catalogue(
+        "beneficiary_counts_extracted.csv", sorted(beneficiary_rows),
+        ["measure", "lang", "year", "count", "raw_value"])
     counts["reference_precision_sample"] = write_reference_sample(
         conn, SNAPSHOT.parent.parent.parent / "tests" / "spot_checks" / "references.md")
     return counts

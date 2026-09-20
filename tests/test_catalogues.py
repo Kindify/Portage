@@ -31,6 +31,7 @@ CATALOGUES = [
     "unresolved_references.csv",
     "measure_join_gaps.csv",
     "measures_without_references.csv",
+    "beneficiary_counts_extracted.csv",
 ]
 
 

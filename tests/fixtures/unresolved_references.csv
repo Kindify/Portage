@@ -14,7 +14,7 @@ Accelerated capital cost allowance for mining and oil sands assets,en,ITR,,sched
 Accelerated capital cost allowance for zero-emission automotive equipment and ve,en,ITR,,schedule_or_class,"Schedule, Class or Part - this dataset holds only the enacted Body of each instrument","subsection 1100(2) and Classes 54, 55, and 56 of Schedule II"
 Accelerated capital cost allowance for zero-emission automotive equipment and ve,en,ITR,,schedule_or_class,"Schedule, Class or Part - this dataset holds only the enacted Body of each instrument","subsection 1100(2) and Classes 54, 55, and 56 of Schedule II"
 Accelerated capital cost allowance for zero-emission automotive equipment and ve,en,ITR,,schedule_or_class,"Schedule, Class or Part - this dataset holds only the enacted Body of each instrument","subsection 1100(2) and Classes 54, 55, and 56 of Schedule II"
-Congé temporaire ciblé de la TPS/TVH,fr,ETA,,no_provision,instrument named but no provision recognised,Partie XI de l'annexe VI de la Loi sur la taxe d'accise
+Congé temporaire ciblé de la TPS/TVH,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Partie XI de l'annexe VI de la Loi sur la taxe d'accise
 Crédit d'impôt des sociétés pour exploration et développement miniers,fr,ITA,,term_not_joined,term_not_joined,"paragraphe 127(9), alinéa (a.3) de la définition « crédit d'impôt à l'investissement »"
 Crédit d'impôt pour l'exploration de minéraux critiques pour les détenteurs d'ac,fr,ITA,,term_not_joined,term_not_joined,"paragraphe 127(9), alinéa (a.2) de la définition « crédit d'impôt à l'investissement » et définitions de « minéral critique », « dépense min"
 Crédit d'impôt pour l'exploration minière pour les détenteurs d'actions accrédit,fr,ITA,,term_not_joined,term_not_joined,"paragraphe 127(9), alinéa (a.2) de la définition « crédit d'impôt à l'investissement » et définition de « dépense minière déterminée »"
@@ -32,51 +32,51 @@ Déduction pour amortissement accéléré pour les actifs miniers et les actifs 
 Déduction pour amortissement accéléré pour les actifs miniers et les actifs liés,fr,ITR,,schedule_or_class,"Schedule, Class or Part - this dataset holds only the enacted Body of each instrument","paragraphe 1100(1) et catégories 41, 41.1 et 41.2 de l'annexe II"
 Déduction pour amortissement accéléré pour les installations de liquéfaction de ,fr,ITR,,schedule_or_class,"Schedule, Class or Part - this dataset holds only the enacted Body of each instrument","alinéas 1100(1)(a.3) et 1100(1)(yb), paragraphe 1101(4i) et alinéa (b) de la catégorie 47 de l'annexe II"
 Détaxation de produits agricoles et de la pêche et d'achats connexes,fr,ETA,,no_provision,instrument named but no provision recognised,Règlement sur les biens liés à l'agriculture ou à la pêche (TPS/TVH)
-Détaxation des appareils médicaux et des appareils fonctionnels,fr,ETA,,no_provision,instrument named but no provision recognised,Partie II de l'annexe VI de la Loi sur la taxe d'accise
-Détaxation des masques et des écrans faciaux,fr,ETA,,no_provision,instrument named but no provision recognised,Articles 2 à 5 de la partie II.1 de l'annexe VI de la Loi sur la taxe d'accise
-Détaxation des médicaments sur ordonnance,fr,ETA,,no_provision,instrument named but no provision recognised,Partie I de l'annexe VI de la Loi sur la taxe d'accise
-Détaxation des produits alimentaires de base,fr,ETA,,no_provision,instrument named but no provision recognised,Partie III de l'annexe VI de la Loi sur la taxe d'accise
-Détaxation des produits d'hygiène féminine,fr,ETA,,no_provision,instrument named but no provision recognised,Article 1 de la partie II.1 de l'annexe VI de la Loi sur la taxe d'accise
+Détaxation des appareils médicaux et des appareils fonctionnels,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Partie II de l'annexe VI de la Loi sur la taxe d'accise
+Détaxation des masques et des écrans faciaux,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Articles 2 à 5 de la partie II.1 de l'annexe VI de la Loi sur la taxe d'accise
+Détaxation des médicaments sur ordonnance,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Partie I de l'annexe VI de la Loi sur la taxe d'accise
+Détaxation des produits alimentaires de base,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Partie III de l'annexe VI de la Loi sur la taxe d'accise
+Détaxation des produits d'hygiène féminine,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Article 1 de la partie II.1 de l'annexe VI de la Loi sur la taxe d'accise
 Education Tax Credit,en,ITA,118.6(2),not_in_consolidation,,subsection 118.6(2)
 Employee benefit plans,en,ITA,"6(1)(g)""employee benefit plan""",not_in_consolidation,,"paragraph 6(1)(g), section 32.1 and subsection 248(1), definition of ""employee benefit plan"""
 Enhanced rebate for new residential rental property,en,ETA,,instrument_not_held,Excise Tax Act is not held by this dataset,section 256.2
-Exemption aux voyageurs,fr,ETA,,no_provision,instrument named but no provision recognised,Article 1 de l'annexe VII de la Loi sur la taxe d'accise
+Exemption aux voyageurs,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Article 1 de l'annexe VII de la Loi sur la taxe d'accise
 Exemption from GST and rebate for legal aid services,en,ETA,,instrument_not_held,Excise Tax Act is not held by this dataset,section 258 (rebate)
 Exemption from GST and rebate for legal aid services,en,ETA,,no_provision,instrument named but no provision recognised,(exemption)
-Exemption from GST for certain residential rent,en,ETA,,no_provision,instrument named but no provision recognised,Paragraph 6(a) of Part I of Schedule V to the Excise Tax Act
-Exemption from GST for certain supplies made by charities and non-profit organiz,en,ETA,,no_provision,instrument named but no provision recognised,Part V.1 of Schedule V to the Excise Tax Act Part VI of Schedule V to the Excise Tax Act
-Exemption from GST for certain supplies made by charities and non-profit organiz,en,ETA,,no_provision,instrument named but no provision recognised,Part VI of Schedule V to the
-Exemption from GST for child care,en,ETA,,no_provision,instrument named but no provision recognised,Section 1 of Part IV of Schedule V to the Excise Tax Act
+Exemption from GST for certain residential rent,en,ETA,,schedule_or_class,instrument named but no provision recognised,Paragraph 6(a) of Part I of Schedule V to the Excise Tax Act
+Exemption from GST for certain supplies made by charities and non-profit organiz,en,ETA,,schedule_or_class,instrument named but no provision recognised,Part V.1 of Schedule V to the Excise Tax Act Part VI of Schedule V to the Excise Tax Act
+Exemption from GST for certain supplies made by charities and non-profit organiz,en,ETA,,schedule_or_class,instrument named but no provision recognised,Part VI of Schedule V to the
+Exemption from GST for child care,en,ETA,,schedule_or_class,instrument named but no provision recognised,Section 1 of Part IV of Schedule V to the Excise Tax Act
 Exemption from GST for domestic financial services,en,ETA,,instrument_not_held,Excise Tax Act is not held by this dataset,"section 123(1), definition of ""financial service"""
-Exemption from GST for domestic financial services,en,ETA,,no_provision,instrument named but no provision recognised,"Part VII of Schedule V to the Excise Tax Act Excise Tax Act,section 123(1), definition of ""financial service"""
-"Exemption from GST for ferry, road and bridge tolls",en,ETA,,no_provision,instrument named but no provision recognised,Part VIII of Schedule V and section 14 of Part VII of Schedule VI to the Excise Tax Act
-Exemption from GST for health care services,en,ETA,,no_provision,instrument named but no provision recognised,Part II of Schedule V to the Excise Tax Act
-Exemption from GST for hospital parking,en,ETA,,instrument_not_held,Excise Tax Act is not held by this dataset,Section 25.1 of Part VI of Schedule V to the
-Exemption from GST for hospital parking,en,ETA,,no_provision,instrument named but no provision recognised,Section 7 of Part V.1 of Schedule V to the Excise Tax Act Section 25.1 of Part VI of Schedule V to the Excise Tax Act
-Exemption from GST for municipal transit,en,ETA,,no_provision,instrument named but no provision recognised,Section 24 of Part VI of Schedule V to the Excise Tax Act
-Exemption from GST for personal care services,en,ETA,,no_provision,instrument named but no provision recognised,Sections 2 and 3 of Part IV of Schedule V to the Excise Tax Act
-Exemption from GST for sales of used residential housing and other personal-use ,en,ETA,,no_provision,instrument named but no provision recognised,Sections 2-5.3 and 9-12 of Part I of Schedule V to the Excise Tax Act
-Exemption from GST for short-term accommodation,en,ETA,,no_provision,instrument named but no provision recognised,Paragraph 6(b) of Part I of Schedule V to the Excise Tax Act
-Exemption from GST for tuition and educational services,en,ETA,,no_provision,instrument named but no provision recognised,Part III of Schedule V to the Excise Tax Act
-"Exemption from GST for water, sewage and basic garbage collection services",en,ETA,,no_provision,instrument named but no provision recognised,Sections 21 and 22 of Part VI of Schedule V to the Excise Tax Act
+Exemption from GST for domestic financial services,en,ETA,,schedule_or_class,instrument named but no provision recognised,"Part VII of Schedule V to the Excise Tax Act Excise Tax Act,section 123(1), definition of ""financial service"""
+"Exemption from GST for ferry, road and bridge tolls",en,ETA,,schedule_or_class,instrument named but no provision recognised,Part VIII of Schedule V and section 14 of Part VII of Schedule VI to the Excise Tax Act
+Exemption from GST for health care services,en,ETA,,schedule_or_class,instrument named but no provision recognised,Part II of Schedule V to the Excise Tax Act
+Exemption from GST for hospital parking,en,ETA,,schedule_or_class,Excise Tax Act is not held by this dataset,Section 25.1 of Part VI of Schedule V to the
+Exemption from GST for hospital parking,en,ETA,,schedule_or_class,instrument named but no provision recognised,Section 7 of Part V.1 of Schedule V to the Excise Tax Act Section 25.1 of Part VI of Schedule V to the Excise Tax Act
+Exemption from GST for municipal transit,en,ETA,,schedule_or_class,instrument named but no provision recognised,Section 24 of Part VI of Schedule V to the Excise Tax Act
+Exemption from GST for personal care services,en,ETA,,schedule_or_class,instrument named but no provision recognised,Sections 2 and 3 of Part IV of Schedule V to the Excise Tax Act
+Exemption from GST for sales of used residential housing and other personal-use ,en,ETA,,schedule_or_class,instrument named but no provision recognised,Sections 2-5.3 and 9-12 of Part I of Schedule V to the Excise Tax Act
+Exemption from GST for short-term accommodation,en,ETA,,schedule_or_class,instrument named but no provision recognised,Paragraph 6(b) of Part I of Schedule V to the Excise Tax Act
+Exemption from GST for tuition and educational services,en,ETA,,schedule_or_class,instrument named but no provision recognised,Part III of Schedule V to the Excise Tax Act
+"Exemption from GST for water, sewage and basic garbage collection services",en,ETA,,schedule_or_class,instrument named but no provision recognised,Sections 21 and 22 of Part VI of Schedule V to the Excise Tax Act
 Exonération de la TPS et remboursement pour les services d'aide juridique,fr,ETA,,instrument_not_held,Loi sur la taxe d'accise is not held by this dataset,article 258 (remboursement)
 Exonération de la TPS et remboursement pour les services d'aide juridique,fr,ETA,,no_provision,instrument named but no provision recognised,(exonération)
-Exonération de la TPS pour certaines fournitures effectuées par des organismes d,fr,ETA,,no_provision,instrument named but no provision recognised,Partie V.1 de l'annexe V de la Loi sur la taxe d'accise Partie VI de l'annexe V de la Loi sur la taxe d'accise
-Exonération de la TPS pour certaines fournitures effectuées par des organismes d,fr,ETA,,no_provision,instrument named but no provision recognised,Partie VI de l'annexe V de la
-Exonération de la TPS pour certains loyers résidentiels,fr,ETA,,no_provision,instrument named but no provision recognised,Alinéa (6a) de la partie I de l'annexe V de la Loi sur la taxe d'accise
-Exonération de la TPS pour l'hébergement de courte durée,fr,ETA,,no_provision,instrument named but no provision recognised,Alinéa (6b) de la partie I de l'annexe V de la Loi sur la taxe d'accise
-Exonération de la TPS pour les frais de scolarité et les services d'enseignement,fr,ETA,,no_provision,instrument named but no provision recognised,Partie III de l'annexe V de la Loi sur la taxe d'accise
-Exonération de la TPS pour les frais de stationnement des hôpitaux,fr,ETA,,instrument_not_held,Loi sur la taxe d'accise is not held by this dataset,Article 25.1 de la partie VI de l'annexe V de la
-Exonération de la TPS pour les frais de stationnement des hôpitaux,fr,ETA,,no_provision,instrument named but no provision recognised,Article 7 de la partie V.1 de l'annexe V de la Loi sur la taxe d'accise Article 25.1 de la partie VI de l'annexe V de la Loi sur la taxe d'a
-Exonération de la TPS pour les reventes d'immeubles résidentiels et d'autres imm,fr,ETA,,no_provision,instrument named but no provision recognised,Articles 2 à 5.3 et 9 à 12 de la partie I de l'annexe V de la Loi sur la taxe d'accise
-"Exonération de la TPS pour les services de distribution d'eau, les services d'ég",fr,ETA,,no_provision,instrument named but no provision recognised,Articles 21 et 22 de la partie VI de l'annexe V de la Loi sur la taxe d'accise
-Exonération de la TPS pour les services de garde d'enfants,fr,ETA,,no_provision,instrument named but no provision recognised,Article 1 de la partie IV de l'annexe V de la Loi sur la taxe d'accise
-Exonération de la TPS pour les services de soins de santé,fr,ETA,,no_provision,instrument named but no provision recognised,Partie II de l'annexe V de la Loi sur la taxe d'accise
-Exonération de la TPS pour les services de soins personnels,fr,ETA,,no_provision,instrument named but no provision recognised,Articles 2 et 3 de la partie IV de l'annexe V de la Loi sur la taxe d'accise
+Exonération de la TPS pour certaines fournitures effectuées par des organismes d,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Partie V.1 de l'annexe V de la Loi sur la taxe d'accise Partie VI de l'annexe V de la Loi sur la taxe d'accise
+Exonération de la TPS pour certaines fournitures effectuées par des organismes d,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Partie VI de l'annexe V de la
+Exonération de la TPS pour certains loyers résidentiels,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Alinéa (6a) de la partie I de l'annexe V de la Loi sur la taxe d'accise
+Exonération de la TPS pour l'hébergement de courte durée,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Alinéa (6b) de la partie I de l'annexe V de la Loi sur la taxe d'accise
+Exonération de la TPS pour les frais de scolarité et les services d'enseignement,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Partie III de l'annexe V de la Loi sur la taxe d'accise
+Exonération de la TPS pour les frais de stationnement des hôpitaux,fr,ETA,,schedule_or_class,Loi sur la taxe d'accise is not held by this dataset,Article 25.1 de la partie VI de l'annexe V de la
+Exonération de la TPS pour les frais de stationnement des hôpitaux,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Article 7 de la partie V.1 de l'annexe V de la Loi sur la taxe d'accise Article 25.1 de la partie VI de l'annexe V de la Loi sur la taxe d'a
+Exonération de la TPS pour les reventes d'immeubles résidentiels et d'autres imm,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Articles 2 à 5.3 et 9 à 12 de la partie I de l'annexe V de la Loi sur la taxe d'accise
+"Exonération de la TPS pour les services de distribution d'eau, les services d'ég",fr,ETA,,schedule_or_class,instrument named but no provision recognised,Articles 21 et 22 de la partie VI de l'annexe V de la Loi sur la taxe d'accise
+Exonération de la TPS pour les services de garde d'enfants,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Article 1 de la partie IV de l'annexe V de la Loi sur la taxe d'accise
+Exonération de la TPS pour les services de soins de santé,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Partie II de l'annexe V de la Loi sur la taxe d'accise
+Exonération de la TPS pour les services de soins personnels,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Articles 2 et 3 de la partie IV de l'annexe V de la Loi sur la taxe d'accise
 Exonération de la TPS pour les services financiers canadiens,fr,ETA,,instrument_not_held,Loi sur la taxe d'accise is not held by this dataset,"paragraphe 123(1), définition de « service financier »"
-Exonération de la TPS pour les services financiers canadiens,fr,ETA,,no_provision,instrument named but no provision recognised,"Partie VII de l'annexe V de la Loi sur la taxe d'accise Loi sur la taxe d'accise, paragraphe 123(1), définition de « service financier »"
-Exonération de la TPS pour les services municipaux de transport,fr,ETA,,no_provision,instrument named but no provision recognised,Article 24 de la partie VI de l'annexe V de la Loi sur la taxe d'accise
-"Exonération de la TPS pour les traversiers, les routes et les ponts à péage",fr,ETA,,no_provision,instrument named but no provision recognised,Partie VIII de l'annexe V et article 14 de la partie VII de l'annexe VI de la Loi sur la taxe d'accise
+Exonération de la TPS pour les services financiers canadiens,fr,ETA,,schedule_or_class,instrument named but no provision recognised,"Partie VII de l'annexe V de la Loi sur la taxe d'accise Loi sur la taxe d'accise, paragraphe 123(1), définition de « service financier »"
+Exonération de la TPS pour les services municipaux de transport,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Article 24 de la partie VI de l'annexe V de la Loi sur la taxe d'accise
+"Exonération de la TPS pour les traversiers, les routes et les ponts à péage",fr,ETA,,schedule_or_class,instrument named but no provision recognised,Partie VIII de l'annexe V et article 14 de la partie VII de l'annexe VI de la Loi sur la taxe d'accise
 Expensing of capital expenditures on scientific research and experimental develo,en,,,no_instrument,no instrument named - a provision number alone is not a citation,"Not legislated as of December 31, 2025."
 Foreign Convention and Tour Incentive Program,en,ETA,,instrument_not_held,Excise Tax Act is not held by this dataset,"sections 252.1, 252.3 and 252.4"
 Foreign Convention and Tour Incentive Program,en,ETA,,instrument_not_held,Excise Tax Act is not held by this dataset,"sections 252.1, 252.3 and 252.4"
@@ -99,7 +99,7 @@ Non-taxation of capital gains on donations of publicly listed securities,en,ITA,
 Non-taxation of capital gains on donations of publicly listed securities,en,ITA,38.3,not_in_consolidation,,"paragraphs 38(a.1) and (a.4), sections 38.3 and 38.4"
 Non-taxation of capital gains on donations of publicly listed securities,en,ITA,38.4,not_in_consolidation,,"paragraphs 38(a.1) and (a.4), sections 38.3 and 38.4"
 Non-taxation of capital gains on principal residences,en,ITA,"40(2)(b)""principal residence""",not_in_consolidation,,"paragraph 40(2)(b), definition of ""principal residence"" in section 54"
-Non-taxation of certain importations,en,OTHER,,no_provision,instrument named but no provision recognised,Schedule VII to the Excise Tax ActNon-Taxable Imported Goods (GST/HST) Regulations
+Non-taxation of certain importations,en,OTHER,,schedule_or_class,instrument named but no provision recognised,Schedule VII to the Excise Tax ActNon-Taxable Imported Goods (GST/HST) Regulations
 Non-taxation of certain non-monetary employment benefits,en,,,no_instrument,no instrument named - a provision number alone is not a citation,Administrative concession
 Non-taxation of personal property of status Indians and Indian bands situated on,en,OTHER,,instrument_not_held,Indian Act is not held by this dataset,section 87
 Non-taxation of strike pay,en,ITA,,no_provision,instrument named but no provision recognised,Strike pay is not a source of income under the Income Tax Act.
@@ -157,7 +157,7 @@ Seuil de petit fournisseur,fr,ETA,,instrument_not_held,Loi sur la taxe d'accise 
 Seuil de petit fournisseur,fr,ETA,,instrument_not_held,Loi sur la taxe d'accise is not held by this dataset,alinéa 240(1)(a) et article 166
 Small suppliers' threshold,en,ETA,,instrument_not_held,Excise Tax Act is not held by this dataset,paragraph 240(1)(a) and section 166
 Small suppliers' threshold,en,ETA,,instrument_not_held,Excise Tax Act is not held by this dataset,paragraph 240(1)(a) and section 166
-Targeted temporary GST/HST relief,en,ETA,,no_provision,instrument named but no provision recognised,Part XI of Schedule VI to the Excise Tax Act
+Targeted temporary GST/HST relief,en,ETA,,schedule_or_class,instrument named but no provision recognised,Part XI of Schedule VI to the Excise Tax Act
 Tax treatment of Canada Pension Plan and Quebec Pension Plan contributions and b,en,ITA,60(1)(e),not_in_consolidation,,"section 118.7 and paragraphs 56(1)(a), 60(1)(e) and (e.1)"
 Tax treatment of Canada Pension Plan and Quebec Pension Plan contributions and b,en,ITA,60(1)(e.1),not_in_consolidation,,"section 118.7 and paragraphs 56(1)(a), 60(1)(e) and (e.1)"
 Tax treatment of active business income of foreign affiliates of Canadian corpor,en,OTHER,,no_provision,instrument named but no provision recognised,"Income Tax Act, sections 91 and 113 and subsections 20(1), 93.1(1), 94.2(2) and 95(1) Income Tax Regulations, sections 5900-5902, 5905 and 5"
@@ -167,12 +167,12 @@ Traitement fiscal des cotisations et des prestations liées au Régime de pensio
 Traitement fiscal des cotisations et des prestations liées au Régime de pensions,fr,ITA,60(1)(e.1),not_in_consolidation,,"article 118.7 et alinéas 56(1)(a), 60(1)(e) et 60(1)(e.1)"
 Traitement fiscal des pensions alimentaires et allocations d'entretien,fr,ITA,56(1)(60b),not_in_consolidation,,alinéa 56(1)(b) et alinéa (60b)
 Traitement fiscal du revenu de placement provenant de polices d'assurance-vie,fr,ITA,12.2(9),not_in_consolidation,,"paragraphes 12.2(9), 211.1(1) et 211.1(2)"
-Transfer of income tax points to provinces,en,OTHER,,instrument_not_held,Federal-Provincial Fiscal Arrangements Act is not held by this dataset,Part V.1
-Transfert de points d'impôt aux provinces,fr,,,no_instrument,no instrument named - a provision number alone is not a citation,Partie V.1 de la Loi sur les arrangements fiscaux entre le gouvernement fédéral et les provinces
-Travellers' exemption,en,ETA,,no_provision,instrument named but no provision recognised,Section 1 of Schedule VII to the Excise Tax Act
-Zero-rating of agricultural and fish products and purchases,en,OTHER,,no_provision,instrument named but no provision recognised,Part IV of Schedule VI to the Excise Tax ActAgriculture and Fishing Property (GST/HST) Regulations
-Zero-rating of basic groceries,en,ETA,,no_provision,instrument named but no provision recognised,Part III of Schedule VI to the Excise Tax Act
-Zero-rating of face masks and face shields,en,ETA,,no_provision,instrument named but no provision recognised,Sections 2 to 5 of Part II.1 of Schedule VI to the Excise Tax Act
-Zero-rating of feminine hygiene products,en,ETA,,no_provision,instrument named but no provision recognised,Section 1 of Part II.1 of Schedule VI to the Excise Tax Act
-Zero-rating of medical and assistive devices,en,ETA,,no_provision,instrument named but no provision recognised,Part II of Schedule VI to the Excise Tax Act
-Zero-rating of prescription drugs,en,ETA,,no_provision,instrument named but no provision recognised,Part I of Schedule VI to the Excise Tax Act
+Transfer of income tax points to provinces,en,OTHER,,schedule_or_class,Federal-Provincial Fiscal Arrangements Act is not held by this dataset,Part V.1
+Transfert de points d'impôt aux provinces,fr,,,schedule_or_class,no instrument named - a provision number alone is not a citation,Partie V.1 de la Loi sur les arrangements fiscaux entre le gouvernement fédéral et les provinces
+Travellers' exemption,en,ETA,,schedule_or_class,instrument named but no provision recognised,Section 1 of Schedule VII to the Excise Tax Act
+Zero-rating of agricultural and fish products and purchases,en,OTHER,,schedule_or_class,instrument named but no provision recognised,Part IV of Schedule VI to the Excise Tax ActAgriculture and Fishing Property (GST/HST) Regulations
+Zero-rating of basic groceries,en,ETA,,schedule_or_class,instrument named but no provision recognised,Part III of Schedule VI to the Excise Tax Act
+Zero-rating of face masks and face shields,en,ETA,,schedule_or_class,instrument named but no provision recognised,Sections 2 to 5 of Part II.1 of Schedule VI to the Excise Tax Act
+Zero-rating of feminine hygiene products,en,ETA,,schedule_or_class,instrument named but no provision recognised,Section 1 of Part II.1 of Schedule VI to the Excise Tax Act
+Zero-rating of medical and assistive devices,en,ETA,,schedule_or_class,instrument named but no provision recognised,Part II of Schedule VI to the Excise Tax Act
+Zero-rating of prescription drugs,en,ETA,,schedule_or_class,instrument named but no provision recognised,Part I of Schedule VI to the Excise Tax Act

@@ -256,6 +256,25 @@ Regulations is a legal question, usually settled by prose the markup does not
 carry. 691 references have other-instrument candidates. The full rule, with the
 before-and-after numbers, is in `docs/reference-rule.md`.
 
+**Reference resolution, reported two ways.** Of the 790 references extracted
+from the report's *Legal reference* field, **613 resolve to a provision - 77.6%**.
+That figure is bounded below 100% by construction: 53 references name an
+instrument this dataset does not hold, chiefly the Excise Tax Act, and 68 name a
+Schedule, Class or Part, which Phase 0 does not model - neither can ever resolve,
+however good the grammar is. Measured over the references that *could* resolve,
+those citing the Income Tax Act or its Regulations, **613 of 673 resolve -
+91.1%**. The remainder are 33 `not_in_consolidation`, 20 `schedule_or_class`,
+5 `term_not_joined` and 2 `no_provision`. Every unresolved reference keeps its
+raw text and a status in `data/unresolved_references.csv`.
+
+**Beneficiary counts are read from prose, and mostly are not.** The field is a
+sentence, so a year and a count can only be extracted by pattern, and only where
+the sentence contains exactly one number-and-year pair. **75 of 458 rows are
+populated**; the rest keep their published sentence with NULL count. Every row
+carries `method` - `'pattern'` or `'none'` - and `raw_value` always holds what
+was published. This is the weakest field in the dataset: unlike a reference, a
+wrong count does not announce itself by failing to resolve.
+
 **The tax expenditure report is a dated snapshot, and its dates do not line up
 with the Act's.** The 2026 Report on Federal Tax Expenditures states the law as
 of **31 December 2025**; the Income Tax Act consolidation in this dataset is as
