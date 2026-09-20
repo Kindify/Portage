@@ -130,8 +130,13 @@ CREATE TABLE provision_temporal_scope (
     cited_section_id INTEGER NOT NULL REFERENCES sections(id),
     phrase          TEXT    NOT NULL,     -- verbatim substring of text_en
     bound_kind      TEXT    NOT NULL,     -- 'start' | 'end' | 'step_down'
+    -- 'YYYY-MM-DD' or 'YYYY-MM'. A phrase that says "before March 2025"
+    -- states a month, and writing 2025-03-01 would invent a day the Act does
+    -- not give. bound_precision says which you have, so nothing has to guess
+    -- whether a date is exact.
     bound_date      TEXT,
     bound_year      INTEGER,
+    bound_precision TEXT,                 -- 'day' | 'month' | 'year'
     method          TEXT    NOT NULL      -- 'extracted_llm'
 );
 
@@ -637,6 +642,7 @@ SELECT p.measure_id,
        t.phrase,
        t.bound_kind,
        t.bound_date,
+       t.bound_precision,
        COALESCE(t.bound_year, CAST(SUBSTR(t.bound_date,1,4) AS INTEGER)) AS end_year,
        t.method
 FROM provision_temporal_scope t
@@ -938,11 +944,12 @@ def load_temporal_scope(conn, data_dir):
             conn.execute(
                 """INSERT INTO provision_temporal_scope
                    (section_id, cited_section_id, phrase, bound_kind,
-                    bound_date, bound_year, method)
-                   VALUES (?,?,?,?,?,?,'extracted_llm')""",
+                    bound_date, bound_year, bound_precision, method)
+                   VALUES (?,?,?,?,?,?,?,'extracted_llm')""",
                 (sid, int(row["cited_section_id"]), row["phrase"],
                  row["bound_kind"], row["bound_date"] or None,
-                 int(row["bound_year"]) if row["bound_year"] else None))
+                 int(row["bound_year"]) if row["bound_year"] else None,
+                 row.get("bound_precision") or None))
             kept += 1
 
     if run_path.exists():

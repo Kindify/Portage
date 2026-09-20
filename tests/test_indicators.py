@@ -270,6 +270,31 @@ def test_temporal_bounds_carry_a_date_that_is_in_the_phrase(conn):
     assert not bad, "bounds whose date is not in their phrase: %s" % bad[:5]
 
 
+def test_temporal_precision_matches_the_stored_bound(conn):
+    """bound_precision must describe what bound_date/bound_year actually hold.
+
+    The column exists so nothing has to guess whether a date is exact. A row
+    where it disagrees with the value would be worse than no column at all.
+    """
+    import re
+
+    bad = []
+    for date, year, prec in conn.execute(
+            """SELECT bound_date, bound_year, bound_precision
+                 FROM provision_temporal_scope"""):
+        if prec == "day":
+            ok = date is not None and re.fullmatch(r"\d{4}-\d{2}-\d{2}", date)
+        elif prec == "month":
+            ok = date is not None and re.fullmatch(r"\d{4}-\d{2}", date)
+        elif prec == "year":
+            ok = date is None and year is not None
+        else:
+            ok = False
+        if not ok:
+            bad.append((date, year, prec))
+    assert not bad, "rows whose precision does not match their bound: %s" % bad[:5]
+
+
 def test_temporal_rows_are_reachable_from_the_provision_finance_cited(conn):
     """cited_section_id must be the row itself or one of its ancestors."""
     bad = []

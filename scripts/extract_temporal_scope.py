@@ -93,9 +93,19 @@ Rules, in order of importance:
    Census", "Class 43.1". These are labels, not conditions.
 4. Most provisions contain no date bound at all. Returning an empty list is
    the normal and correct answer. Do not hunt for something to return.
-5. Report the bound in "bound_value": "YYYY-MM-DD" when the phrase names a
-   full calendar date, "YYYY" when it names only a year. Nothing else. If the
-   phrase names several bounds, return one object per bound.
+5. Report the bound in "bound_value", at exactly the precision the phrase
+   uses and no finer:
+     - "YYYY-MM-DD" when the phrase names a full calendar date
+       ("before March 31, 2025" -> "2025-03-31");
+     - "YYYY-MM" when it names a month and a year but no day
+       ("before March 2025" -> "2025-03");
+     - "YYYY" when it names only a year ("taxation years before 2025" ->
+       "2025").
+   NEVER INVENT A DAY. If the phrase does not say which day, do not supply
+   one - not the first of the month, not the last, not any. The same goes for
+   a month the phrase does not name. Reporting a date more precise than the
+   text is the same error as inventing one. If the phrase names several
+   bounds, return one object per bound.
 
 Return only the JSON object the schema describes. No explanation.\
 """
@@ -132,7 +142,13 @@ RESPONSE_SCHEMA = {
                     # columns regardless - the split happens in split_bound().
                     "bound_value": {
                         "type": "string",
-                        "description": "YYYY-MM-DD for a full date, YYYY for a year alone.",
+                        "description": (
+                            "The bound at the precision the phrase uses and no "
+                            "finer: YYYY-MM-DD for a full calendar date, YYYY-MM "
+                            "for a month and year with no day, YYYY for a year "
+                            "alone. Never supply a day or a month the phrase "
+                            "does not state."
+                        ),
                     },
                 },
                 "required": ["phrase", "bound_kind", "bound_value"],
@@ -282,13 +298,26 @@ def build_request(prov):
 
 
 def split_bound(value):
-    """"2025-03-31" -> ("2025-03-31", None); "2025" -> (None, 2025)."""
+    """A returned bound_value -> (bound_date, bound_year, precision).
+
+    Three precisions, because the text has three. A phrase that says "before
+    March 2025" states a month, and writing 2025-03-01 or 2025-03-31 would be
+    inventing a day the Act does not give - the same error as inventing the
+    year. `bound_date` therefore holds either YYYY-MM-DD or YYYY-MM, and
+    `bound_precision` says which, so that a consumer never has to guess
+    whether a date is exact.
+
+    Lexicographic order still works across all three for the earliest/latest
+    indicators: "2025" < "2025-03" < "2025-03-01".
+    """
     value = (value or "").strip()
     if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
-        return value, None
+        return value, None, "day"
+    if re.fullmatch(r"\d{4}-\d{2}", value):
+        return value, None, "month"
     if re.fullmatch(r"\d{4}", value):
-        return None, int(value)
-    return None, None
+        return None, int(value), "year"
+    return None, None, None
 
 
 def verify(bound, text):
@@ -301,9 +330,30 @@ def verify(bound, text):
     if bound.get("bound_kind") not in ("start", "end", "step_down"):
         return False, "bound_kind is not one of start, end, step_down"
 
-    date, year = split_bound(bound.get("bound_value"))
-    if date is None and year is None:
-        return False, "bound_value is not YYYY-MM-DD or YYYY"
+    date, year, precision = split_bound(bound.get("bound_value"))
+    if precision is None:
+        return False, "bound_value is not YYYY-MM-DD, YYYY-MM or YYYY"
+    if date is not None:
+        month = int(date[5:7])
+        if not 1 <= month <= 12:
+            return False, "bound_value names month %02d" % month
+    if precision == "day":
+        # "Never invent a day", checked rather than trusted - the same
+        # treatment the year rule gets. A day-precision bound must name its
+        # day in the phrase, as digits.
+        #
+        # This will reject the one or two provisions in scope that spell the
+        # day out ("the first day of January 1975"). That is a visible loss in
+        # the rejects catalogue, and it is the right way round: a false
+        # rejection is a row Matt can see and fix, while a false accept is an
+        # invented day that looks exact and is invisible.
+        day = int(date[8:10])
+        if not 1 <= day <= 31:
+            return False, "bound_value names day %02d" % day
+        if not re.search(r"(?<!\d)0?%d(?!\d)" % day, phrase):
+            return False, ("day %d does not appear in the phrase - the phrase "
+                           "may name only a month and year, or spell the day "
+                           "out in words" % day)
     # The rule that enforces "never infer a date the text does not state":
     # the year reported must itself be in the phrase the model copied.
     reported = date[:4] if date else str(year)
@@ -411,11 +461,12 @@ def write_outputs(provs, messages, failures, scope, batch_id, run_date):
             continue
         for bound in parsed.get("bounds", []):
             ok, reason = verify(bound, prov["text"])
-            date, year = split_bound(bound.get("bound_value"))
+            date, year, precision = split_bound(bound.get("bound_value"))
             if ok:
                 rows.append((pid, prov["cited_id"], prov["act"],
                              prov["citation_path"], bound["phrase"],
-                             bound["bound_kind"], date or "", year or ""))
+                             bound["bound_kind"], date or "", year or "",
+                             precision))
             else:
                 rejects.append((prov["act"], prov["citation_path"],
                                 bound.get("phrase", ""),
@@ -431,7 +482,8 @@ def write_outputs(provs, messages, failures, scope, batch_id, run_date):
     rows.sort(key=lambda r: (r[2], r[3], r[4]))
     _write_csv(DATA / "provision_temporal_scope.csv", rows,
                ["section_id", "cited_section_id", "act", "citation_path",
-                "phrase", "bound_kind", "bound_date", "bound_year"])
+                "phrase", "bound_kind", "bound_date", "bound_year",
+                "bound_precision"])
     _write_csv(DATA / "temporal_scope_rejects.csv", sorted(rejects),
                ["act", "citation_path", "phrase", "bound_kind", "bound_value",
                 "reason"])
@@ -546,11 +598,12 @@ def _write_sample(rows):
         "Record results in `temporal-scope-RESULTS.md`. Do not regenerate this file.",
         "",
     ]
-    for i, (_sid, _cid, act, path, phrase, kind, date, year) in enumerate(sample, 1):
+    for i, (_sid, _cid, act, path, phrase, kind, date, year, prec) in enumerate(sample, 1):
         lines += ["## %d. %s %s" % (i, act, path), "",
                   "> %s" % phrase, "",
                   "- bound_kind: `%s`" % kind,
-                  "- date: `%s`  year: `%s`" % (date or "-", year or "-"),
+                  "- date: `%s`  year: `%s`  precision: `%s`"
+                  % (date or "-", year or "-", prec),
                   "- [ ] phrase appears verbatim   - [ ] bound is correct", ""]
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text("\n".join(lines), encoding="utf-8")
@@ -666,10 +719,28 @@ def prompt_doc():
         "",
         "- the phrase must be a verbatim substring of the provision's `text_en`;",
         "- `bound_kind` must be one of `start`, `end`, `step_down`;",
-        "- `bound_value` must be `YYYY-MM-DD` or `YYYY`, and **the year in it",
-        "  must appear inside the phrase**. The model returns one string; the",
-        "  script splits it into the nullable `bound_date` and `bound_year`",
-        "  columns, so no nullable union is ever sent over the wire.",
+        "- `bound_value` must be `YYYY-MM-DD`, `YYYY-MM` or `YYYY`, and **the",
+        "  year in it must appear inside the phrase**. The model returns one",
+        "  string; the script splits it into the nullable `bound_date` and",
+        "  `bound_year` columns plus `bound_precision`, so no nullable union is",
+        "  ever sent over the wire.",
+        "",
+        "A `day`-precision bound must also **name its day in the phrase, as",
+        "digits**. That is \"never invent a day\" enforced rather than merely",
+        "asked for, the same treatment the year rule gets. 325 of the 997",
+        "provisions in scope write dates as \"March 31, 2025\" and 75 write",
+        "\"March 2025\" with no day; only one or two spell a day out (\"the",
+        "first day of January\"), and those will be rejected into the",
+        "catalogue rather than stored. A rejection Matt can see beats an",
+        "invented day that looks exact.",
+        "",
+        "`YYYY-MM` exists so that \"before March 2025\" is not written as",
+        "2025-03-01 or 2025-03-31. Supplying a day the Act does not state is",
+        "the same error as supplying a year it does not state, and it is the",
+        "more dangerous of the two because it looks exact. `bound_precision` -",
+        "`day`, `month` or `year` - travels with every row so a reader never",
+        "has to infer how precise a date really is. Lexicographic order still",
+        "works across all three: `2025` < `2025-03` < `2025-03-01`.",
         "",
         "The last rule is the one that enforces \"never infer a date the text",
         "does not state\". A model that resolved a cross-reference, or used its",

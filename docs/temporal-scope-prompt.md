@@ -14,7 +14,7 @@ and because Matt reads it before the key is supplied.
 | effort | `high`, adaptive thinking |
 | max_tokens | 4000 |
 | transport | Batch API, one request per provision, keyed by `custom_id` |
-| prompt sha256 | `441c05df50737ac275155306acbeb38701b95382955d334eb0ee21c5c3ce0bef` |
+| prompt sha256 | `105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e` |
 
 The hash covers the system prompt, the user template, the response
 schema, the model and the effort together. Change any one of them and
@@ -27,10 +27,28 @@ and again by the build when the CSV is loaded:
 
 - the phrase must be a verbatim substring of the provision's `text_en`;
 - `bound_kind` must be one of `start`, `end`, `step_down`;
-- `bound_value` must be `YYYY-MM-DD` or `YYYY`, and **the year in it
-  must appear inside the phrase**. The model returns one string; the
-  script splits it into the nullable `bound_date` and `bound_year`
-  columns, so no nullable union is ever sent over the wire.
+- `bound_value` must be `YYYY-MM-DD`, `YYYY-MM` or `YYYY`, and **the
+  year in it must appear inside the phrase**. The model returns one
+  string; the script splits it into the nullable `bound_date` and
+  `bound_year` columns plus `bound_precision`, so no nullable union is
+  ever sent over the wire.
+
+A `day`-precision bound must also **name its day in the phrase, as
+digits**. That is "never invent a day" enforced rather than merely
+asked for, the same treatment the year rule gets. 325 of the 997
+provisions in scope write dates as "March 31, 2025" and 75 write
+"March 2025" with no day; only one or two spell a day out ("the
+first day of January"), and those will be rejected into the
+catalogue rather than stored. A rejection Matt can see beats an
+invented day that looks exact.
+
+`YYYY-MM` exists so that "before March 2025" is not written as
+2025-03-01 or 2025-03-31. Supplying a day the Act does not state is
+the same error as supplying a year it does not state, and it is the
+more dangerous of the two because it looks exact. `bound_precision` -
+`day`, `month` or `year` - travels with every row so a reader never
+has to infer how precise a date really is. Lexicographic order still
+works across all three: `2025` < `2025-03` < `2025-03-01`.
 
 The last rule is the one that enforces "never infer a date the text
 does not state". A model that resolved a cross-reference, or used its
@@ -115,9 +133,19 @@ Rules, in order of importance:
    Census", "Class 43.1". These are labels, not conditions.
 4. Most provisions contain no date bound at all. Returning an empty list is
    the normal and correct answer. Do not hunt for something to return.
-5. Report the bound in "bound_value": "YYYY-MM-DD" when the phrase names a
-   full calendar date, "YYYY" when it names only a year. Nothing else. If the
-   phrase names several bounds, return one object per bound.
+5. Report the bound in "bound_value", at exactly the precision the phrase
+   uses and no finer:
+     - "YYYY-MM-DD" when the phrase names a full calendar date
+       ("before March 31, 2025" -> "2025-03-31");
+     - "YYYY-MM" when it names a month and a year but no day
+       ("before March 2025" -> "2025-03");
+     - "YYYY" when it names only a year ("taxation years before 2025" ->
+       "2025").
+   NEVER INVENT A DAY. If the phrase does not say which day, do not supply
+   one - not the first of the month, not the last, not any. The same goes for
+   a month the phrase does not name. Reporting a date more precise than the
+   text is the same error as inventing one. If the phrase names several
+   bounds, return one object per bound.
 
 Return only the JSON object the schema describes. No explanation.
 ```
@@ -165,7 +193,7 @@ Enforced by `output_config.format`, so the model cannot return prose.
           },
           "bound_value": {
             "type": "string",
-            "description": "YYYY-MM-DD for a full date, YYYY for a year alone."
+            "description": "The bound at the precision the phrase uses and no finer: YYYY-MM-DD for a full calendar date, YYYY-MM for a month and year with no day, YYYY for a year alone. Never supply a day or a month the phrase does not state."
           }
         },
         "required": [

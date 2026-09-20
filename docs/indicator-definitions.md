@@ -538,7 +538,7 @@ threshold look like a finding. The reader supplies it -
 
 Empty until Phase 2 step 3 fills `provision_temporal_scope`.
 
-**Columns:** `measure_id`, `name_en`, `name_fr`, `act`, `cited_citation_path`, `provision_citation_path`, `phrase`, `bound_kind`, `bound_date`, `end_year`, `method`
+**Columns:** `measure_id`, `name_en`, `name_fr`, `act`, `cited_citation_path`, `provision_citation_path`, `phrase`, `bound_kind`, `bound_date`, `bound_precision`, `end_year`, `method`
 
 **Rows in this build:** 0
 
@@ -552,6 +552,7 @@ SELECT p.measure_id,
        t.phrase,
        t.bound_kind,
        t.bound_date,
+       t.bound_precision,
        COALESCE(t.bound_year, CAST(SUBSTR(t.bound_date,1,4) AS INTEGER)) AS end_year,
        t.method
 FROM provision_temporal_scope t
