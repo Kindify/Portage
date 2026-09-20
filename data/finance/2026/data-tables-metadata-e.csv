@@ -1,0 +1,20 @@
+ITEM,SUBITEM,VALUE
+DATASET NAME,,REPORT ON FEDERAL TAX EXPENDITURES - SUMMARY OF COST INFORMATION
+DATASET YEAR,,2026
+ONLINE REFERENCE,,https://www.canada.ca/en/department-finance/services/publications/federal-tax-expenditures/2026.html
+VARIABLE DEFINITION,MEASURE,Name of the measure
+"VARIABLE DEFINITION,GROUP,""Indicates whether the measure is a tax expenditure, a tax measure other than a tax expenditure, or a refundable tax credit classified as a transfer payment"""
+VARIABLE DEFINITION,SUBJECT,Main subject matter of the measure
+VARIABLE DEFINITION,CATEGORY,Indicates whether the measure is structural or non-structural
+"VARIABLE DEFINITION,TAX,""Indicates whether the measure relates to the personal income tax, the corporate income tax and/or the Goods and Services Tax"""
+VARIABLE DEFINITION,DETAILS,Describes contents of the row
+NOTES,NOTE 1,The elimination of a tax expenditure would not necessarily yield the full tax revenues shown in the table. See Part 1 of the report for a discussion of the reasons for this.
+"NOTES,NOTE 2,""The classification of a measure as structural or non-structural is not indicative of the relevance and performance of the measure. A measure could pursue both structural and non-structural objectives, in which case it is categorized based on an assessment of whether the structural or non-structural component predominates (see explanation in the introduction to Part 3 of the report)."""
+"NOTES,NOTE 3,""Amounts under $500,000 are reported as “S” (“small”), amounts between $500,000 and $5 million are rounded to the nearest $1 million and amounts above $5 million are rounded to the nearest $5 million."""
+SYMBOLS,n.a.,No data available to support a meaningful estimate or projection
+SYMBOLS,–,Tax expenditure not in effect
+SYMBOLS,X,Not published for confidentiality reasons
+SYMBOLS,PIT,Personal income tax (excluding trusts when these are presented separately)
+SYMBOLS,TRU,Personal income tax with respect to trusts
+SYMBOLS,CIT,Corporate income tax
+SYMBOLS,GST,Goods and Services Tax

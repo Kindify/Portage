@@ -1,0 +1,11 @@
+raw_value,value_kind,legend_match,cells
+,empty,portage,576
+(numeric value),estimate or projection,n/a,4241
+-,not_in_effect,variant,36
+F,small,legend,136
+S,small,legend,137
+X,withheld_confidential,legend,178
+n.a.,not_available,legend,391
+n.d,not_available,variant,16
+n.d.,not_available,legend,335
+–,not_in_effect,legend,394

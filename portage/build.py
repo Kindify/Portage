@@ -14,6 +14,7 @@ from collections import defaultdict
 
 from .parse import parse
 from .parse import parse_walker
+from .measures_build import build_measures
 from .refs import candidate_index, extract
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -788,6 +789,10 @@ def build(db_path=DB_PATH):
                                all_meta[src["act"]]["en"]["consolidation_date"])
     _write_spot_check_results_template(conn)
 
+    # Phase 1: the tax expenditure report, from the committed snapshot.
+    measure_counts = build_measures(
+        conn, lambda name, rows, header: _write_catalogue(DATA / name, rows, header))
+
     rows = conn.execute("SELECT COUNT(*) FROM sections").fetchone()[0]
     addressable = conn.execute(
         "SELECT COUNT(*) FROM sections WHERE is_addressable=1").fetchone()[0]
@@ -795,6 +800,11 @@ def build(db_path=DB_PATH):
         "SELECT COUNT(*) FROM sections WHERE text_en IS NOT NULL AND text_fr IS NOT NULL"
     ).fetchone()[0]
 
+
+    n_measures = conn.execute("SELECT COUNT(*) FROM measures").fetchone()[0]
+    n_mrefs = conn.execute("SELECT COUNT(*) FROM measure_references").fetchone()[0]
+    n_mrefs_ok = conn.execute(
+        "SELECT COUNT(*) FROM measure_references WHERE status='resolved'").fetchone()[0]
 
     meta_rows = {
         "source": "Justice Laws Website, Department of Justice Canada",
@@ -817,10 +827,21 @@ def build(db_path=DB_PATH):
         "rows_cross_references_unique": str(n_unique),
         "rows_cross_references_ambiguous": str(n_ambig),
         "rows_terms_defined_more_than_once": str(n_multi),
+        "report_year": "2026",
+        "report_retrieved_date": "2026-09-19",
+        "report_licence": "Open Government Licence - Canada (open data); "
+                          "Department of Finance Canada terms (web pages)",
+        "rows_measures": str(n_measures),
+        "rows_measure_references": str(n_mrefs),
+        "rows_measure_references_resolved": str(n_mrefs_ok),
+        "rows_measure_costs": str(conn.execute("SELECT COUNT(*) FROM measure_costs").fetchone()[0]),
+        "rows_measure_history": str(conn.execute("SELECT COUNT(*) FROM measure_history").fetchone()[0]),
+        "rows_measure_beneficiary_counts": str(conn.execute(
+            "SELECT COUNT(*) FROM measure_beneficiary_counts").fetchone()[0]),
         "rows_unresolved_tagged_references": str(n_xref_unres),
         "rows_label_anomalies": str(n_anom),
         "rows_definition_key_fallbacks": str(n_fb),
-        "phase": "0",
+        "phase": "0 complete; 1 in progress",
         "schema_version": "1",
         "session": "4 - Act and Regulations, both languages",
         "official": "no - unofficial reproduction, not an official version",
@@ -846,6 +867,8 @@ def build(db_path=DB_PATH):
             "bilingual_gaps": n_gap, "label_anomalies": n_anom,
             "definition_fallbacks": n_fb, "alignment_unverified": n_unv,
             "definition_join_suspects": n_sus, "alignment_positional": n_pos,
+            "measures": n_measures, "measure_references": n_mrefs,
+            "measure_refs_resolved": n_mrefs_ok,
             "cross_references": n_xrefs, "xref_unique": n_unique,
             "xref_ambiguous": n_ambig, "terms_multi_defined": n_multi}
 

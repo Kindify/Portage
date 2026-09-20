@@ -839,3 +839,66 @@ was anticipated in CLAUDE.md's list. Having the publisher's own legend means
 `cost_tokens.csv` starts from an authority rather than a guess.
 
 ---
+
+## 2026-09-19 - Phase 1 step 3: the measure tables
+
+**The snapshot is committed and the build never fetches.** `data/finance/2026/`
+holds the ten HTML pages and the four open data CSVs, 3.4 MB, with
+`MANIFEST.json` recording SHA-256, byte counts, source URLs, both licences and
+the retrieved date. It is a fixed dated edition under the Open Government
+Licence, and canada.ca rejects scripted fetches often enough that a build
+depending on a live fetch would not be reproducible. `.gitignore` excludes
+`data/` file-by-file, because git cannot re-include a path inside an excluded
+directory.
+
+**Correction to the note of earlier today:** curl *can* fetch canada.ca, with a
+full browser header set and `--retry-all-errors`. The rejections are
+intermittent, not systematic. The earlier claim was true of the attempts made,
+not of the technique.
+
+**Fields are keyed by row position.** 17 fields on every measure in both
+languages; English labels stable, French varying 25 ways including two measures
+that label the Tax field `Direction de la politique de l'impôt`. Every variant
+sits at one fixed slot. `data/field_label_variants.csv` is diffed against a
+fixture, so a new label at any position fails the build.
+
+**Cost tokens are catalogued as symbols, not values.** Listing all ~1,600
+distinct numbers would churn the fixture on every edition while hiding the one
+thing the catalogue exists to catch - an unannounced new symbol. Numbers are one
+aggregate row. `legend_match` separates what Finance documents (`legend`) from
+what we inferred (`variant` for the bare hyphen and `n.d`; `portage` for the
+empty cell).
+
+**Repealed citations get their own status.** `not_in_consolidation` - 33 of
+them. The report states the law as of 31 December 2025, the Act consolidation is
+18 June 2026, and a six-month gap between two dated documents is not a parsing
+failure. Stated in README.
+
+**The bilingual join is by reference set plus cost values, never position.**
+193 of 229 measures join uniquely; 36 do not and are catalogued in
+`data/measure_join_gaps.csv`, with both language records surviving as singles.
+Most failures are measures whose references do not resolve and whose costs are
+all symbols, leaving nothing language-independent to join on. Adding a name or
+order tie-breaker would be judgment, and CLAUDE.md puts judgment outside the
+data.
+
+**Three grammar bugs the French edition exposed**, each of which produced a
+plausible wrong answer:
+
+1. French writes a paragraph label without its opening bracket - `alinéa
+   118(1)d)` where English writes `paragraph 118(1)(d)`. Phase 0's citation
+   paths use the English form, so French reference text is normalised before
+   extraction. Until it was, the two editions never produced the same reference
+   set and only 152 measures joined.
+2. `section 146.1Canada Education Savings Act` read as the provision `146.1C`.
+3. `section 258 (rebate)` read as the provision `258(rebate)`.
+
+**Beneficiary counts are populated only where unambiguous.** The field is prose.
+75 of 458 rows carry a parsed year and count; the rest keep their raw text with
+NULL count. A half-read sentence is worse than an honest blank.
+
+**Validated against Finance's own numbers.** 559 cost cells have a counterpart
+in the open data CSV and **all 559 match**. This is the only check on Phase 1's
+figures that does not read the pages we parsed.
+
+---

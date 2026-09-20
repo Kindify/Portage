@@ -162,59 +162,74 @@ counting the Part 3 index links).
 same number appears three ways - `1,770` in English HTML, `5 515` with a
 non-breaking space in French HTML, `5,515` in the French CSV.
 
-### Step 3 - write the reference grammar down before implementing it
+### Step 3 - parse, resolve, catalogue, test - **DONE**
 
-`docs/reference-rule.md`, the same discipline as `docs/citation-path-rule.md`.
-Pattern extraction is permitted here because failure is visible - a reference
-either resolves to an existing `citation_path` or it does not - but the grammar
-still gets written first: section, subsection, paragraph, subparagraph, clause;
-ranges with "to"; lists with "and"; "of the Act" against "of the Regulations";
-Part and Schedule references. Anything the grammar does not cover is stored
-unresolved with its raw text. Never dropped, never guessed.
+Grammar written first in `docs/reference-rule.md` Part 2, then implemented.
+90 tests pass.
 
-### Step 4 - parse, resolve, catalogue, test
+| table | rows |
+|---|---|
+| `measures` | 265 (193 paired + 36 English-only + 36 French-only) |
+| `measure_references` | 790 |
+| `measure_costs` | 6,440 |
+| `measure_history` | 681 |
+| `measure_beneficiary_counts` | 458 |
 
-Five tables (`measures`, `measure_references`, `measure_costs`,
-`measure_history`, `measure_beneficiary_counts`) and eight acceptance tests, all
-specified in `CLAUDE.md`.
+**Reference resolution, by status:**
 
-The bilingual join is the part Phase 0 has already taught us about: measures are
-alphabetical in each language, so **position means nothing across editions** -
-the same trap as definitions. Join on the language-independent content, the
-reference set plus the cost values. Anything that does not join uniquely is
-catalogued and both singles survive.
+| status | rows | |
+|---|---|---|
+| `resolved` | 613 | **77.6%** |
+| `no_provision` | 56 | 7.1% |
+| `instrument_not_held` | 56 | 7.1% |
+| `not_in_consolidation` | 33 | 4.2% |
+| `schedule_or_class` | 20 | 2.5% |
+| `no_instrument` | 7 | 0.9% |
+| `term_not_joined` | 5 | 0.6% |
 
-**Resolution rate is reported, not asserted.** A build that resolves 100% is
-suspicious, not good.
+A 100% rate would be evidence of a bug: the Excise Tax Act references and the
+Schedule references cannot resolve by construction.
 
----
+**Validated against Finance's own numbers:** 559 cost cells have a counterpart
+in the open data CSV and all 559 match.
+
+**Both CLAUDE.md fixtures pass.** The reorganization deferral resolves to
+sections 55, 85, 87 and 88 with no cost estimate in any year; the measure citing
+paragraph 20(1)(ss) resolves to `20(1)(ss)`.
+
+**Six catalogues**, each diffed against a committed fixture:
+`field_label_variants.csv` (43 rows - a new label at any position fails the
+build), `cost_tokens.csv` (11 symbol rows), `unresolved_references.csv`,
+`measure_join_gaps.csv`, `measures_without_references.csv`, and the Phase 0 six.
+
+**Waiting on Matt:** `tests/spot_checks/references.md` - 30 resolved references
+to check by hand. Resolution is mechanical, so what it checks is whether the
+grammar reads Finance's citation the way a person would, which no automated test
+here can tell us because they all read the same grammar.
 
 ## Open items
 
-**1. Fragments join by ordinal across languages.** `2(3)~c1` in English pairs
-with `2(3)~c1` in French purely by position within the provision. Where the
-counts differ the rows are flagged; where they match they are paired on trust.
-It is the same species of assumption that ordinals failed at for definitions,
-though the consequences are smaller - fragments are not citable and each
-language round-trips in its own order.
+**1. The 30-row precision sample has not been checked.** Nothing else in Phase 1
+tells us whether the grammar reads a citation the way a person would.
 
-**2. Schedules are not captured.** Three in the Act, ten in the Regulations.
-"AMENDMENTS NOT IN FORCE" is rightly excluded, but "Listed Corporations" and the
-Regulations' schedules are part of the instruments.
+**2. 36 measures do not join across languages.** Mostly measures with no
+resolvable reference and no numeric cost - nothing language-independent to join
+on. A name or order tie-breaker would be judgment.
 
-**3. Table structure is not modelled.** Text is preserved, cell geometry is not.
+**3. `no_provision` (56) is the largest unresolved bucket** and is dominated by
+Excise Tax Act Schedule forms - "Part V of Schedule V to the Excise Tax Act".
+They name an instrument we do not hold and a structure we do not model, so
+resolving them is out of scope, but the grammar could recognise them as Schedule
+references rather than "no provision recognised".
 
-**4. `history_note` is section-level only.** 762 notes against 763 sections in
-the Act; the source does not attach them to subsections.
+**4. Beneficiary counts are mostly unparsed** - 75 of 458 rows. The field is
+prose.
 
-**5. The spot-check files have not been checked by hand.** Eighty citations
-across four files, waiting on Matt. Nothing else substitutes for this - every
-other guard compares the build against the same XML.
+**5. Phase 0 items still open:** fragments join by ordinal across languages;
+schedules not captured; table structure not modelled; `history_note` is
+section-level only.
 
-**6. Commercial redistribution** remains an open legal question. Not a blocker;
-the project is non-commercial.
-
----
+**6. Commercial redistribution** remains an open legal question. Not a blocker.
 
 ## Not in Phase 1
 

@@ -1,0 +1,98 @@
+{
+  "edition": "Report on Federal Tax Expenditures - Concepts, Estimates and Evaluations 2026",
+  "publisher": "Department of Finance Canada",
+  "dcterms_issued": "2026-02-26",
+  "dcterms_modified": "2026-02-26",
+  "open_data_dataset": "https://open.canada.ca/data/en/dataset/0849a2c8-e65f-4874-a978-952029f39c11",
+  "licence_open_data": "Open Government Licence - Canada",
+  "licence_web_pages": "https://www.canada.ca/en/department-finance/corporate/terms-conditions.html",
+  "attribution": "Contains information licensed under the Open Government Licence - Canada.",
+  "retrieved_date": "2026-09-19",
+  "note": "The build reads only this snapshot. It never fetches canada.ca.",
+  "files": [
+    {
+      "file": "data-tables-e.csv",
+      "bytes": 69680,
+      "sha256": "f8815a4a3d2d5661f1fabec6a7afcfd57e5ecbb3128ddef00d4f920208bd28f2",
+      "source_url": "https://open.canada.ca/data/dataset/0849a2c8-e65f-4874-a978-952029f39c11/resource/6a28d2f6-0273-4ac4-bf5a-c97486900505/download/data-tables-e.csv"
+    },
+    {
+      "file": "data-tables-metadata-e.csv",
+      "bytes": 2050,
+      "sha256": "df17530be1055228e89f732b5288ee43f042b35bc583e617a19a8a425df8eb8c",
+      "source_url": "https://open.canada.ca/data/dataset/0849a2c8-e65f-4874-a978-952029f39c11/resource/a854aea3-a2a3-4789-b105-e7de918f0419/download/data-tables-metadata-e.csv"
+    },
+    {
+      "file": "donnees-tableaux-f.csv",
+      "bytes": 87242,
+      "sha256": "4b3e39470abf8243c7ca858ae0f18d127521c32aeb71eea59f3b9fde127d0271",
+      "source_url": "https://open.canada.ca/data/dataset/0849a2c8-e65f-4874-a978-952029f39c11/resource/d078e1bf-ea31-4dba-a2b8-8bdfd966011d/download/donnees-tableaux-f.csv"
+    },
+    {
+      "file": "donnees-tableaux-metadonnees-f.csv",
+      "bytes": 2475,
+      "sha256": "01429e201330df5e337ef41ad28ea8bcc95d931c452cfb5bbcb095880638f21d",
+      "source_url": "https://open.canada.ca/data/dataset/0849a2c8-e65f-4874-a978-952029f39c11/resource/6937ecf1-5a2b-46da-981c-60bd1df49ca8/download/donnees-tableaux-metadonnees-f.csv"
+    },
+    {
+      "file": "part-3-en.html",
+      "bytes": 61958,
+      "sha256": "3d761d36bee1f86dff4cf313438a8457d7b373ebe47d2375cf4ea37604ebec12",
+      "source_url": "https://www.canada.ca/en/department-finance/services/publications/federal-tax-expenditures/2026/part-3.html"
+    },
+    {
+      "file": "part-4-en.html",
+      "bytes": 325476,
+      "sha256": "bf59515fcad2a6461f2e66326e10b3f3c1421b93f4860adb0fc860ac6b2b0cad",
+      "source_url": "https://www.canada.ca/en/department-finance/services/publications/federal-tax-expenditures/2026/part-4.html"
+    },
+    {
+      "file": "part-5-en.html",
+      "bytes": 389462,
+      "sha256": "c6b3e5c01cae51e6bc2b4a0fad65f0dca2b767ed0b684f97e42b5224c73c53c0",
+      "source_url": "https://www.canada.ca/en/department-finance/services/publications/federal-tax-expenditures/2026/part-5.html"
+    },
+    {
+      "file": "part-6-en.html",
+      "bytes": 327881,
+      "sha256": "088c66d3e7dafdade26dd8484dcd2a829a53ee8a3285b3e69739dfcd0710c479",
+      "source_url": "https://www.canada.ca/en/department-finance/services/publications/federal-tax-expenditures/2026/part-6.html"
+    },
+    {
+      "file": "part-7-en.html",
+      "bytes": 370116,
+      "sha256": "d7ea5f5bd20c79cbc22555e5a076de3cdf337bc1c4a4aa8e1aeb17b9b1da365e",
+      "source_url": "https://www.canada.ca/en/department-finance/services/publications/federal-tax-expenditures/2026/part-7.html"
+    },
+    {
+      "file": "partie-3-fr.html",
+      "bytes": 69814,
+      "sha256": "fb568ba15ac2e7dca26050257e5ae2dbed56ce0e7635fcc7abe64c1c31c71581",
+      "source_url": "https://www.canada.ca/fr/ministere-finances/services/publications/depenses-fiscales/2026/partie-3.html"
+    },
+    {
+      "file": "partie-4-fr.html",
+      "bytes": 788514,
+      "sha256": "2190943455efbb68d79311bb4116fe8076d1c75e913a35f55ef4b8b93c58c3b9",
+      "source_url": "https://www.canada.ca/fr/ministere-finances/services/publications/depenses-fiscales/2026/partie-4.html"
+    },
+    {
+      "file": "partie-5-fr.html",
+      "bytes": 204993,
+      "sha256": "001bd52578bf90721fe656944a99a4a1597d46d22e7a7152546f59b117476797",
+      "source_url": "https://www.canada.ca/fr/ministere-finances/services/publications/depenses-fiscales/2026/partie-5.html"
+    },
+    {
+      "file": "partie-6-fr.html",
+      "bytes": 376908,
+      "sha256": "219c5776b9e2e8aee4db0abf70002fc2721c8e6dcdcfe8253ab3dae07c6de15c",
+      "source_url": "https://www.canada.ca/fr/ministere-finances/services/publications/depenses-fiscales/2026/partie-6.html"
+    },
+    {
+      "file": "partie-7-fr.html",
+      "bytes": 470548,
+      "sha256": "117f652f4af0e6bee85b3e271788436d79da3c9a57a81c3621fc6806c9449a8a",
+      "source_url": "https://www.canada.ca/fr/ministere-finances/services/publications/depenses-fiscales/2026/partie-7.html"
+    }
+  ]
+}

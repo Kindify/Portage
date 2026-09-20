@@ -1,0 +1,20 @@
+ÉLÉMENT,SOUS-ÉLÉMENT,VALEUR;
+NOM DE LA BASE DE DONNÉES,,RAPPORT SUR LES DÉPENSES FISCALES FÉDÉRALES - SOMMAIRE DES RENSEIGNEMENTS SUR LES COÛTS;
+ANNÉE DE LA BASE DE DONNÉES,,2026;
+RÉFÉRENCE EN LIGNE,,https://www.canada.ca/fr/ministere-finances/services/publications/depenses-fiscales/2026.html;
+DÉFINITION DES VARIABLES,MESURE,Nom de la mesure;
+"DÉFINITION DES VARIABLES,GROUPE,""Indique si la mesure est une dépense fiscale, une mesure fiscale ne constituant pas une dépense fiscale ou un crédit d’impôt remboursable classé comme paiement de transfert""";
+DÉFINITION DES VARIABLES,THÈME,Thème principal de la mesure;
+DÉFINITION DES VARIABLES,CATÉGORIE,Indique si la mesure est structurelle ou non structurelle;
+"DÉFINITION DES VARIABLES,IMPÔT OU TAXE,""Indique si la mesure est liée à l’impôt sur le revenu des particuliers, à l’impôt sur le revenu des sociétés et/ou à la taxe sur les produits et services""";
+DÉFINITION DES VARIABLES,DÉTAILS,Décrit le contenu de la rangée;
+NOTES,NOTE 1,L’élimination d’une dépense fiscale ne produirait pas nécessairement le plein montant de revenu indiqué dans le tableau. Voir à ce sujet les explications contenues dans la partie 1 du rapport.;
+"NOTES,NOTE 2,""Le classement d’une mesure dans la catégorie des dépenses structurelles ou non structurelles n’est pas révélateur de la pertinence ou du rendement de la mesure. Une mesure peut viser à la fois des objectifs structurels et non structurels";" le cas échéant, elle est classée en fonction d’une évaluation de sa composante prédominante (voir les explications dans l’introduction de la partie 3 du rapport)."""
+"NOTES,NOTE 3,""La lettre « F » (« faible ») indique un montant de moins de 500 000 $. Les montants allant de 500 000 $ à 5 millions de dollars sont arrondis au multiple de 1 million le plus proche, et les montants supérieurs à 5 millions de dollars sont arrondis au multiple de 5 millions le plus proche.""";
+SYMBOLES,n.d.,Données insuffisantes pour établir des estimations ou des projections pertinentes;
+SYMBOLES,–,Mesure fiscale qui n’est pas en vigueur;
+SYMBOLES,X,Chiffres non publiés pour des raisons de confidentialité;
+SYMBOLES,IRP,Impôt sur le revenu des particuliers (excluant les fiducies lorsque les montants relativement aux fiducies sont présentés séparément);
+SYMBOLES,FID,Impôt sur le revenu des particuliers relativement aux fiducies;
+SYMBOLES,IRS,Impôt sur le revenu des sociétés;
+SYMBOLES,TPS,Taxe sur les produits et services;

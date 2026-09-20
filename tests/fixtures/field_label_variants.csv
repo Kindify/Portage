@@ -1,0 +1,43 @@
+lang,slot,field,label_as_published,measures
+en,0,description,Description,229
+en,1,tax,Tax,229
+en,2,beneficiaries,Beneficiaries,229
+en,3,type_of_measure,Type of measure,229
+en,4,legal_reference,Legal reference,229
+en,5,implementation_and_recent_history,Implementation and recent history,229
+en,6,objective_category,Objective – category,229
+en,7,objective,Objective,229
+en,8,category,Category,229
+en,9,reason_not_benchmark,Reason why this measure is not part of benchmark tax system,229
+en,10,subject,Subject,229
+en,11,ccofog_2014_code,CCOFOG 2014 code,229
+en,12,other_relevant_government_programs,Other relevant government programs,229
+en,13,source_of_data,Source of data,229
+en,14,estimation_method,Estimation method,229
+en,15,projection_method,Projection method,229
+en,16,number_of_beneficiaries,Number of beneficiaries,229
+fr,0,description,Description,229
+fr,1,tax,Direction de la politique de l'impôt,4
+fr,1,tax,Impôt,2
+fr,1,tax,Impôt ou taxe,223
+fr,2,beneficiaries,Bénéficiaires,229
+fr,3,type_of_measure,Type de mesure,229
+fr,4,legal_reference,Référence juridique,229
+fr,5,implementation_and_recent_history,Mise en œuvre et évolution récente,229
+fr,6,objective_category,Objectif – Catégorie,7
+fr,6,objective_category,Objectif – catégorie,222
+fr,7,objective,Objectif,229
+fr,8,category,Catégorie,229
+fr,9,reason_not_benchmark,Raison pour laquelle cette mesure ne fait pas partie du système fiscal de référence,11
+fr,9,reason_not_benchmark,Raison pour laquelle la mesure ne fait pas partie du régime fiscal de référence,218
+fr,10,subject,Objet,4
+fr,10,subject,Thème,225
+fr,11,ccofog_2014_code,Code CCOFOG 2014,4
+fr,11,ccofog_2014_code,Code de la CCFAP 2014,225
+fr,12,other_relevant_government_programs,Autres programmes gouvernementaux pertinents,4
+fr,12,other_relevant_government_programs,Autres programmes pertinents du gouvernement,225
+fr,13,source_of_data,Source de données,11
+fr,13,source_of_data,Source des données,218
+fr,14,estimation_method,Méthode d'estimation,229
+fr,15,projection_method,Méthode de projection,229
+fr,16,number_of_beneficiaries,Nombre de bénéficiaires,229

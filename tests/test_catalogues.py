@@ -23,6 +23,14 @@ CATALOGUES = [
     "alignment_positional.csv",
     "unresolved_tagged_references.csv",
     "terms_defined_more_than_once.csv",
+    # Phase 1. field_label_variants is the one that enforces "a new label at
+    # any row position fails the build": the French labels vary 25 ways for 17
+    # fields, so an unannounced 26th is a change in the source, not noise.
+    "field_label_variants.csv",
+    "cost_tokens.csv",
+    "unresolved_references.csv",
+    "measure_join_gaps.csv",
+    "measures_without_references.csv",
 ]
 
 

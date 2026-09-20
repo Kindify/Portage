@@ -256,6 +256,32 @@ Regulations is a legal question, usually settled by prose the markup does not
 carry. 691 references have other-instrument candidates. The full rule, with the
 before-and-after numbers, is in `docs/reference-rule.md`.
 
+**The tax expenditure report is a dated snapshot, and its dates do not line up
+with the Act's.** The 2026 Report on Federal Tax Expenditures states the law as
+of **31 December 2025**; the Income Tax Act consolidation in this dataset is as
+of **18 June 2026**. So Finance sometimes cites a provision that has since been
+repealed or renumbered - 118.6(2), 38.3, 38.4 and 12.2(9) are examples. Those
+references carry `status = 'not_in_consolidation'`, which is a statement about
+the six-month gap between two dated documents, **not** a parsing failure and
+not an error by Finance. 33 references are in that state.
+
+**Two cost symbols are Portage's inference, not Finance's legend.** Finance
+documents `n.a.`/`n.d.`, `–`, `X` and `S`/`F` in the metadata published with the
+open data. The report's tables also contain a **bare hyphen** (`-`, 36 cells)
+and **`n.d` without its final period** (16 cells), which the legend does not
+mention. We read them as the documented `–` and `n.d.` respectively. Those two
+rows are marked `legend_match = 'variant'` in `data/cost_tokens.csv`; every
+documented symbol is marked `legend`, and the empty cell - also undocumented -
+is marked `portage`. `raw_value` always keeps what was published, so any reader
+who disagrees can reclassify without reparsing.
+
+**The Part 7 appendix is excluded.** *Additional Information on Relevant
+Government Programs by Subject* is a reference table, not a tax measure. It has
+no caption id in English but does in French, with 17 body rows, so it passes
+every structural test for a measure; it is excluded because the Part 3 index
+does not link it. Measures are defined by that index, which gives 229 in each
+language.
+
 **Schedules and amendments-not-in-force are not captured.** The `sections` table
 covers the enacted `<Body>`. The file also contains three `<Schedule>` elements -
 "RELATED PROVISIONS" (16 sections), "AMENDMENTS NOT IN FORCE" (6 sections) and

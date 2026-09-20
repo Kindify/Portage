@@ -206,3 +206,180 @@ would have produced a link that is wrong, confident, and invisible.
 
 Each of these is a real limitation, and each is visible in the counts rather
 than hidden by a higher resolution rate.
+
+---
+
+# Part 2 - references in the tax expenditure report
+
+Everything above governs references **tagged as elements** in the Justice Laws
+XML. This part governs the `Legal reference` field of a measure in the Report on
+Federal Tax Expenditures, which is prose and must be extracted by pattern.
+
+**Why pattern extraction is allowed here and was not in Part 1.** Failure is
+visible. A reference either resolves to a `citation_path` that exists in
+`sections` or it does not, and the unresolved list is published. A mis-parsed
+*structure* in Phase 0 would have been invisible; a mis-parsed *reference* here
+shows up as an unresolved row or as a link a reader can check. Every row carries
+`method = 'pattern'` so it can never be confused with Part 1's tagged rows.
+
+Written before implementing, against the 229 English values in the committed
+snapshot.
+
+## 1. The shapes that actually occur
+
+Counted across all 229 English `Legal reference` values:
+
+| Shape | Count | Example |
+|---|---|---|
+| instrument first, then provisions | most | `Income Tax Act, section 153` |
+| instrument **last**, after "to the" | 38 | `Part V of Schedule V to the Excise Tax Act` |
+| `and` lists | 78 | `subsections 39(1.1) and (2)` |
+| `to` ranges | 33 | `sections 110.6 to 110.7` |
+| hyphen ranges | some | `Sections 2-5.3 and 9-12 of Part I of Schedule V` |
+| Schedule / Class | 29 / 5 | `Class 43.1 of Schedule II` |
+| Part in roman numerals | 25 | `Part VI of Schedule V` |
+| **two instruments run together, no separator** | 11 | `subsection 66.1(6)Income Tax Regulations, section 1219` |
+| missing space after the comma | several | `Excise Tax Act,subsection 259(3)` |
+| `Not yet legislated as of December 31, 2025.` | 8 | no reference at all |
+| definition reference | some | `section 123(1), definition of "financial service"` |
+| **formula variable** | 1 | `the description of L in subsection 1400(3)` |
+
+## 2. The rule
+
+### An instrument qualifier is required
+
+A provision reference resolves **only** when an instrument is named. This is the
+same rule that the single `XRefInternal` in Part 1 forced: a bare section number
+with no instrument qualifier never resolves, because section 51 of *something*
+is not a citation. The fixture for it is
+`test_bare_section_number_never_resolves`.
+
+The instrument is carried from the nearest naming, in either direction:
+
+- **Instrument first:** `Income Tax Act, section 153` - the instrument governs
+  every provision that follows, until another instrument is named.
+- **Instrument last:** `Part V of Schedule V to the Excise Tax Act` - the
+  instrument governs the provisions that precede it in that segment.
+
+**Segments are split on instrument names wherever they appear**, including
+mid-string with no separator, which the report does 11 times.
+
+### Only the Income Tax Act and the Income Tax Regulations resolve
+
+| Instrument | `instrument` | Resolves? |
+|---|---|---|
+| Income Tax Act | `ITA` | yes, to a `citation_path` |
+| Income Tax Regulations | `ITR` | yes, to a `citation_path` |
+| Excise Tax Act | `ETA` | **no** - stored with the instrument name |
+| Income Tax Application Rules | `ITAR` | no |
+| Canada Pension Plan | `CPP` | no |
+| Employment Insurance Act | `EI` | no |
+| anything else | as published | no |
+
+Everything other than the ITA and the Regulations is stored **unresolved, with
+its instrument name recorded** - it is a real reference to a real provision, in
+an instrument this dataset does not hold. That is a gap in coverage, not a
+failure of parsing, and the two must not look alike.
+
+*Observed in the 2026 edition:* the Excise Tax Act appears 38 times. The Income
+Tax Application Rules, the Canada Pension Plan and the Employment Insurance Act
+do **not** appear at all in this edition's English values, though the grammar
+recognises them.
+
+### Provision forms that resolve
+
+Against a `citation_path` in `sections`, for the ITA and ITR only:
+
+```
+section 153                 -> 153
+subsection 39(1.1)          -> 39(1.1)
+subsections 39(1.1) and (2) -> 39(1.1), 39(2)      [the section carries across a list]
+paragraph 20(1)(ss)         -> 20(1)(ss)
+paragraphs 1100(1)(a.3) and (yb)
+                            -> 1100(1)(a.3), 1100(1)(yb)
+sections 110.6 to 110.7     -> every section in the range that exists
+```
+
+A list **inherits the previous item's prefix at matching depth**, not merely
+its section number:
+
+```
+subsections 39(1.1) and (2)          -> 39(1.1), 39(2)
+paragraphs 1100(1)(a.3) and (yb)     -> 1100(1)(a.3), 1100(1)(yb)
+paragraphs 110(1)(d), (d.01) and (d.1)
+                                     -> 110(1)(d), 110(1)(d.01), 110(1)(d.1)
+```
+
+A continuation with one bracketed level replaces the last level of the previous
+path; with two, the last two. Inheriting copies levels that are present in the
+same field, so it is mechanical and not a guess about meaning. Inheriting only
+the *section* would have produced `1100(yb)`, a provision that does not exist.
+
+**Bracketed levels are matched narrowly** - digits with optional dots and up to
+two trailing letters, one or two letters with optional dotted suffix, roman
+numerals, or up to four capitals. An earlier, looser version accepted any
+bracketed word and read `section 258 (rebate)` as the provision `258(rebate)`.
+
+A range enumerates only the paths that **exist** in `sections`. It never invents
+one, and a range whose endpoints do not exist stays unresolved.
+
+### Paragraphs of a definition
+
+The report cites a paragraph inside a defined term:
+
+```
+subsection 127(9), paragraph (a.3) of definition of "investment tax credit"
+```
+
+This resolves to **`127(9)"investment tax credit"(a.3)`** - the key Phase 0
+already built for definition paragraphs, so the target exists and nothing is
+invented. Resolving it as `127(a.3)`, which an earlier version did, pointed at
+a provision that does not exist.
+
+The shape is: a subsection, a paragraph label, and a defined term, in any order
+within the segment. All three must be present. A definition reference with no
+paragraph resolves to the definition itself, `127(9)"investment tax credit"`.
+
+**In French references the term must be translated before it can be a key.**
+Phase 0 keys every definition by its **English** term, so a French reference
+naming *crédit d'impôt à l'investissement* has to reach the English key. The
+only mechanical route is Phase 0's own bilingual join: look the French term up
+in `defined_term_fr` and take the `defined_term_en` from the same record.
+
+That join is only trustworthy where Phase 0 established it symmetrically - both
+files agreeing about both terms. Where the term does not join, the reference is
+**unresolved with the reason `term_not_joined`**, never guessed. This is the
+`definition_join_suspects` machinery from Part 1 doing a second job: a term we
+declined to pair across languages is a term we must decline to resolve across
+languages.
+
+### Formula variables resolve to their subsection
+
+`the description of L in subsection 1400(3)` resolves to **`1400(3)`**, with the
+whole phrase kept in `raw_text`. The variable is part of the provision's text,
+not a separately addressable unit - Phase 0 stores formula content as
+non-addressable fragments - so the subsection is the correct and honest target.
+The reader keeps the variable because `raw_text` keeps it.
+
+### Schedules, Classes and Parts do not resolve
+
+`Class 43.1 of Schedule II`, `Part VI of Schedule V`, `Part I` - Phase 0 parses
+only the enacted `<Body>` of each instrument and holds no Schedule records, so
+there is nothing to resolve to. These are stored unresolved with the raw text
+and the instrument, and they are a known coverage gap already stated in README.
+
+### Nothing else resolves
+
+`Not yet legislated as of December 31, 2025.` produces **no reference rows at
+all** - it is a statement that no provision exists yet, not an unresolved
+reference, and recording it as one would overstate the failure rate.
+
+Anything the grammar does not recognise is stored as a single unresolved row
+with the whole field as `raw_text`. Never dropped, never guessed.
+
+## 3. What is reported
+
+`resolution_rate` is reported, never asserted. Unresolved rows go to
+`data/unresolved_references.csv` against a committed fixture. **A build that
+resolved 100% would be evidence of a bug**, because the Excise Tax Act
+references and the Schedule references cannot resolve by construction.
