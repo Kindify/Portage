@@ -249,3 +249,92 @@ text, never dropped and never guessed.
   from these tables, never stored as judgment inside them.
 - Temporal scope extraction from the Act's text (also Phase 2).
 - Any front end.
+
+Phase 2: Indicators
+
+Phase 1 delivered Finance's tax expenditure map as data: 229 measures per language, references resolved to the Act and Regulations, cost tables verified against Finance's own CSV, two hand-checked precision samples. Phase 2 computes indicators over those tables so that a reader can sort, filter and compare. It produces facts with derivations. It never produces a score, a rank, a weight, or a recommendation.
+
+The line this phase must not cross
+
+An indicator is a number or category that a reader could recompute from the published sources by following a written formula. If a column would need a judgment call to fill (is this measure worth keeping, is this loophole-shaped, is this fair), it does not exist in this dataset. "Low-hanging fruit" is something a human concludes after reading the indicators; the dataset only makes the reading possible.
+
+Concretely:
+
+No composite index. No column that combines two indicators with a weight.
+No ordering baked into the data. Sorting is the reader's action in the front end or query.
+Every indicator column has a derivation entry in docs/indicator-definitions.md: formula, inputs, what null means, and the source of each input. The build fails if a column exists without an entry (keep the definitions as a dict in code and generate the doc from it, then test that the doc is current).
+Null is null. A measure with no cost estimate has null cost, never zero. A ratio with a null input is null. Nothing is imputed.
+Finance's caveats travel with the number: value_kind and raw_value are carried through to any indicator that uses a cost cell.
+Small is not waste. Nothing in the data or the docs characterizes a low-cost or low-claimant measure as a candidate for anything.
+Indicators (one row per measure in indicators)
+
+Cost, from measure_costs:
+
+cost_latest_estimate, cost_latest_estimate_year: the most recent year with value_kind='estimate' (projections excluded). Null if none.
+cost_latest_projection, cost_latest_projection_year.
+cost_first_estimate, cost_first_estimate_year: earliest estimate year in the report's window.
+cost_change_abs, cost_change_pct: latest estimate minus first estimate, and the ratio; null if either is non-numeric or the years are equal.
+cost_status: one of costed (numeric in every year), partially_costed (numeric in some years), not_costed (no numeric value in any year), withheld (any X cell). Derived from value_kind only.
+cost_total_or_component: whether the figure used is Finance's Total row or a component row, since some measures publish only components.
+
+Beneficiaries, from measure_beneficiary_counts:
+
+beneficiaries_latest, beneficiaries_latest_year: only where method='pattern'. Null otherwise, with beneficiaries_raw carrying the published sentence in both cases.
+cost_per_beneficiary: cost_latest_estimate divided by beneficiaries_latest only when the years match; otherwise null and cost_per_beneficiary_note says the years differ.
+
+Age and history, from measure_history and the objective field:
+
+introduced_year: earliest year in measure_history, if parseable.
+last_change_year: latest year in measure_history.
+years_since_last_change: report year minus last_change_year.
+objective_source_year: the year in the parenthetical Finance attaches to the objective ("(Budget 1998)"). Extracted by pattern from that short field; method column; raw text kept; null if absent.
+
+Classification, copied from Finance's fields, no interpretation:
+
+category (structural / non-structural / refundable credit).
+objective_category, and objective_category_internal (1 if Finance's Part 3 lists that category under "objectives that are internal to the tax system", else 0). This is Finance's own grouping; store the list as a fixture.
+subject, ccofog_code, type_of_tax, type_of_measure.
+has_overlapping_program: 1 if the "other relevant government programs" field is non-null and not "n/a". The field text is stored beside it. This is Finance's statement that related spending exists, nothing more.
+
+Legal footprint, from measure_references joined to sections:
+
+provisions_cited: count of reference rows.
+provisions_resolved: count with status resolved.
+sections_touched: distinct top-level sections.
+provisions_not_in_consolidation: count with that status (the as-of-date mismatch).
+shared_with_measures: count of other measures citing at least one of the same resolved citation_paths, and a separate measure_provision_ overlap table listing the pairs. Pure join.
+amending_acts_count: from Phase 0 history_note on each cited section: the number of amending-statute entries in the note (they are semicolon-separated, "1994, c. 7, Sch. II, s. 15"). Pattern extraction over a formulaic field; method column; catalogue of unparsed notes with fixture. Summed over the measure's cited sections, with a note that a section shared by several measures is counted for each.
+
+Temporal scope, from the text of cited provisions:
+
+This is the one extraction that needs a model. For each cited provision, extract date-bounded conditions ("taxation years before 2025", "acquired after 2024 and before 2035", "on or before March 31, 2027") into a provision_temporal_scope table: section id, phrase exactly as it appears in the text, bound_kind (start / end / step-down), date or year, and method='extracted_llm'.
+Rules: the phrase must be a verbatim substring of text_en (a test asserts this for every row); the model never infers a date that the text does not state; the extraction prompt, model name and run date are recorded in meta; the API is called from a batch script, never from the build, and its output is committed as data with a fixture.
+Indicators derived: earliest_end_date, latest_end_date across a measure's provisions, and has_step_down. Whether a date has "passed" is not computed; the reader compares against their own date.
+Precision sample of 30 rows for Matt: phrase beside its extracted bound. Same protocol as Phase 1.
+Views (SQL files in views/, each with a one-paragraph header)
+
+These are the canned questions from the use-case list, as queries over the tables. Each is a filter, never a ranking:
+
+not_costed.sql: measures with cost_status = not_costed.
+withheld.sql: measures with any X cell.
+no_beneficiary_count.sql.
+end_date_before.sql: parameterized on a year; provisions with an end bound before it.
+last_change_before.sql: parameterized on a year.
+objective_internal.sql: Finance's internal-to-the-tax-system measures.
+overlapping_programs.sql.
+shared_provisions.sql: provisions cited by more than one measure.
+not_in_consolidation.sql: measures citing repealed provisions.
+provision_footprint.sql: for a given citation_path, every measure citing it and every measure sharing a section with it.
+Acceptance tests
+Every indicators column has a definitions entry; doc generated from code and tested current.
+Hand recomputation fixtures: cost_change for three named measures from the published tables (Matt supplies the three from the report pages, computes them in a spreadsheet, and the test asserts equality).
+Reorganization deferral: cost_status = not_costed, beneficiaries null, provisions_resolved = 4.
+No indicator is non-null where any of its inputs is null.
+Temporal scope: every phrase is a verbatim substring of its provision's text_en; every row has a model, prompt hash and run date in meta.
+Views run without error and return the row counts recorded in a fixture for this edition.
+Precision sample for temporal scope recorded by hand.
+Explicitly out of Phase 2
+Any qualitative flag ("objective no longer applies", "beneficiary field disagrees with cost table"). Those are Phase 3 candidates and need the same model-extraction discipline plus a human decision on whether they belong in a dataset at all.
+Evaluations linkage. Finance's list of published evaluations is not keyed to measures; linking by title would be judgment. Catalogue the list as published; do not link.
+Any front end. Views are SQL; presentation comes after Phase 3 test users have asked their questions.
+Any text that says what a reader should do with an indicator.

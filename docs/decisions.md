@@ -1090,3 +1090,199 @@ were. The doc described an intention; the code did endpoints. The doc was wrong,
 not the code.
 
 ---
+
+## 2026-09-19 - Git identity, releases, and what a tag means
+
+**Repo-local git identity.** `git config --local user.name kindify` /
+`kindify@users.noreply.github.com`. The global config is not touched. An earlier
+commit was made under a different identity and was amended.
+
+**A tag means "checked", not "built".** v0.1.0 was held back until the eighty
+hand spot checks were complete, and tagged only after the results were recorded
+and the README said so. The build passing its own tests is not the bar.
+
+**Release assets are assembled under `dist/<tag>/` with `SHA256SUMS.txt`** and
+uploaded with `gh release create --notes-from-tag`. Two mechanical notes for
+next time: `--notes-from-tag` cannot be combined with `--repo`, so run it from
+the repository root; and the hand-verification results ship **with** the data,
+so the evidence travels with the thing it is evidence for.
+
+---
+
+## 2026-09-19 - The measure reference grammar: pattern extraction, and why it is allowed here
+
+**Decided.** References in the report's `Legal reference` field are extracted by
+**pattern**, `method = 'pattern'`, and are kept in a different table from Phase
+0's tagged references so the two can never be confused.
+
+**Why pattern extraction is permitted here and was banned in Phase 0.** Failure
+is visible. A reference either resolves to a `citation_path` that exists or it
+does not, and the unresolved list is published. A mis-parsed *structure* in
+Phase 0 would have been invisible - the text would simply sit under the wrong
+heading forever. A mis-parsed *reference* shows up as an unresolved row or as a
+link a reader can check in one click.
+
+**The rules**, all written into `docs/reference-rule.md` Part 2 before
+implementation:
+
+- **An instrument qualifier is required.** A bare provision number never
+  resolves. This is the rule the single `XRefInternal` in Phase 1 step 1 forced,
+  and it has its own fixture.
+- **Only the Act and the Regulations resolve.** Everything else - the Excise Tax
+  Act above all - is stored unresolved **with its instrument name recorded**,
+  because a reference to an instrument we do not hold is a coverage gap, not a
+  parsing failure, and the two must not look alike.
+- **A formula variable resolves to its subsection**, with the phrase kept in
+  `raw_text`. The variable is part of the provision's text, not a separately
+  addressable unit.
+- **Schedules, Classes and Parts do not resolve**, because Phase 0 holds only
+  the enacted Body.
+- **"Not yet legislated as of ..." produces no reference rows at all.** It is a
+  statement that no provision exists, not an unresolved reference, and counting
+  it as one would overstate the failure rate.
+
+---
+
+## 2026-09-20 - Definition references: the host, and not citing it twice
+
+**Decided (Matt, from precision sample round 2).** Three rules about references
+that name a defined term.
+
+**1. A paragraph of a definition resolves to the definition key.**
+`subsection 127(9), paragraph (a.3) of definition of "investment tax credit"`
+resolves to `127(9)"investment tax credit"(a.3)` - the key Phase 0 already
+built. An earlier version produced `127(a.3)`, a provision that does not exist.
+
+**2. The host is the provision the definition sits in, not the first one
+named.** `paragraph 40(2)(b), definition of "principal residence" in section 54`
+hangs off **54**. Taking the first provision in the segment produced
+`40(2)(b)"principal residence"` and mis-hosted two others. The host is now the
+provision nearest the definition phrase, preferring one introduced by "in",
+"du" or "au" after the term.
+
+**3. The host is not also emitted as a citation of its own.** Finance cited the
+definition; the subsection is where it lives. The bare host row is suppressed
+**whether or not the definition resolved** - an unmapped French term does not
+turn the host into something Finance cited. Leaving it in was making the French
+edition resolve `127(9)` and `66.2(5)` where the English resolved the
+definition, which was the last English/French asymmetry in the data.
+
+18 reference rows removed, 792 to 774; `resolved` 611 to 600. **Fewer resolved
+rows is the improvement**: 18 of them were citations Finance never made.
+
+**French terms reach the English key through Phase 0's symmetric join**, and a
+term that did not join there is `term_not_joined` here. A term we declined to
+pair across languages is one we must decline to resolve across languages.
+
+---
+
+## 2026-09-20 - Published oddities are catalogued, not accommodated
+
+**Decided (Matt).** `data/source_oddities.csv`, seven entries with a fixture.
+Each records something the published source does, where, and what Portage does
+about it.
+
+**Why a catalogue rather than a code comment.** Each of these was found while
+parsing and each was quietly worked around at first. Writing them down makes the
+workaround a recorded observation: Finance's English edition calls 38(a.2) a
+"subsection" when it is a paragraph, the Part 7 appendix has a caption id in
+French but not English, two French measures label the Tax field with the name of
+a departmental branch. A reader who hits one of these in the source should be
+able to find out whether we noticed.
+
+---
+
+## 2026-09-20 - Phase 2 governance: what CLAUDE.md says, and Matt's four amendments
+
+**CLAUDE.md governs Phase 2**, and it is explicit about the line: an indicator
+is something a reader could recompute from the published sources by following a
+written formula. No composite index, no weight, no ordering baked into the data,
+nothing imputed, and no text saying what a reader should conclude.
+
+**Matt's amendments, adopted 2026-09-20:**
+
+1. **Indicators are SQL views inside `portage.sqlite`, not a stored table.** A
+   stored indicator is a judgment that outlives the reasoning behind it; a view
+   forces the computation to stay visible and to be re-derived on every read.
+   The static site materialises them at export time.
+2. **`docs/indicator-definitions.md` is generated** from each view's SQL plus a
+   prose paragraph, and a test asserts it is current. The build fails if a view
+   exists with no entry, or an entry with no view.
+3. **Cross-edition comparison is out of scope** until a second edition exists.
+   There is nothing to compare against and designing for it now would be
+   designing against a guess.
+4. **The Excise Tax Act comes after Phase 2**, not before - even though adding
+   it is the single largest available gain in reference coverage (53 references).
+
+---
+
+## 2026-09-20 - Indicator design decisions
+
+**Settled with Matt before any SQL was written.** Full definitions in
+`docs/indicator-definitions.md`.
+
+**Parameterized views do not exist in SQLite**, so the two CLAUDE.md describes
+as "parameterized on a year" **expose the year as a column** and the reader
+supplies the threshold. There are deliberately no per-threshold views: choosing
+the year is the reader's judgment, and a view named `v_end_date_before_2027`
+would make that choice look like a finding.
+
+**One row per measure**, not per language - 247 rows, matching `measures`. The
+numeric indicators are language-independent; only the copied classification
+labels differ and they carry `_en` / `_fr`. **`join_method` is carried through**
+so the 36 unjoined singles stay visible: a reader filtering on `subject_en`
+would otherwise lose the 18 French-only measures without noticing.
+
+**`cost_status` has five values, not four.** `no_cost_table` was added because
+46 measures have no cost table at all, and folding them into `not_costed` merged
+two different statements - *Finance published a table showing no estimate* and
+*Finance published no table*. The first is a measurement result, the second a
+publishing decision.
+
+**The cost figure is Finance's `Total` row, or the single component row where
+there is no Total.** 52 measures publish a Total, 130 publish exactly one
+component, and **one** publishes several components with no Total. That one gets
+null figures and `cost_figure_basis = 'components_only'`: adding components
+together would be arithmetic Finance did not publish.
+
+**`objective_category_internal` is 1 only where every category present is
+internal**, with `objective_category_mixed` distinguishing the mixed case. A
+measure can carry several categories in one field. Finance's Part 3 grouping -
+12 internal, 10 other - ships as a fixture, so a regrouping fails a test rather
+than silently reclassifying measures.
+
+**`amending_acts_count` double counts by design.** A section cited by several
+measures contributes its amending entries to each. It is a property of the
+measure's legal footprint, not a partition of the Act, and the definition says
+so.
+
+**Nothing computes whether a date has passed.** No `is_expired`, no
+`days_remaining`, no comparison against the build date. "Expired" depends on
+when you ask and on facts outside this dataset; the reader compares against
+their own date.
+
+**Temporal scope is extracted over the cited provisions only** - roughly 400
+distinct provisions behind ~600 resolved references - not the whole Act.
+
+---
+
+## 2026-09-20 - The precision sample protocol, generalised
+
+**One seed per round, and a round is never re-seeded.** `REFERENCE_SAMPLE_SEEDS`
+maps round number to seed. The first sample is the evidence for the first
+check; regenerating it would orphan the results that cite it. A new round gets a
+new seed and a new file, and the results file accumulates rounds.
+
+**This is now the second place the protocol is used** - the Phase 0 spot checks
+were the first - and both times the hand check found something the automated
+tests could not. Round 1 of the reference sample found a bug that had produced
+six false resolutions corpus-wide. Round 2 passed 30 of 30 and still produced
+two corrections, because a reader looking at a citation notices things a test
+asserting internal consistency cannot.
+
+**The argument for the protocol, stated once here:** every automated test in
+this project reads the same parser, grammar and schema that produced the data.
+A fault that is internally consistent passes all of them. Thirty citations read
+by a person is the only check that comes from outside that loop.
+
+---

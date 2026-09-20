@@ -2,15 +2,49 @@
 
 ## Where things stand
 
-**Phase 1 is complete and released as `v0.2.0`.** The Income Tax Act and its
-Regulations in both languages, and the 2026 Report on Federal Tax Expenditures
-linked to them. 105 tests pass. Both precision-sample rounds are checked by
-hand: round 1 found a real bug, round 2 passed 30 of 30 and found two
-refinements.
+**Phase 0 and Phase 1 are complete and released** - `v0.1.0` and `v0.2.0`.
+**Phase 2 is in progress: step 1 of 4 is done.**
 
-Next: Phase 2.
+Start here, then read `CLAUDE.md`. Where this file and CLAUDE.md differ,
+**CLAUDE.md governs**, with four amendments Matt adopted on 2026-09-20, recorded
+in `docs/decisions.md` and summarised under Phase 2 below.
 
-## What Phase 0 delivers
+### What exists
+
+| | |
+|---|---|
+| `portage.sqlite` | built by `python -m portage.build` in about a minute |
+| Phase 0 | 49,032 provision records, ITA and ITR, both languages, consolidation 2026-06-18 |
+| Phase 1 | 229 tax expenditure measures per language, 774 references, 6,440 cost cells |
+| tests | 105, `pytest` |
+| catalogues | 18, each diffed against a committed fixture in `tests/fixtures/` |
+| hand checks | 40 provision spot checks + 60 reference checks, all recorded |
+
+### The documents, and what each is for
+
+| file | what it carries |
+|---|---|
+| `CLAUDE.md` | the brief and the non-negotiables. Governs. |
+| `PLAN.md` | where the work stands and what is next. This file. |
+| `docs/decisions.md` | every decision, dated, with the reasoning. 40+ entries. |
+| `docs/source-notes.md` | what the real source data looks like, checked not assumed |
+| `docs/citation-path-rule.md` | how a provision becomes a citation path |
+| `docs/reference-rule.md` | how a reference resolves - Part 1 tagged, Part 2 the report |
+| `docs/indicator-definitions.md` | **Phase 2 step 1 output**: every view, its meaning, its null rules |
+| `tests/spot_checks/` | the hand-verification samples and their results |
+
+### Three rules that have been earned the hard way
+
+1. **Position is never a join key.** Six times the shortcut looked right and was
+   wrong. Each bilingual edition is ordered alphabetically in its own language.
+2. **A test that shares code with the thing it tests proves nothing.** The first
+   round-trip passed while the database was missing text, because parser and
+   check had the same blind spot.
+3. **Hand checks find what tests cannot.** Both times a sample was checked by a
+   person it found something. Every automated test reads the same grammar that
+   produced the data.
+
+## Phase 0 - the Act and Regulations - COMPLETE, released v0.1.0
 
 `portage.sqlite`, built by `python -m portage.build` on a laptop in about
 25 seconds.
@@ -37,50 +71,15 @@ stay stable between builds.
 
 ---
 
-## Done in session 4
+### Released
 
-**Divergent addressable rows are split** (option (c)). The English record keeps
-the path, the French moves to `<path>~fr`, both are flagged as gaps and point at
-each other through `same_path_counterpart`. Fragments stay joined and keep
-`alignment_unverified = 1`. **No row under 51(1) carries both languages** - a
-test asserts it.
-
-**The Regulations parsed with no changes to the walker.** Both round trips were
-exact on the first run.
-
-**The Regulations use CALS table markup** the Act never uses - `TableGroup`,
-`table`, `row`, `entry`, `colspec`, `Caption`; 5 tables, 157 rows, 314 cells.
-It needed no special handling: the `_is_text_leaf` rule from session 2 is
-structural rather than a list of element names, so an unseen vocabulary was
-captured rather than dropped. Table text is preserved exactly; table *structure*
-is not modelled, which is stated in README.
-
-**One real bug, found by the Regulations.** The Regulations number sections
-`3000 to 3002` / `3000 à 3002`; the Act has no section-level ranges, so the
-label rule translated range connectors only below section level and the two
-languages never joined. Caught by the section-count test - written for a
-different purpose - which expected 499 and found 501.
-
-**A correction.** Session 1 said the Act contains zero `XRefInternal` elements.
-That count was English-only; the French Act has one. It does not change the
-tagged-only decision, but the original statement was too absolute.
-
-**README gained a Methods section** setting out the three independent guards -
-round-trip against a separate reconstruction, uniqueness on the shipped key,
-symmetric bilingual join - and the three-version history of the definition rule.
+`v0.1.0` at <https://github.com/Kindify/Portage/releases/tag/v0.1.0>, with the
+database, the catalogues, the README and the hand-verification results. The tag
+was held until the eighty spot checks were done: a tag means checked, not built.
 
 ---
 
-## Released - v0.1.0
-
-Tagged. Assets assembled in `dist/v0.1.0/` with `SHA256SUMS.txt`, ready to
-upload wherever the project is published (there is no git remote yet):
-`portage.sqlite`, the six catalogue CSVs, `README.md`, and the spot-check
-results with the four verified samples.
-
----
-
-## Phase 1 - the tax expenditure report
+## Phase 1 - tax expenditures linked to the Act - COMPLETE, released v0.2.0
 
 Rules, table definitions and acceptance tests are in `CLAUDE.md`. This is the
 sequencing and the things to settle first.
@@ -227,54 +226,145 @@ regenerating it would orphan the results it is evidence for.
 
 ---
 
-## Phase 2
+## Phase 2 - indicators
 
-Phase 0 made the Act navigable. Phase 1 attached what Finance says each measure
-costs. Phase 2 is what CLAUDE.md has been holding back the whole time:
-**indicators computed from these tables, never stored as judgment inside them.**
+**CLAUDE.md's "Phase 2: Indicators" section governs.** Read it before working
+here. Matt adopted four amendments to it on 2026-09-20:
 
-Before any of it, the two things CLAUDE.md names as Phase 2 scope:
+1. Indicators are **SQL views inside `portage.sqlite`**, not a stored table.
+2. `docs/indicator-definitions.md` is **generated** from each view's SQL plus a
+   prose paragraph, and tested current.
+3. **Cross-edition comparison is out of scope** until a second edition exists.
+4. **The Excise Tax Act comes after Phase 2**, not before.
 
-1. **Interacting provisions.** Expose the Act's own cross-reference graph -
-   `cross_references` and `definition_ref_candidates` are already built. No
-   curated additions: if Finance did not list a provision, it is not a Tier 1
-   reference, and the graph is what stands in for that.
-2. **Temporal scope extraction** from the Act's text - the "before 2025" and
-   "2040" dates that the Phase 0 fixtures already touch.
+### Step 1 - definitions before SQL - **DONE**
 
-Then indicators. Each one computed on read, from the published tables, with the
-query that produces it written down beside the number. Nothing derived is
-stored, because a stored indicator is a judgment that outlives the reasoning
-behind it.
+`docs/indicator-definitions.md`. Every view, what it means, and what null means
+in it, written before any SQL. Four design questions were raised and answered:
 
-**What to settle first, before any code:**
+- Parameterized views do not exist in SQLite, so the year is **a column** and
+  the reader supplies the threshold. No per-threshold views.
+- `indicators` is **one row per measure** (247), `_en` / `_fr` on copied labels,
+  with `join_method` carried through so the 36 unjoined singles stay visible.
+- `cost_status` has **five** values; `no_cost_table` was added because 46
+  measures have no cost table at all, which is a different statement from a
+  table showing no estimate.
+- Temporal scope is extracted over the **cited provisions only**, ~400 of them.
 
-- **Which indicators?** CLAUDE.md says evidence, not recommendations. An
-  indicator that ranks provisions by cost is evidence; one that ranks them by
-  "value" is not. The line needs to be drawn explicitly, in writing, before
-  anything is computed.
-- **How is an indicator published?** A column, a view, a separate table, or a
-  documented query? A view keeps the computation visible; a table does not.
-- **What happens when the report year changes?** The 2027 edition will
-  renumber, rename and re-cost. The snapshot mechanism handles the data; the
-  question is whether indicators are comparable across editions at all.
+Three facts checked against the data first, because they decided the rules: only
+52 of 183 measures publish a `Total` cost row (130 publish exactly one
+component, 1 publishes several with no Total); Finance's Part 3 groups objective
+categories into 12 internal and 10 other; 1,240 sections carry a history note,
+semicolon-separated after a `[NOTE: ...]` prefix.
 
-### Carried into Phase 2 from Phase 1
+### Step 2 - the SQL - **NEXT**
 
-- 18 measures per language do not join; nothing language-independent to join on.
-- 174 references do not resolve, 79 of them Schedule or Part forms in
-  instruments this dataset does not hold.
-- Beneficiary counts are prose: 75 of 458 rows parsed.
-- Ranges are endpoints only, so a measure citing a range is not linked to the
-  provisions between them.
-- The Excise Tax Act is cited 53 times and is not held at all. Adding it would
-  resolve most of the remaining references, and is the single largest coverage
-  gain available.
+In this order:
+
+1. **`indicators` first**, because everything else reads from it. Build it
+   column group by column group in the order the doc lists them - cost,
+   beneficiaries, history, objective source, classification, legal footprint -
+   and leave the temporal-scope columns null until step 3 supplies the table.
+2. **Then the ten canned views**, each a filter over `indicators` or the base
+   tables. None carries an `ORDER BY` that implies importance.
+3. **Then the generator and its test**: the prose lives in a dict in code, the
+   SQL is read back from `sqlite_master`, the doc is written from both, and a
+   test asserts the file on disk matches what the generator produces.
+
+Two small things the doc leaves open, to decide while writing the SQL: whether
+`sections_touched` takes the top-level section from the path string or from the
+`sections` row, and whether `v_provision_footprint` returns one row per
+(path, measure) pair or one per path with a count.
+
+### Step 3 - temporal scope - **AFTER STEP 2**
+
+The one extraction in Phase 2 that needs a model, and the only part of this
+project that calls an API. CLAUDE.md's rules are strict and are not negotiable:
+
+- the extracted phrase must be a **verbatim substring** of `text_en`, asserted
+  by a test for every row;
+- the model never infers a date the text does not state;
+- prompt, model name and run date recorded in `meta`;
+- **the API is called from a batch script, never from the build**, and its
+  output is committed as data with a fixture;
+- a precision sample of 30 rows checked by hand, same protocol as Phase 1.
+
+Scope is the cited provisions only. Expect this to be the slowest step and the
+one most likely to produce a finding about the Act rather than about the code.
+
+### Step 4 - acceptance tests
+
+Listed in CLAUDE.md. Two need Matt before they can be written:
+
+- **Hand recomputation fixtures**: three measures' `cost_change` computed by
+  Matt in a spreadsheet from the published pages, asserted equal. He supplies
+  the three.
+- **View row counts** recorded in a fixture for this edition.
+
+The others are mechanical: every column has a definitions entry; the
+reorganization deferral is `not_costed` with `provisions_resolved = 4`; no
+indicator is non-null where an input is null; temporal phrases are verbatim.
 
 ---
 
 ## Not in Phase 2
 
-From `CLAUDE.md`: interacting provisions Finance does not list; any indicator,
-ranking or score; temporal scope extraction from the Act's text; any front end.
-Also still out: embeddings and an MCP server.
+From CLAUDE.md's "Explicitly out of Phase 2":
+
+- **Any qualitative flag** - "objective no longer applies", "beneficiary field
+  disagrees with cost table". Phase 3 candidates at best, and they need a human
+  decision on whether they belong in a dataset at all.
+- **Evaluations linkage.** Finance's list of published evaluations is not keyed
+  to measures, and linking by title would be judgment. Catalogue the list as
+  published; do not link it.
+- **Any front end.** Views are SQL. Presentation comes after Phase 3 test users
+  have asked their own questions.
+- **Any text that says what a reader should do with an indicator.**
+
+Also still out, carried from earlier phases: embeddings, an MCP server, and
+cross-edition comparison until a second edition exists.
+
+---
+
+## Carried forward, unresolved
+
+Known gaps, none of them blocking Phase 2. Each is documented where it matters
+and most are catalogued with a fixture.
+
+**Coverage**
+
+- **The Excise Tax Act is cited 53 times and is not held.** The single largest
+  available gain in reference coverage. Deferred to after Phase 2.
+- 174 of 774 references do not resolve: 79 Schedule or Part forms, 53 naming
+  instruments we do not hold, 19 provisions absent from the consolidation, 12
+  with no provision recognised, 6 with no instrument named, 5 `term_not_joined`.
+- **Schedules are not captured** in either instrument. "Listed Corporations" is
+  part of the Act and its omission is a gap, not a principle.
+- **Table structure is not modelled** - the Regulations' five tables survive as
+  text, without cell geometry.
+
+**Precision**
+
+- **18 measures per language do not join.** Nothing language-independent to
+  join on: no resolvable reference, no numeric cost, a shared categorical
+  signature.
+- **Beneficiary counts: 75 of 458 rows parsed.** The field is prose, and this is
+  the weakest thing in the dataset - unlike a reference, a wrong count does not
+  announce itself.
+- **Ranges are endpoints only**, so a measure citing a range is not linked to
+  the provisions between them.
+- **Fragments join by ordinal across languages.** `2(3)~c1` pairs with `2(3)~c1`
+  by position. Flagged where counts differ, paired on trust where they match -
+  the one place position is still doing work.
+- `history_note` is section-level only, because that is where the source
+  attaches it.
+
+**Open questions for a person, not for code**
+
+- **Commercial redistribution.** Justice Canada's standing permission to
+  reproduce enactments is not conditioned on non-commercial use, while a
+  separate clause restricts commercial redistribution of site materials. Both
+  are quoted verbatim in `docs/source-notes.md`. The project is non-commercial;
+  what a downstream commercial user may do needs a real opinion.
+- **13 malformed labels in the published XML**, catalogued. Three are in the
+  English Act and were handled; the rest were left as published.
