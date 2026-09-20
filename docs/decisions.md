@@ -671,3 +671,65 @@ extraction, and belongs with the rest of that work rather than smuggled in here.
 candidate paths, in `data/unresolved_tagged_references.csv` against a fixture.
 
 ---
+
+## 2026-09-19 - Reference resolution: three states, and candidates are kept
+
+**Decided (Matt).** Supersedes the entry above it, which resolved a reference to
+a single target or not at all. The rule is now written out in full in
+`docs/reference-rule.md`, and was written before it was implemented.
+
+**A reference has three possible outcomes, not two.** `unique` (one candidate
+definition), `ambiguous` (several) and `unresolved` (none). Every candidate gets
+a row in **`definition_ref_candidates` (ref_id, definition_id)**, and the
+reference itself never picks one.
+
+**Why `ambiguous` is an answer and not a failure.** A term is often defined
+several times in the same instrument, each definition governing a different
+Part or purpose - "person" is defined in **15** places in the English Act,
+"transaction" and "beneficiary" in 9 each. Which one governs a particular
+sentence is a scope question, and CLAUDE.md puts scope outside the data. Storing
+all the candidates lets a consumer apply its own scope rule in the open, instead
+of inheriting a silent guess from us. Collapsing this into "resolved / not
+resolved" would have thrown away the most interesting thing the table knows.
+
+**Matching is exact and nothing looser:** `normalise_term` (NFC, collapsed
+whitespace, case preserved) then string equality against `defined_term_en` or
+`defined_term_fr`, on definition records in the same instrument that carry text
+in that language.
+
+**Known gap, kept visible.** Candidates are `<Definition>` records only. The
+source also defines terms inline - `<DefinedTermEn>` inside a provision's own
+`<Text>`, 962 of them in the English Act, e.g. ITA 10.1(5) "an *eligible
+derivative* ... **means** a swap agreement". Those are not candidates under this
+rule, so roughly 150 references whose term really is defined somewhere come out
+`unresolved`. Stated in `docs/reference-rule.md` and catalogued rather than
+papered over. Extending the rule to inline sites is a decision for later; it
+would raise coverage and lower the `unique` share, because more real candidates
+means more real ambiguity.
+
+**Terms defined more than once are now catalogued in their own right** -
+`data/terms_defined_more_than_once.csv`, 249 distinct terms - because that is a
+finding about the Act, not merely the reason a reference failed to resolve.
+
+**`XRefExternal` resolves to nothing, and the rule says why.** It may resolve
+only where the target is the ITA or Regulations *and* the reference names a
+provision. The second condition is never met: the element's text is always an
+instrument *title*. Of 2,837 elements exactly one contains anything resembling a
+provision number, and that is `The Loans Act, 1983(2)` - part of a title.
+
+**`XRefInternal`: stored, noted, not resolved.** There is exactly one in the
+whole corpus, in the French Act at `93(5.2)(a)`, and its text is `51`. It is
+left unresolved because resolving it would be **wrong**: the surrounding prose
+reads "l'article 51 de la *Loi de 2012 apportant des modifications techniques
+concernant l'impôt et les taxes*" - section 51 of a different Act. An element
+named `XRefInternal` holding a bare section number looks exactly like a
+reference to the current instrument, and the single case in the corpus is the
+counter-example to that assumption. It is the cheapest possible warning about
+what pattern extraction will face.
+
+**Numbers:** 5,364 references. `DefinitionRef` 2,526 - unique 1,237 (49.0%),
+ambiguous 801 (31.7%), unresolved 488 (19.3%). `XRefExternal` 2,837, all
+unresolved. `XRefInternal` 1, unresolved. `definition_ref_candidates` holds
+3,888 rows; the most candidates for one reference is 15.
+
+---

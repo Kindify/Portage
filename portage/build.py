@@ -10,6 +10,7 @@ import pathlib
 import random
 import re
 import sqlite3
+from collections import defaultdict
 
 from .parse import parse
 from .refs import extract
@@ -89,7 +90,8 @@ CREATE TABLE cross_references (
     target_act         TEXT,
     to_citation_path   TEXT,
     to_id              INTEGER REFERENCES sections(id),
-    resolved           INTEGER NOT NULL DEFAULT 0,
+    resolution         TEXT    NOT NULL,
+    candidate_count    INTEGER NOT NULL DEFAULT 0,
     unresolved_reason  TEXT,
     method             TEXT    NOT NULL DEFAULT 'tagged',
     order_index        INTEGER NOT NULL
@@ -97,7 +99,20 @@ CREATE TABLE cross_references (
 
 CREATE INDEX idx_xref_from ON cross_references(act, from_citation_path);
 CREATE INDEX idx_xref_to   ON cross_references(act, to_citation_path);
-CREATE INDEX idx_xref_kind ON cross_references(act, ref_kind, resolved);
+CREATE INDEX idx_xref_kind ON cross_references(act, ref_kind, resolution);
+
+-- One row per candidate definition for a DefinitionRef. A reference with
+-- several candidates gets several rows; the reference itself never picks one.
+-- Which definition governs at a location is a scope question, and CLAUDE.md
+-- puts scope questions outside the data.
+CREATE TABLE definition_ref_candidates (
+    ref_id        INTEGER NOT NULL REFERENCES cross_references(id),
+    definition_id INTEGER NOT NULL REFERENCES sections(id),
+    citation_path TEXT    NOT NULL,
+    PRIMARY KEY (ref_id, definition_id)
+);
+
+CREATE INDEX idx_defcand_def ON definition_ref_candidates(definition_id);
 
 CREATE VIRTUAL TABLE sections_fts_en USING fts5(
     citation_path, heading_en, text_en, content=''
@@ -603,30 +618,51 @@ def build(db_path=DB_PATH):
             gaps.append((act, row[0], row[1], row[2], row[3], row[4],
                          " ".join(row[5].split())[:80]))
 
-    # Phase 1 step 1: tagged cross-references.
-    xref_rows = []
+    # Phase 1 step 1: tagged cross-references. See docs/reference-rule.md.
+    # Candidates come from the section rows rather than the parse records, so a
+    # definition counts in a language only if it carries text in that language.
+    cur = conn.execute(
+        "SELECT act, citation_path, level, defined_term_en, defined_term_fr, "
+        "text_en, text_fr FROM sections")
+    columns = [d[0] for d in cur.description]
+    section_records = [dict(zip(columns, r)) for r in cur.fetchall()]
+    by_act = defaultdict(list)
+    for rec in section_records:
+        by_act[rec["act"]].append(rec)
+
+    unresolved_rows = []
     for src in SOURCES:
         for lang in ("en", "fr"):
-            for row in extract(src[lang]["xml"], src["act"], lang, src[lang]["url"]):
-                conn.execute(
+            for row in extract(src[lang]["xml"], src["act"], lang,
+                               src[lang]["url"], by_act[src["act"]]):
+                cur = conn.execute(
                     """INSERT INTO cross_references
                        (act, lang, from_citation_path, ref_kind, raw_text,
                         reference_type, target_link, target_act,
-                        to_citation_path, resolved, unresolved_reason,
-                        method, order_index)
-                       VALUES (?,?,?,?,?,?,?,?,?,?,?,'tagged',?)""",
+                        to_citation_path, resolution, candidate_count,
+                        unresolved_reason, method, order_index)
+                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'tagged',?)""",
                     (row["act"], row["lang"], row["from_citation_path"],
                      row["ref_kind"], row["raw_text"], row["reference_type"],
                      row["target_link"], row["target_act"],
-                     row["to_citation_path"], row["resolved"],
+                     row["to_citation_path"], row["resolution"],
+                     len(row["candidate_paths"]),
                      row["unresolved_reason"] or None, row["order_index"]))
-                if not row["resolved"]:
-                    xref_rows.append(
+                ref_id = cur.lastrowid
+                for path in row["candidate_paths"]:
+                    conn.execute(
+                        """INSERT OR IGNORE INTO definition_ref_candidates
+                           (ref_id, definition_id, citation_path)
+                           SELECT ?, s.id, ? FROM sections s
+                           WHERE s.act=? AND s.citation_path=?""",
+                        (ref_id, path, row["act"], path))
+                if row["resolution"] != "unique":
+                    unresolved_rows.append(
                         (row["act"], row["lang"], row["from_citation_path"],
                          row["ref_kind"], row["raw_text"][:100],
-                         row["unresolved_reason"], row.get("candidates", "")))
+                         row["resolution"], row["unresolved_reason"],
+                         "; ".join(row["candidate_paths"][:6])))
 
-    # Link both ends to section rows now that every reference is in.
     conn.execute(
         """UPDATE cross_references SET from_id = (
                SELECT s.id FROM sections s
@@ -640,13 +676,31 @@ def build(db_path=DB_PATH):
            WHERE to_citation_path IS NOT NULL""")
 
     n_xrefs = conn.execute("SELECT COUNT(*) FROM cross_references").fetchone()[0]
-    n_xrefs_resolved = conn.execute(
-        "SELECT COUNT(*) FROM cross_references WHERE resolved=1").fetchone()[0]
+    n_unique = conn.execute(
+        "SELECT COUNT(*) FROM cross_references WHERE resolution='unique'").fetchone()[0]
+    n_ambig = conn.execute(
+        "SELECT COUNT(*) FROM cross_references WHERE resolution='ambiguous'").fetchone()[0]
 
     n_xref_unres = _write_catalogue(
-        DATA / "unresolved_tagged_references.csv", sorted(xref_rows),
-        ["act", "lang", "from_citation_path", "ref_kind", "raw_text", "reason",
-         "candidates"])
+        DATA / "unresolved_tagged_references.csv", sorted(unresolved_rows),
+        ["act", "lang", "from_citation_path", "ref_kind", "raw_text",
+         "resolution", "reason", "candidates"])
+
+    # A term defined in more than one place is a finding in its own right, not
+    # merely a reason a reference failed to resolve.
+    multi = [
+        (r[0], r[1], r[2], r[3], r[4]) for r in conn.execute(
+            """SELECT act, lang, raw_text, candidate_count,
+                      (SELECT GROUP_CONCAT(citation_path, '; ')
+                       FROM (SELECT citation_path FROM definition_ref_candidates
+                             WHERE ref_id = x.id ORDER BY citation_path))
+               FROM cross_references x
+               WHERE resolution='ambiguous'
+               GROUP BY act, lang, raw_text
+               ORDER BY act, lang, raw_text""")]
+    n_multi = _write_catalogue(
+        DATA / "terms_defined_more_than_once.csv", multi,
+        ["act", "lang", "term", "definition_count", "definitions"])
 
     _set_alignment(conn)
 
@@ -724,7 +778,9 @@ def build(db_path=DB_PATH):
         "rows_definition_join_suspects": str(n_sus),
         "rows_alignment_positional": str(n_pos),
         "rows_cross_references": str(n_xrefs),
-        "rows_cross_references_resolved": str(n_xrefs_resolved),
+        "rows_cross_references_unique": str(n_unique),
+        "rows_cross_references_ambiguous": str(n_ambig),
+        "rows_terms_defined_more_than_once": str(n_multi),
         "rows_unresolved_tagged_references": str(n_xref_unres),
         "rows_label_anomalies": str(n_anom),
         "rows_definition_key_fallbacks": str(n_fb),
@@ -754,8 +810,8 @@ def build(db_path=DB_PATH):
             "bilingual_gaps": n_gap, "label_anomalies": n_anom,
             "definition_fallbacks": n_fb, "alignment_unverified": n_unv,
             "definition_join_suspects": n_sus, "alignment_positional": n_pos,
-            "cross_references": n_xrefs,
-            "cross_references_resolved": n_xrefs_resolved}
+            "cross_references": n_xrefs, "xref_unique": n_unique,
+            "xref_ambiguous": n_ambig, "terms_multi_defined": n_multi}
 
 
 if __name__ == "__main__":

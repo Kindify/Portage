@@ -225,13 +225,25 @@ Full detail in `docs/citation-path-rule.md` and `docs/source-notes.md`.
 Read these before using the data. Each is a deliberate boundary, not a bug, and
 each is catalogued in a file the tests check.
 
-**Cross-references contain no provision-to-provision links at all.** The source XML marks references to other
-statutes (`XRefExternal`) and to defined terms (`DefinitionRef`), but has no
-markup at all for a reference from one provision to another inside the same
-instrument. Phase 0 ships only the tagged ones, each marked `method = 'tagged'`.
-References like "Notwithstanding subsections 152(4) to (5)" are **not present**
-and are deferred to Phase 1 as a separate table. Do not read `cross_references`
-as a complete reference graph.
+**Cross-references contain no provision-to-provision links at all.** The
+`cross_references` table holds only what the source marks up as elements:
+`XRefExternal`, which names another *instrument* rather than a provision;
+`DefinitionRef`, which names a defined term; and `XRefInternal`, of which the
+entire corpus contains **one**. References like "Notwithstanding subsections
+152(4) to (5)" are **not in this table**. **Do not read it as a reference
+graph.**
+
+**A reference has three outcomes, and "ambiguous" is an answer.** Of 5,364
+tagged references, 1,237 resolve to exactly one definition (`unique`), 801 name
+a term defined in several places (`ambiguous`), and 3,326 resolve to nothing
+(`unresolved`). Every candidate definition is recorded in
+`definition_ref_candidates`, and a reference with several candidates **never
+picks one** - "person" is defined in 15 places in the English Act, and which
+definition governs a given sentence is a question of scope that this dataset
+does not answer. Join the candidates table and apply your own rule in the open.
+The 249 terms defined more than once are listed in
+`data/terms_defined_more_than_once.csv`. The rule is in
+`docs/reference-rule.md`.
 
 **Schedules and amendments-not-in-force are not captured.** The `sections` table
 covers the enacted `<Body>`. The file also contains three `<Schedule>` elements -

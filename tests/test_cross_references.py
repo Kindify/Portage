@@ -23,7 +23,7 @@ def test_every_tagged_element_becomes_exactly_one_row(conn, act, lang, xml):
     Counting straight from the XML is what caught it.
     """
     body = etree.parse(str(xml)).getroot().find("Body")
-    for tag in ("XRefExternal", "DefinitionRef"):
+    for tag in ("XRefExternal", "DefinitionRef", "XRefInternal"):
         in_source = sum(1 for _ in body.iter(tag))
         in_db = conn.execute(
             "SELECT COUNT(*) FROM cross_references "
@@ -38,19 +38,60 @@ def test_no_reference_dangles(conn):
     ).fetchone()[0] == 0, "references whose source provision is missing"
     assert conn.execute(
         "SELECT COUNT(*) FROM cross_references "
-        "WHERE resolved=1 AND to_id IS NULL"
+        "WHERE resolution='unique' AND to_id IS NULL"
     ).fetchone()[0] == 0, "resolved references whose target row is missing"
 
 
-def test_resolved_rows_carry_a_target_and_unresolved_rows_carry_a_reason(conn):
+def test_resolution_states_are_internally_consistent(conn):
+    """Each state must mean exactly what docs/reference-rule.md says."""
+    checks = [
+        ("resolution NOT IN ('unique','ambiguous','unresolved')",
+         "unknown resolution state"),
+        ("resolution='unique' AND to_citation_path IS NULL",
+         "unique resolution with no target"),
+        ("resolution='unique' AND candidate_count != 1",
+         "unique resolution without exactly one candidate"),
+        ("resolution='ambiguous' AND candidate_count < 2",
+         "ambiguous resolution with fewer than two candidates"),
+        ("resolution='ambiguous' AND to_citation_path IS NOT NULL",
+         "ambiguous reference that picked a target anyway"),
+        ("resolution='unresolved' AND candidate_count != 0",
+         "unresolved reference that had candidates"),
+        ("resolution!='unique' AND COALESCE(unresolved_reason,'')=''",
+         "non-unique reference that does not say why"),
+    ]
+    for where, complaint in checks:
+        n = conn.execute(
+            "SELECT COUNT(*) FROM cross_references WHERE " + where).fetchone()[0]
+        assert n == 0, "%s: %d rows" % (complaint, n)
+
+
+def test_candidates_table_matches_the_counts(conn):
+    """Every candidate is recorded, and the count on the reference agrees."""
     bad = conn.execute(
+        """SELECT COUNT(*) FROM cross_references x
+           WHERE x.candidate_count != (
+               SELECT COUNT(*) FROM definition_ref_candidates c
+               WHERE c.ref_id = x.id)""").fetchone()[0]
+    assert bad == 0, "candidate_count disagrees with definition_ref_candidates"
+
+    orphan = conn.execute(
+        """SELECT COUNT(*) FROM definition_ref_candidates c
+           LEFT JOIN sections s ON s.id = c.definition_id
+           WHERE s.id IS NULL""").fetchone()[0]
+    assert orphan == 0, "candidate rows pointing at no section"
+
+
+def test_ambiguity_is_never_broken_by_choosing(conn):
+    """The governing principle: scope questions are not answered here."""
+    n = conn.execute(
         "SELECT COUNT(*) FROM cross_references "
-        "WHERE resolved=1 AND to_citation_path IS NULL").fetchone()[0]
-    assert bad == 0
-    bad = conn.execute(
-        "SELECT COUNT(*) FROM cross_references "
-        "WHERE resolved=0 AND COALESCE(unresolved_reason,'')=''").fetchone()[0]
-    assert bad == 0, "unresolved references must say why"
+        "WHERE candidate_count > 1 AND to_citation_path IS NOT NULL"
+    ).fetchone()[0]
+    assert n == 0, (
+        "%d references with several candidate definitions were resolved to one "
+        "anyway - which definition governs at a location is a scope question "
+        "this tool does not answer" % n)
 
 
 def test_every_row_is_tagged_not_extracted(conn):
@@ -70,16 +111,18 @@ def test_resolution_is_unique_or_it_is_not_resolution(conn, act, lang, xml):
     so cannot see terms defined inline in a provision's own text, and it also
     counts the ~fr half of a split pair as a separate site.
     """
-    from portage.parse import parse_walker
     from portage.refs import definition_index
 
-    walker, _ = parse_walker(xml, act, "u")
-    index = definition_index(walker, lang)
+    cur = conn.execute(
+        "SELECT act, citation_path, level, defined_term_en, defined_term_fr, "
+        "text_en, text_fr FROM sections WHERE act=?", (act,))
+    columns = [d[0] for d in cur.description]
+    index = definition_index([dict(zip(columns, r)) for r in cur.fetchall()], lang)
 
     rows = conn.execute(
         "SELECT raw_text, to_citation_path FROM cross_references "
-        "WHERE act=? AND lang=? AND ref_kind='DefinitionRef' AND resolved=1",
-        (act, lang)).fetchall()
+        "WHERE act=? AND lang=? AND ref_kind='DefinitionRef' "
+        "AND resolution='unique'", (act, lang)).fetchall()
     assert rows, "expected some resolved definition references for %s %s" % (act, lang)
     for raw, target in rows:
         sites = index.get(" ".join(raw.split()), [])

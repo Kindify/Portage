@@ -86,33 +86,43 @@ sequencing and the things to settle first.
 
 ### Step 1 - tagged cross-references - **DONE**
 
-`cross_references` is built: 5,363 rows, every one `method = 'tagged'`, from
-`XRefExternal` and `DefinitionRef` across both instruments and both languages.
-63 tests pass. Details in `docs/decisions.md`; the headline numbers:
+`cross_references` and `definition_ref_candidates` are built, every row
+`method = 'tagged'`, from `XRefExternal`, `DefinitionRef` and the single
+`XRefInternal`. 66 tests pass. The rule is written out in
+`docs/reference-rule.md`; it was written before it was implemented.
 
-| | rows | resolved | |
-|---|---|---|---|
-| `DefinitionRef` | 2,526 | 950 | **37.6%** |
-| `XRefExternal` | 2,837 | 0 | names an instrument, not a provision |
-| **total** | **5,363** | **950** | **17.7%** |
+| kind | rows | unique | ambiguous | unresolved |
+|---|---|---|---|---|
+| `XRefExternal` | 2,837 | 0 | 0 | 2,837 |
+| `DefinitionRef` | 2,526 | 1,237 (49.0%) | 801 (31.7%) | 488 (19.3%) |
+| `XRefInternal` | 1 | 0 | 0 | 1 |
+| **total** | **5,364** | **1,237** | **801** | **3,326** |
 
-**The finding that matters for Phase 1:** the source tags **no**
-provision-to-provision references. None in the English Act, the English
-Regulations or the French Regulations; exactly one in the French Act. The
-reference graph the project eventually wants does not exist in the source and
-must be built by pattern extraction. A test asserts the count so that if
-Justice Canada starts tagging them, we hear about it.
+`definition_ref_candidates`: 3,888 rows. Most candidates for one reference: 15.
+249 distinct terms are defined more than once.
 
-Two decisions lowered the resolution rate deliberately: inline definition sites
-are indexed (a term defined by "an *eligible derivative* ... **means**" in the
-provision's own text counts, even with no `<Definition>` wrapper), and ambiguous
-terms are never resolved by picking one. Both are written up in
-`docs/decisions.md`.
+**Three findings that shape the rest of Phase 1:**
 
-**Carried into the reference work:** 81 of 97 unresolved English Regulations
-references match a definition in the *Act* (35 uniquely). Resolving them needs
-the "of the Act" signal from prose, so it belongs with the pattern extraction
-rather than here.
+1. **The source tags no provision-to-provision references.** One `XRefInternal`
+   in the whole corpus. The reference graph does not exist in the source and
+   must be built by pattern extraction.
+2. **That one `XRefInternal` is a warning, not a head start.** It sits in the
+   French Act at `93(5.2)(a)`, its text is `51`, and it means section 51 *of a
+   different Act* - the surrounding prose names "la Loi de 2012 apportant des
+   modifications techniques". A bare section number in an element called
+   "internal" looks exactly like a reference to the current instrument.
+   Resolving it on that basis would have produced a confidently wrong link.
+   Expect the same shape of trap in the report's reference field.
+3. **Ambiguity is the normal case, not an error.** 801 references name a term
+   defined in several places. The measure references in Phase 1 will have the
+   same property, and the same answer applies: record the candidates, never
+   choose.
+
+**Carried forward:** candidates are `<Definition>` records only, so ~150
+references whose term is defined *inline* (962 such sites in the English Act)
+come out unresolved. And 81 of 97 unresolved English Regulations references match
+an *Act* definition - both gaps need the prose signal, so they belong with the
+pattern extraction.
 
 ### Step 2 - inspect the report before parsing it
 
