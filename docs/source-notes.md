@@ -737,3 +737,276 @@ Caught by the section-count test, which expected 499 and found 501. Fixed by
 applying the connector rule at section level too, with a pattern that recognises
 a numeric range. `1100A` - a section label with a trailing letter, also new in
 the Regulations - was already handled.
+
+---
+
+## 7. Report on Federal Tax Expenditures 2026 (Phase 1, step 2)
+
+Inspection only. No parser has been written. Everything below was checked
+against the live pages on **2026-09-19**, not assumed.
+
+**Format: clean HTML, not PDF.** Each measure is a single `<table>` with one row
+per field. This is the good case - the whole phase is a table walk, not a PDF
+extraction job.
+
+### Where it is
+
+| Part | English | French |
+|---|---|---|
+| 3 (index) | `.../federal-tax-expenditures/2026/part-3.html` | `.../depenses-fiscales/2026/partie-3.html` |
+| 4 | `.../2026/part-4.html` | `.../2026/partie-4.html` |
+| 5 | `.../2026/part-5.html` | `.../2026/partie-5.html` |
+| 6 | `.../2026/part-6.html` | `.../2026/partie-6.html` |
+| 7 | `.../2026/part-7.html` | `.../2026/partie-7.html` |
+
+English base: `https://www.canada.ca/en/department-finance/services/publications/federal-tax-expenditures/2026/`
+French base: `https://www.canada.ca/fr/ministere-finances/services/publications/depenses-fiscales/2026/`
+
+The French URLs come from the language toggle on each page, not from guesswork.
+
+- `dcterms.issued` = `2026-02-26`, `dcterms.modified` = `2026-02-26` on both editions.
+- **Retrieved: 2026-09-19.**
+
+**Note on fetching.** `curl` cannot retrieve these pages: canada.ca closes the
+HTTP/2 stream with `INTERNAL_ERROR`, and forcing HTTP/1.1 hangs. `HEAD` works,
+`GET` does not. The pages were read through a real browser instead. Whatever the
+build eventually uses will have to cope with that; the open data CSVs below
+download with `curl` without complaint.
+
+### The same data is on open.canada.ca, under the OGL
+
+**Dataset:** Report on Federal Tax Expenditures - Concepts, Estimates and
+Evaluations 2026
+<https://open.canada.ca/data/en/dataset/0849a2c8-e65f-4874-a978-952029f39c11>
+Published 2026-02-26, metadata modified 2026-06-01.
+**Licence: Open Government Licence - Canada**, stated explicitly on the record.
+
+Ten resources: the two HTML editions, plus **Data tables** and **Data tables -
+metadata** as both XLSX and CSV in each language.
+
+**But the CSV is not a substitute for the HTML.** Its own metadata names it
+`REPORT ON FEDERAL TAX EXPENDITURES - SUMMARY OF COST INFORMATION`, and its
+columns are:
+
+```
+MESURE / MEASURE, GROUP, SUBJECT, CATEGORY, TAX, DETAILS, 2020 … 2027
+```
+
+That is the **cost table and five classification fields**. It does **not**
+contain the description, the objective, the implementation history, the
+estimation or projection method, the number of beneficiaries - or, decisively,
+**the legal reference**. The field Phase 1 exists to use is only in the HTML.
+
+So: parse the HTML for measures and references; use the CSV as an **independent
+check on the cost figures**, which is worth more than it sounds, because it was
+produced by Finance rather than by us. Both CSVs have 524 rows.
+
+### Licence terms, verbatim
+
+**Department of Finance Canada, Terms and conditions**
+<https://www.canada.ca/en/department-finance/corporate/terms-conditions.html>
+(retrieved 2026-09-19).
+
+Non-commercial reproduction:
+
+> Unless otherwise specified you may reproduce the materials in whole or in
+> part for non-commercial purposes, and in any format, without charge or further
+> permission, provided you do the following:
+>
+> - exercise due diligence in ensuring the accuracy of the materials reproduced;
+> - indicate both the complete title of the materials reproduced, as well as the
+>   author (where available)
+> - indicate that the reproduction is a copy of the version available at [URL
+>   where original document is available]
+
+Commercial reproduction:
+
+> Unless otherwise specified, you may not reproduce materials on this site, in
+> whole or in part, for the purposes of commercial redistribution without prior
+> written permission from the copyright administrator.
+
+Data licence - the clause that governs the open data release:
+
+> All distributed data are subject to the Open Government Licence – Canada.
+
+> Canada grants to the licensee a non-exclusive, fully paid, royalty-free right
+> and licence to exercise all intellectual property rights in the data. This
+> includes the right to use, incorporate, sublicense (with further right of
+> sublicensing), modify, improve, further develop, and distribute the Data; and
+> to manufacture or distribute derivative products.
+
+> Please use the following attribution statement: Contains information licensed
+> under the Open Government Licence – Canada.
+
+**Reading of the two.** The open.canada.ca release is explicitly OGL, and the
+Finance terms say distributed data are OGL. The webpage text carries the
+narrower non-commercial terms. We take the cost data under the OGL and the page
+text under the site terms, attribute both, and stay non-commercial - the same
+position as Phase 0. Not a blocker; recorded so the distinction is visible.
+
+### Measure counts
+
+Cross-checked two ways: counting measure tables on each page, and counting the
+links in the Part 3 index. **They agree, in both languages.**
+
+| Part | English measures | French measures |
+|---|---|---|
+| 4 | 49 | **99** |
+| 5 | 70 | **28** |
+| 6 | 52 | 48 |
+| 7 | 58 | 54 |
+| **total** | **229** | **229** |
+
+**The two editions paginate completely differently.** Part 4 holds 49 measures
+in English and 99 in French. Measures are alphabetical *within each language*,
+so the page boundaries fall at different points - the same phenomenon as
+definitions in Phase 0, one level up. **The part number is not a join key and is
+not even comparable across editions.** It should be stored as provenance, never
+used for matching.
+
+### How to tell a measure table from the others
+
+A measure table has a `<caption>` carrying an `id` (a slug, e.g.
+`10-temporary-wage-subsidy-employers`). A cost table has a caption with **no**
+`id` reading "Cost Information: Millions of dollars" / "Renseignements sur les
+coûts : Millions de dollars".
+
+**That rule is not quite enough**, and the exception was found by counting:
+Part 7 carries an appendix table, *Additional Information on Relevant Government
+Programs by Subject*. In **English** it has a caption with no id; in **French**
+the same table **does** have a caption id, and 17 body rows - so it passes both
+the "has an id" and the "17 fields" tests and looks exactly like a measure.
+
+**The reliable rule is the Part 3 index:** a measure is a table whose caption id
+is linked from the Part 3 list. That gives 229 in both languages and excludes the
+appendix. Anything on a part page that the index does not link is not a measure.
+
+### The field set: 17 fields, every measure, both languages
+
+Confirmed on all 229 measures in each language - the row count per measure table
+is exactly 17 everywhere, with no exceptions.
+
+| # | English label | French label(s) as published |
+|---|---|---|
+| 0 | Description | Description |
+| 1 | Tax | Impôt ou taxe (96); **Direction de la politique de l'impôt** (2); Impôt (1) |
+| 2 | Beneficiaries | Bénéficiaires |
+| 3 | Type of measure | Type de mesure |
+| 4 | Legal reference | Référence juridique |
+| 5 | Implementation and recent history | Mise en œuvre et évolution récente |
+| 6 | Objective – category | Objectif – catégorie (94); Objectif – Catégorie (5) |
+| 7 | Objective | Objectif |
+| 8 | Category | Catégorie |
+| 9 | Reason why this measure is not part of benchmark tax system | Raison pour laquelle **la mesure** ne fait pas partie du **régime** fiscal de référence (92); Raison pour laquelle **cette mesure** ne fait pas partie du **système** fiscal de référence (7) |
+| 10 | Subject | Thème (97); **Objet** (2) |
+| 11 | CCOFOG 2014 code | Code de la CCFAP 2014 (97); **Code CCOFOG 2014** (2) |
+| 12 | Other relevant government programs | Autres programmes pertinents du gouvernement (97); Autres programmes gouvernementaux pertinents (2) |
+| 13 | Source of data | Source des données (92); Source **de** données (7) |
+| 14 | Estimation method | Méthode d'estimation |
+| 15 | Projection method | Méthode de projection |
+| 16 | Number of beneficiaries | Nombre de bénéficiaires |
+
+Counts above are from Part 4 French (99 measures); the same pattern holds on the
+other parts.
+
+Against CLAUDE.md's expected list: "type of tax" is published as **Tax**, and
+there are **three** separate fields where CLAUDE.md listed "objective (with the
+budget or document that stated it)" and "category" - the report has
+`Objective – category`, `Objective` and `Category` as distinct rows.
+
+### The field whose structure varies: the French labels
+
+**English labels are perfectly stable** - 17 distinct labels, each appearing once
+per measure, on every part.
+
+**French labels are not.** Part 4 alone has **25 distinct normalised labels for
+17 fields**. Three kinds of variation, and they need different handling:
+
+1. **Non-breaking spaces and capitalisation.** `Objectif – catégorie` vs
+   `Objectif – Catégorie`; `Code de la CCFAP 2014` with and without U+00A0.
+   Normalisable.
+2. **Genuinely different wording for the same field.** `Thème` / `Objet`,
+   `Source des données` / `Source de données`, `régime fiscal` / `système
+   fiscal`, `Autres programmes pertinents du gouvernement` / `Autres programmes
+   gouvernementaux pertinents`, `Code de la CCFAP 2014` / `Code CCOFOG 2014`
+   (the English acronym, in the French edition). A mapping table, not a
+   normalisation.
+3. **An outright error.** Two French measures label the *Tax* field
+   **`Direction de la politique de l'impôt`** - "Tax Policy Branch". That is not
+   a field name at all.
+
+**The saving structure: every variant sits at a fixed row position.** Checked
+directly - each label, however spelled, appears only at its own slot (0-16) and
+never at another. So the parser can key on position, with the label recorded and
+variants mapped, and must **not** key on label text alone. Keying on the French
+label strings would silently lose seven measures' `Source of data`, two
+measures' `Subject`, and both mislabelled `Tax` fields.
+
+### Cost tables
+
+A measure has **zero, one or two** cost tables following it. On Part 6: 13
+measures with none, 36 with one, **3 with two** (the donations-of-cultural-
+property, ecologically-sensitive-land and publicly-listed-securities measures,
+which split personal from trust donations). 13 + 36 + 6 = 42, which matches the
+table count.
+
+Measures with no cost table are the "no estimate available" cases. One of them
+is *Deferral for asset transfers to a corporation and corporate reorganizations*
+- the fixture named in CLAUDE.md acceptance test 4, which independently confirms
+both the fixture and the reading.
+
+Header is a single row: an empty corner cell, then eight year columns
+`2020 2021 2022 2023 2024 (P) 2025 (P) 2026 (P) 2027 (P)`. **`(P)` marks a
+projection**, which is where `value_kind` 'projection' comes from - it is in the
+column header, not inferred from the year.
+
+Row labels vary widely between measures - 31 distinct labels on Part 4 alone,
+from `Personal income tax` and `Total` to
+`Quarterly payments for families with young children entitled to the Canada
+Child Benefit (2021) – Children's Benefits`. The row label is data, not a fixed
+schema, and belongs in a column.
+
+### Cost cell tokens, with the published legend
+
+The symbols are **documented by Finance**, in the metadata CSV on
+open.canada.ca. This is an authority, not our inference:
+
+| EN | FR | Meaning, verbatim from the metadata |
+|---|---|---|
+| `n.a.` | `n.d.` | "No data available to support a meaningful estimate or projection" |
+| `–` | `–` | "Tax expenditure not in effect" |
+| `X` | `X` | "Not published for confidentiality reasons" |
+| `S` | `F` | Under $500,000. NOTE 3: "Amounts under $500,000 are reported as "S" ("small")…" |
+
+Tokens actually observed in the HTML cells, beyond numbers:
+
+- `–` U+2013 en dash, and **`-` U+002D hyphen as well** - two different
+  characters, both present, on parts 4 and 7. Do not assume one dash.
+- `n.a.` (EN) / `n.d.` (FR), **and `n.d` without the final period** - 16
+  occurrences on Part 4 French.
+- `X`, `S` (EN) / `F` (FR)
+- **empty cells**, in quantity.
+
+`X` and the bare `-` were not anticipated in CLAUDE.md's list, and neither was
+the empty cell. All of them must be classified in `data/cost_tokens.csv` before
+a build passes.
+
+**Number formatting differs by language and by medium.** The English HTML uses
+`1,770`; the French HTML uses `5 515` with a non-breaking space as the thousands
+separator; the French CSV uses `5,515`. Three formats for the same number.
+
+### Encoding
+
+The open data CSVs are **Windows-1252, with CRLF line endings**, not UTF-8 -
+`file` reports "Non-ISO extended-ASCII text", and the en dash arrives as a
+replacement character if read as UTF-8. They must be decoded as cp1252.
+
+### Open questions for step 3
+
+1. **Does the legal reference field ever cite something other than the ITA and
+   the Regulations?** Not yet examined field-by-field; it decides how much the
+   grammar has to cover.
+2. **What is the `Objective – category` field** as distinct from `Objective` and
+   `Category`? All three exist; CLAUDE.md anticipated two.
+3. **Does the appendix table belong in the data at all?** It is not a measure.
+   Current reading: exclude it, and say so.

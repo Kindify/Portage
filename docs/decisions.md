@@ -796,3 +796,46 @@ definition records, 4,187 same-instrument inline sites, 894 and 1,490
 other-instrument.
 
 ---
+
+## 2026-09-19 - The tax expenditure report: HTML is the source, the CSV is the check
+
+**Decided** after inspecting the real pages (`docs/source-notes.md` section 7).
+
+**Parse the HTML pages.** The open.canada.ca release is under the Open
+Government Licence and is genuinely useful, but it is a *summary of cost
+information*: `MEASURE, GROUP, SUBJECT, CATEGORY, TAX, DETAILS` and eight year
+columns. It has no description, no objective, and **no legal reference**. The
+field Phase 1 exists to use is only in the web pages. The CSV becomes an
+independent check on the cost figures - valuable precisely because Finance
+produced it and we did not.
+
+**A measure is a table the Part 3 index links to** - not a table with a caption
+id. The Part 7 appendix, *Additional Information on Relevant Government Programs
+by Subject*, has no caption id in English but does in French, with 17 body rows,
+so it passes every structural test for a measure. Counting index links gives 229
+in both languages and excludes it. The shape test would have silently added a
+230th "measure" in French only.
+
+**Never key a French field on its label.** The field set is 17 on every measure
+in both languages, but the French labels vary 25 ways for those 17 fields:
+non-breaking spaces, real synonyms (`Thème`/`Objet`, `Source des données`/`Source
+de données`, `régime`/`système fiscal de référence`), the English acronym in the
+French edition (`Code CCOFOG 2014`), and two measures where the *Tax* field is
+labelled `Direction de la politique de l'impôt` - a branch of the department,
+not a field name. Every variant sits at one fixed row position, so position is
+the key and the label is recorded alongside.
+
+**The part number is provenance, not a join key.** Part 4 holds 49 measures in
+English and 99 in French. Measures are alphabetical within each language, so the
+page boundaries land in different places - the Phase 0 definition problem, one
+level up.
+
+**Cost token classification comes from Finance, not from us.** The metadata CSV
+documents the symbols: `n.a.`/`n.d.` "No data available to support a meaningful
+estimate or projection"; `–` "Tax expenditure not in effect"; `X` "Not published
+for confidentiality reasons"; `S`/`F` under $500,000. `X`, a bare U+002D hyphen
+alongside the U+2013 en dash, and empty cells all occur in the tables and none
+was anticipated in CLAUDE.md's list. Having the publisher's own legend means
+`cost_tokens.csv` starts from an authority rather than a guess.
+
+---

@@ -115,22 +115,52 @@ distinct terms are defined more than once; "person" is defined in 15 places.
    several places. The report's measure references will behave the same way:
    record the candidates, never choose.
 
-### Step 2 - inspect the report before parsing it
+### Step 2 - inspect the report - **DONE**
 
-`docs/source-notes.md` first, as in Phase 0. The questions to answer against the
-real pages, not from assumption:
+Written up in `docs/source-notes.md` section 7. Retrieved 2026-09-19. No parser
+written.
 
-- Are Parts 3 to 7 clean HTML, or tables inside a PDF? This decides the shape of
-  the whole phase.
-- Does the same data exist on open.canada.ca under the OGL? If so, prefer those
-  terms and quote both.
-- Confirm the actual field set per measure against `CLAUDE.md`'s expected list.
-  Fields absent for a measure are null, never empty string or zero.
-- What does the French edition's URL structure look like, from the language
-  toggle?
-- What distinct tokens appear in cost cells? `S`, `n.a.`, and the
-  no-estimate wording are known; the fixture in `data/cost_tokens.csv` has to
-  start from what is actually there.
+**Format: clean HTML.** Each measure is one `<table>`, one row per field. Not a
+PDF extraction job.
+
+**229 measures in each language**, cross-checked two ways (counting tables, and
+counting the Part 3 index links).
+
+**Seven findings that change how step 4 must be written:**
+
+1. **The editions paginate differently.** Part 4 holds 49 measures in English
+   and **99** in French; Part 5 holds 70 and 28. Measures are alphabetical
+   within each language. The part number is provenance, never a join key.
+2. **`caption[id]` does not identify a measure.** The Part 7 appendix table has
+   no caption id in English but does in French, with 17 body rows - it passes
+   every shape test. **A measure is a table the Part 3 index links to.**
+3. **17 fields on every measure in both languages**, no exceptions. But the
+   **French labels vary**: 25 distinct labels for 17 fields on Part 4 alone -
+   non-breaking spaces, different wording (`Thème`/`Objet`,
+   `régime`/`système fiscal`), and two measures labelling the *Tax* field
+   `Direction de la politique de l'impôt`, which is not a field name.
+   **Every variant sits at a fixed row position**, so key on position, map the
+   labels, and never key on label text.
+4. **A measure has zero, one or two cost tables.** Three measures on Part 6 have
+   two. Measures with none are the "no estimate" cases - including the CLAUDE.md
+   fixture *Deferral for asset transfers to a corporation*, which confirms it.
+5. **Finance publishes the symbol legend**, in the metadata CSV on
+   open.canada.ca: `n.a.`/`n.d.` = no data, `–` = not in effect, `X` = withheld
+   for confidentiality, `S`/`F` = under $500,000. `cost_tokens.csv` starts from
+   that, not from our inference. `X`, a bare hyphen and empty cells all occur
+   and none was anticipated in CLAUDE.md.
+6. **`(P)` in the column header marks a projection** - it is published, not
+   inferred from the year.
+7. **The open data CSV is a check, not a source.** It is under the OGL and is
+   worth having, but it is a *summary of cost information*: it carries no
+   description, no objective, and **no legal reference**. The field Phase 1
+   exists to use is only in the HTML. Use the CSV to validate the cost figures
+   against Finance's own numbers.
+
+**Also worth knowing:** `curl` cannot fetch the canada.ca pages at all (HTTP/2
+`INTERNAL_ERROR`; HTTP/1.1 hangs), the CSVs are Windows-1252 with CRLF, and the
+same number appears three ways - `1,770` in English HTML, `5 515` with a
+non-breaking space in French HTML, `5,515` in the French CSV.
 
 ### Step 3 - write the reference grammar down before implementing it
 
