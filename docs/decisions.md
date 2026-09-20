@@ -573,3 +573,51 @@ of evidence the project has.
 carries an explicit "not yet completed" status rather than an empty promise.
 
 ---
+
+## 2026-09-19 - Spot-check samples exclude rows a checker cannot verify
+
+**Decided (Matt):** `_spot_check_sample` excludes any row whose first sentence is
+under 25 characters or begins with a repealed-provision marker
+(`[Repealed, ...]` / `[Abrogé, ...]`).
+
+**Why:** seven of the eighty rows in the first hand-check round had to be skipped
+as unsearchable. "at the earlier of" appears hundreds of times in the Act and
+locates nothing on the official site; a bare repeal note has no text to compare.
+Beyond wasting the checker's time, handing someone a row they cannot verify
+tempts a tired checker into marking it passed, which would quietly corrupt the
+one piece of evidence in this project that does not come from the XML.
+
+**Scale:** the filter removes about 6% of candidate rows for short text and about
+1.4% for repeal notes. The sampling pool stays far larger than the sample.
+
+**The checked sample is preserved.** Changing the filter changes which rows the
+seed selects, so the four files that were actually verified are kept as
+`tests/spot_checks/verified_2026-09_*.md` and the build no longer writes to those
+names. `RESULTS.md` refers to them. Regenerating a sample must never orphan the
+evidence for a sample already checked.
+
+---
+
+## 2026-09-19 - ITR 1206(1): no label was altered
+
+**Investigated** following a query raised during hand verification (ITR French,
+sample row 8) about whether the label read `(1)` or `(01)`.
+
+**Finding: `(1)`, everywhere, and Portage changed nothing.**
+
+- The published French XML gives `<Label>(1)</Label>` for subsection 1206(1).
+- The English XML gives `(1)`.
+- The official site renders `(1)` - checked directly against
+  `laws-lois.justice.gc.ca/fra/reglements/C.R.C.,_ch._945/section-1206.html`.
+- The complete set of subsection labels under 1206 is
+  `(1) (2) (3) (3.1) (4) (4.1) (4.2) (4.3) (5) (6) (7) (8) (8.1) (9)`. **No
+  label in section 1206 contains a zero, in either language.**
+- The stored row has `label_raw = '(1)'`, `label_raw_fr = '(1)'`,
+  `label_anomaly = 0`, `label_anomaly_fr = 0`, `alignment = 'verified'`.
+
+**No catalogue entry is warranted**, because no normalisation took place - this
+was not a case of Portage deriving a path from a malformed label. Recorded here
+anyway, since a question asked and answered is worth more in the log than in
+nobody's memory.
+
+---

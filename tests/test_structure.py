@@ -96,3 +96,22 @@ def test_fragments_are_not_addressable(conn):
         "WHERE is_addressable=1 AND citation_path LIKE '%~c%'"
     ).fetchall()
     assert bad == []
+
+
+def test_spot_check_samples_are_searchable(conn):
+    """A checker must be able to find every sampled row on the official site.
+
+    The first round of hand checks had to skip seven of eighty rows because the
+    text was too short to search or was a bare repeal note. That wastes the
+    checker's time and tempts a tired checker into marking them passed.
+    """
+    from portage.build import _is_checkable, _spot_check_sample
+
+    for act in ("ITA", "ITR"):
+        for lang in ("en", "fr"):
+            sample = _spot_check_sample(conn, act, lang)
+            assert sample, "%s %s produced no sample" % (act, lang)
+            unusable = [r[0] for r in sample if not _is_checkable(r[3])]
+            assert unusable == [], (
+                "%s %s sampled rows a checker cannot verify: %s"
+                % (act, lang, unusable))

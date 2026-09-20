@@ -223,8 +223,34 @@ def _first_sentence(text):
     return text[:cut + 1].strip()
 
 
+#: Shortest first sentence worth handing a checker. Below this there is not
+#: enough text to search for on the official site - "at the earlier of" appears
+#: hundreds of times and locates nothing.
+MIN_SPOT_CHECK_CHARS = 25
+
+#: A provision whose text is only a repeal note. Nothing to compare.
+REPEALED_MARKER = re.compile(r"^\s*\[\s*(Repealed|Abrogé)", re.IGNORECASE)
+
+
+def _is_checkable(text):
+    """Can a person actually find this on the official site?
+
+    Excludes text too short to search for and bare repeal notes. Both were hit
+    in the first round of hand checks: seven of the eighty sampled rows had to
+    be skipped as unsearchable, which wastes the checker's time and - worse -
+    tempts a tired checker to mark them passed.
+    """
+    if REPEALED_MARKER.match(text or ""):
+        return False
+    return len(_first_sentence(text or "")) >= MIN_SPOT_CHECK_CHARS
+
+
 def _spot_check_sample(conn, act, lang):
-    """The seeded twenty for one instrument and language, in document order."""
+    """The seeded twenty for one instrument and language, in document order.
+
+    Rows a checker could not verify are excluded before sampling - see
+    _is_checkable.
+    """
     text_col, head_col = "text_%s" % lang, "heading_%s" % lang
     rows = conn.execute(
         "SELECT citation_path, level, COALESCE(%s,''), COALESCE(%s,'') "
@@ -233,6 +259,7 @@ def _spot_check_sample(conn, act, lang):
         "AND %s IS NOT NULL AND %s != '' "
         "ORDER BY COALESCE(order_index, order_index_fr)"
         % (head_col, text_col, text_col, text_col), (act,)).fetchall()
+    rows = [r for r in rows if _is_checkable(r[3])]
     if not rows:
         return []
     sample = random.Random(SPOT_CHECK_SEED).sample(rows, min(20, len(rows)))

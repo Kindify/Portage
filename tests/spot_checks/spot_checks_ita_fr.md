@@ -11,26 +11,26 @@ this project derived, not citations Justice Canada would recognise.
 
 | # | Citation | Level | Heading | First sentence |
 |---|---|---|---|---|
-| 1 | `18(17)"position"(a)(vii)` | subparagraph | - | une créance qui est due par la personne ou société de personnes, ou qui lui est due, et qui remplit l’un des critères ci-après à un moment donné : |
-| 2 | `41(2)(b)(ii)` | subparagraph | - | aucune somme n’est déductible au titre d’une perte subie au cours de toute année, relativement à des biens meubles déterminés, jusqu’à ce qu’aient été déduites les pertes relatives à des biens meubles déterminés déductibles au titre d’années antérieures, |
-| 3 | `60.022(5)(d)` | paragraph | - | le minimum relatif au compte d’un contribuable dans le cadre d’un RPAC correspond à la somme qui serait le minimum pour l’année civile déterminé selon le paragraphe 8506(5) du Règlement de l’impôt sur le revenu si le compte du contribuable était un compte dans le cadre de la disposition à cotisations |
-| 4 | `61(4)"income-averaging annuity contract"(a)(i)(B)` | clause | - | 85 moins l’âge du particulier au moment du premier paiement de la rente, |
-| 5 | `95(2)(f.11)(i)(B)` | clause | - | comme si, en ce qui concerne une créance dont est débitrice la société affiliée ou une société de personnes dont elle est un associé (appelées « débitrice » à la présente division), chaque gain en capital ou perte en capital de la débitrice qui est réputé se produire en vertu des paragraphes 39(2) ou |
-| 6 | `96(2.7)` | subsection | Idem | Pour l’application de l’alinéa (2.2)a), en cas d’apport de capital à un moment donné par un contribuable à une société de personnes, si la société de personnes ou une personne ou société de personnes avec qui la société de personnes a un lien de dépendance consent un prêt au contribuable ou à une per |
-| 7 | `110(1.1)(d)` | paragraph | - | le contribuable ou, s’il est décédé, la succession assujettie à l’imposition à taux progressifs de celui-ci, présente ce document au ministre avec la déclaration de revenu de celui-ci visant l’année pour laquelle la déduction prévue à l’alinéa (1)d) est demandée. |
-| 8 | `110.6(1)"qualified farm or fishing property"(a)(iv)` | subparagraph | - | une société dont une action du capital-actions est une action du capital-actions d’une société agricole ou de pêche familiale d’un particulier visé à l’un des sous-alinéas (i) à (iii), |
-| 9 | `122.92(1)"secondary unit"(a)` | paragraph | - | il compte une entrée privée, une cuisine, une salle de bain et une aire de repos; |
-| 10 | `135.2(8)(c)(vii)` | subparagraph | - | la succession ne dispose pas de l’unité avant la distribution; |
-| 11 | `146.1(2)(g.3)(i)(B)` | clause | - | la désignation est effectuée de concert avec un transfert de biens au régime à partir d’un autre régime enregistré d’épargne-études dont le particulier était bénéficiaire immédiatement avant le transfert, |
-| 12 | `146.4(1.2)(d)` | paragraph | - | le moment immédiatement après la fin d’une année civile si, à la fois : |
-| 13 | `147(5)(a)` | paragraph | - | à la date de la présentation de la demande d’agrément du régime; |
-| 14 | `149.1(1)"relevant person"(b)(ii)` | subparagraph | - | le ministre est convaincu, après examen d’une demande de la fondation, que le particulier n’aurait de lien de dépendance avec aucun particulier dominant si le paragraphe 251(1) s’appliquait compte non tenu de ses alinéas a) et b). |
-| 15 | `204.1(3)` | subsection | Impôt payable par un régime de participation différée aux bénéfices | La fiducie régie par un régime de participation différée aux bénéfices et qui, à la fin d’un mois donné postérieur au mois de mai 1976, a un excédent doit, pour ce mois, payer un impôt en vertu de la présente partie égal à 1 % de l’excédent. |
-| 16 | `222(6)(c)` | paragraph | - | fait un paiement au titre de la dette, y compris un prétendu paiement fait au moyen d’un titre négociable qui fait l’objet d’un refus de paiement. |
-| 17 | `237.1(5)(c)(ii)` | subparagraph | - | si tout ou partie de la déclaration écrite ou de la déclaration de renseignements est établie en français : |
-| 18 | `239(2.1)(c)` | paragraph | - | ou l’une de ces peines. |
-| 19 | `248(25)(b)(iii)(A)(I)` | subclause | - | la personne ou société de personnes donnée, |
-| 20 | `252(2)(a)(ii)` | subparagraph | - | celle dont le contribuable a déjà été l’enfant, au sens de l’alinéa (1)b), |
+| 1 | `18(22)(c)` | paragraph | - | l’année d’imposition de la personne rattachée au cours de laquelle la disposition mentionnée à l’alinéa b) se produit se termine après la fin de l’année donnée. |
+| 2 | `46(3)(b)` | paragraph | - | d’autre part, avaient, immédiatement avant la première disposition visée à l’alinéa a), une juste valeur marchande totale supérieure à 1 000 $, |
+| 3 | `65(1)(a)` | paragraph | - | d’un gisement naturel de pétrole ou de gaz naturel, d’un puits de pétrole ou de gaz, de ressources minérales ou d’une concession forestière; |
+| 4 | `66(12.1)` | subsection | Restrictions quant aux frais d’exploration et d’aménagement au Canada | Sauf disposition contraire expresse de la présente loi, les règles suivantes s’appliquent : |
+| 5 | `95(2.6)` | subsection | Application de la définition de personne ou société de personnes déterminée | Pour l’application des alinéas a) à d) de la définition de personne ou société de personnes déterminée au paragraphe (1), si une personne ou une société de personnes (appelée « contribuable » au présent paragraphe) a un lien de dépendance avec une autre personne ou société de personnes (appelée « per |
+| 6 | `104(27)(c)(ii)` | subparagraph | - | si le bénéficiaire — enfant ou petit-enfant du particulier — avait moins de 18 ans au décès, la part du bénéficiaire sur la prestation (à l’exception de toute fraction de celle-ci qui se rapporte à un surplus actuariel) est réputée, pour l’application de l’alinéa 60l), être un montant provenant d’un |
+| 7 | `110.61(11)(f)(ii)` | subparagraph | - | soit dans le cadre d’une opération ou d’une série d’opérations dans laquelle la personne ou la société de personnes donnée a disposé, en faveur de la société, de biens qui représentent : |
+| 8 | `111.1(2)` | subsection | Déduction interdite | Le particulier ne peut pas déduire pour son année d’imposition, en vertu de l’article 110.6, un montant relativement à une partie d’un gain en capital imposable si celle-ci a déjà été déduite en application des articles 110.61 ou 110.62. |
+| 9 | `125.7(1)"qualifying period"(d)` | paragraph | - | une période visée par règlement qui prend fin au plus tard le 2 juillet 2022. |
+| 10 | `142.4(5)(b)(iii)` | subparagraph | - | soit est réputée avoir été effectuée par l’alinéa 142.6(1)c), |
+| 11 | `146.3(14.1)(b)` | paragraph | - | elle est transférée sur l’ordre du rentier directement à un régime de pension agréé dont il était un participant, au sens du paragraphe 147.1(1), avant le transfert ou à un régime de pension déterminé et elle est attribuée au rentier aux termes d’une disposition à cotisations déterminées, au sens du |
+| 12 | `147.1(8)(a)(i)` | subparagraph | - | le plafond des cotisations déterminées pour l’année, |
+| 13 | `147.5(22)` | subsection | Imposition des sommes transférées | La somme qui est transférée conformément au paragraphe (21) du compte d’un participant dans le cadre d’un régime de pension agréé collectif en faveur d’un particulier : |
+| 14 | `149(8)(b)` | paragraph | - | sont à inclure dans le calcul du revenu et du revenu brut d’une société les dons qu’elle a reçus et les sommes qui lui ont été versées pour affectation à des activités de recherche scientifique et de développement expérimental. |
+| 15 | `161(11)(b)` | paragraph | - | s’il s’agit d’une pénalité visée à l’article 163.1 relative à une année d’imposition, pour la période allant de la date d’exigibilité du solde qui est applicable au contribuable pour l’année jusqu’à la date du paiement de la pénalité; |
+| 16 | `211.93(1)(b)(ii)(A)` | clause | - | des engagements du Canada en vertu de l’Accord de Paris conclu le 12 décembre 2015, |
+| 17 | `244.1"money services business"(b)` | paragraph | - | elle n’a pas de lieu d’affaires au Canada et se livre à la fourniture, à l’intention d’entités se trouvant au Canada, de l’un des services ci-après, qu’elle fournit aux personnes ou entités se trouvant au Canada qui consomment ces services : |
+| 18 | `248(1)"short-term preferred share"(a)` | paragraph | - | soit une action dont les caractéristiques, une convention ou une modification de ces caractéristiques ou de cette convention prévoient que la société émettrice ou une personne apparentée à celle-ci a l’obligation ou peut avoir l’obligation, à tout moment dans les cinq ans suivant la date d’émission d |
+| 19 | `248(1)"worker cooperative"(g)` | paragraph | - | au moins le tiers de ses administrateurs sont des travailleurs admissibles de coopérative; |
+| 20 | `271(1)` | subsection | - | Sous réserve des paragraphes (3) et (4), chaque institution financière déclarante communique au ministre les renseignements ci-après relativement à chacun de ses comptes déclarables : |
 
 Source: Income Tax Act, consolidation date 2026-06-18.
 Unofficial reproduction. Not an official version.

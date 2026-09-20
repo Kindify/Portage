@@ -133,3 +133,119 @@ else for Phase 0 without saying why. Everything runs on a laptop with
 - Keep the README honest: what the data is, what it is not, source,
   snapshot date, licence, and the sentence "This dataset makes provisions
   navigable. It does not interpret them and is not legal advice."
+
+  "# Phase 1: Finance tax expenditure map"
+
+Phase 0 delivered the Act and Regulations as subsection-level records in
+both languages, verified by round-trip, uniqueness on the shipped key,
+symmetric bilingual join, and hand spot checks. Phase 1 links Finance
+Canada's Report on Federal Tax Expenditures to those records. Same
+principles: evidence not recommendations, provenance on everything,
+Finance's own references only (Tier 1), no tax opinions in the data.
+
+## Order of work
+
+1. Tagged cross-references first. Build `cross_references` from the
+   XRefExternal, XRefInternal and DefinitionRef elements already in the
+   XML, with method='tagged'. Resolve DefinitionRef to definition records.
+   This is the resolution machinery Phase 1 reuses.
+2. Inspect the report before parsing it (source-notes first, as in
+   Phase 0).
+3. Parse, resolve, catalogue, test.
+
+## Source
+
+Report on Federal Tax Expenditures 2026, Department of Finance Canada,
+Parts 3 to 7 (Part 3 is the introduction to the descriptions; Parts 4
+to 7 hold the measures, alphabetically). English:
+https://www.canada.ca/en/department-finance/services/publications/federal-tax-expenditures/2026/part-3.html
+and the corresponding part-4 to part-7 pages. Find the French edition
+from the page's language toggle and record its URLs. Check whether the
+same data exists on open.canada.ca under the Open Government Licence;
+if so, record both, prefer the OGL terms, and quote the canada.ca terms
+too.
+
+Each measure on the page is a fixed-field block. Expected fields:
+description, type of tax, beneficiaries, type of measure, legal
+reference, implementation and recent history, objective (with the
+budget or document that stated it), category, reason it is not part
+of the benchmark, subject, CCOFOG code, other relevant government
+programs, source of data, estimation method, projection method, number
+of beneficiaries, and a cost table (millions of dollars by year,
+projections included). Confirm the actual field set in
+docs/source-notes.md before writing the parser. Fields absent for a
+measure are stored as null, never as an empty string or zero.
+
+## Tables
+
+- `measures`: id, name_en, name_fr, report_year, part, source_url_en,
+  source_url_fr, retrieved_date, plus one column per descriptive field
+  in each language (type_of_tax_en/fr, beneficiaries_en/fr, ... ).
+  Keep Finance's wording verbatim.
+- `measure_references`: measure_id, raw_text (the legal reference cell
+  as published), instrument (ITA or ITR or other), citation_path,
+  resolved (0/1), method ('pattern'), order_index. One row per
+  provision Finance lists. Unresolved rows stay in the table.
+- `measure_costs`: measure_id, year, value_millions (nullable),
+  value_kind: one of 'estimate', 'projection', 'small' (published as
+  "S"), 'not_available' (published as "n.a."), 'no_estimate'
+  (published as "No estimate is available" or equivalent). The
+  published token is kept in `raw_value`. None of these is ever
+  stored as 0.
+- `measure_history`: measure_id, year (if parseable), text_en, text_fr,
+  order_index. One row per event Finance lists under implementation
+  and recent history.
+- `measure_beneficiary_counts`: measure_id, year, count, raw_value.
+
+## Bilingual join
+
+Measures are ordered alphabetically in each language, so order differs
+between editions, exactly as definitions did in Phase 0. Do not join by
+position. Join on the language-independent content: the set of legal
+references plus the cost table values, which are identical numbers in
+both editions. Any measure that does not join uniquely is catalogued in
+data/measure_join_gaps.csv with a fixture, and both language records
+survive as singles.
+
+## Reference extraction rule
+
+Legal references are a short structured field, not prose. Extraction
+by pattern is permitted here because failure is visible: a reference
+either resolves to an existing citation_path or it does not. Write the
+grammar into docs/reference-rule.md before implementing (section,
+subsection, paragraph, subparagraph, clause; ranges "to"; lists "and";
+"of the Act", "of the Regulations"; Part and Schedule references).
+Anything the grammar does not cover is stored unresolved with the raw
+text, never dropped and never guessed.
+
+## Acceptance tests
+
+1. Every measure on every page is captured: count of parsed measures
+   equals the count of measure headings on the page, both languages.
+2. Every measure has at least one measure_references row, or is listed
+   in data/measures_without_references.csv (fixture).
+3. Resolution rate is reported, not asserted. Unresolved references go
+   to data/unresolved_references.csv (fixture). A build that resolves
+   100% is suspicious, not good.
+4. Fixture check: "Deferral for asset transfers to a corporation and
+   corporate reorganizations" resolves to sections 55, 85, 87 and 88 and
+   has no cost estimate for any year (value_kind 'no_estimate').
+5. Fixture check: the measure whose legal reference is paragraph
+   20(1)(ss) resolves to citation_path 20(1)(ss) in the Act.
+6. Cost tokens: every distinct raw_value seen across all cost cells is
+   listed in data/cost_tokens.csv with its mapped value_kind (fixture).
+   A new token fails the build until it is classified.
+7. Bilingual join: every joined measure pair has identical
+   measure_references sets and identical measure_costs values.
+8. Precision sample: tests/spot_checks/references.md lists 30 random
+   (raw_text, citation_path) pairs for Matt to confirm by hand, seeded,
+   never overwritten once results are recorded.
+
+## Explicitly out of Phase 1
+
+- Interacting provisions Finance does not list (Tier 2). Expose the
+  Act's cross-reference graph instead; no curated additions.
+- Any indicator, ranking or score. That is Phase 2, and it is computed
+  from these tables, never stored as judgment inside them.
+- Temporal scope extraction from the Act's text (also Phase 2).
+- Any front end.

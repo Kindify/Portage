@@ -11,26 +11,26 @@ this project derived, not citations Justice Canada would recognise.
 
 | # | Citation | Level | Heading | First sentence |
 |---|---|---|---|---|
-| 1 | `304(1)(a)` | paragraph | - | an annuity contract that is, or is issued pursuant to, an arrangement described in any of paragraphs 148(1)(a) to (b.4) and (d) of the Act; |
-| 2 | `306(1)(b)(i)` | subparagraph | - | if the policy is issued before 2017, it is reasonable to expect that the condition in paragraph (a) will be met on each policy anniversary of the policy on which the policy could remain in force after that time and before the endowment date of the exemption test policies issued in respect of the poli |
-| 3 | `1100(1)(zc)(i)(H)` | clause | - | included in Class 28 in Schedule II by virtue of subparagraph (d)(ii) of that Class (other than property referred to in subparagraph (m)(iv) of Class 10), or |
-| 4 | `1100(14)` | subsection | - | In this section and section 1101, rental property of a taxpayer or a partnership means |
-| 5 | `1101(5e.1)(b)` | paragraph | - | railway traffic control or signalling equipment, including switching, block signalling, interlocking, crossing protection, detection, speed control or retarding equipment, but not including property that is principally electronic equipment or systems software therefor; |
-| 6 | `1104(10)(b)(i)` | subparagraph | - | the Secretary of State, or |
-| 7 | `1104(13)"producer gas"(b)(iv)` | subparagraph | - | that is not generated from any feedstock other than eligible waste fuel, specified waste material or fossil fuel. |
-| 8 | `1206(1)"Canadian exploration and development overhead expense"(d)(v)` | subparagraph | - | in respect of the performance of the service, or |
-| 9 | `1207(1)(b)` | paragraph | - | his frontier exploration base as of the end of the year (before making any deduction under this subsection for the year). |
-| 10 | `1900(1)"group term life insurance policy"(b)` | paragraph | - | no amount may become payable to a person (other than the group policyholder) in respect of a policy dividend, an experience rating refund or a refund of premiums that has been funded by contributions made to or under the policy by another person; |
-| 11 | `2400(6)(b)` | paragraph | - | is |
-| 12 | `4900(1)(r)` | paragraph | - | a debt issued by a Canadian corporation (other than a corporation with share capital or a corporation that is a connected person under the governing plan of the plan trust) if |
-| 13 | `5202"qualified activities"(a)` | paragraph | - | any of the following activities, when they are performed in Canada in connection with manufacturing or processing (not including the activities listed in paragraphs (a) to (k) of the definition manufacturing or processing in subsection 125.1(3) of the Act) in Canada of goods for sale or lease: |
-| 14 | `5901(1)(a)(ii)(A)` | clause | - | the affiliate’s hybrid deficit, if any, in respect of the corporation at that time, and |
-| 15 | `5905(5.1)(a)(v)` | subparagraph | - | in the case of its opening underlying foreign tax, that is the total of its underlying foreign tax in respect of each predecessor corporation, determined immediately before that time; |
-| 16 | `5907(1)"whole dividend"(b)` | paragraph | - | where a whole dividend is deemed by subparagraph 5902(1)(a)(ii) to have been paid at the same time on shares of more than one class of an affiliate’s capital stock, for the purpose only of that subparagraph, the whole dividend deemed to have been paid at that time on the shares of a class of the affi |
-| 17 | `5907(1.1)(a)(v)(C.1)(II)` | subclause | - | be deducted from the hybrid underlying tax of the primary affiliate, and |
-| 18 | `5907(8)(b)` | paragraph | - | if subsection 91(1.2) of the Act applies at any particular time in respect of a foreign affiliate of a corporation, the various amounts are to be computed, in respect of attributed amounts for the stub period in respect of the particular time, as if |
-| 19 | `7306(b)` | paragraph | - | the product of 6 cents multiplied by the lesser of 5,000 and the number of those kilometres; |
-| 20 | `8901.1(1)(b)(i)` | subparagraph | - | it is described in paragraph 149(1)(d.6) of the Act, |
+| 1 | `306(1)(b)(ii)` | subparagraph | - | if the policy is issued after 2016, it is reasonable to expect — without reference to any automatic adjustments under the policy that may be made after that time to ensure that the policy is an exempt policy and, where applicable, making projections using the most recent values that are used to calcu |
+| 2 | `306(10)` | subsection | - | Notwithstanding subsections (3) and (4), if a life insurance policy is issued for any purpose at a particular time determined under subsection 148(11) of the Act, then for the purposes of applying this section (other than this subsection and subsection (9)) and section 307 in respect of the life insu |
+| 3 | `1100(2.2)(j)(iv)` | subparagraph | - | the property shall be deemed to have become available for use by the taxpayer at the earlier of |
+| 4 | `1101(1ad)(b)` | paragraph | - | from a person with whom the taxpayer was not dealing at arm’s length (otherwise than by virtue of a right referred to in paragraph 251(5)(b) of the Act) at the time the property was acquired, |
+| 5 | `1102(26)(b)` | paragraph | - | the following are prescribed programs: |
+| 6 | `1202(7)(c)` | paragraph | - | the corporation shall be deemed after that time to be a successor (within the meaning assigned by subsection (2)) that had, at that time, acquired all the properties owned by the corporation immediately before that time from an original owner thereof; |
+| 7 | `1203(2)(d)` | paragraph | - | where the taxpayer is a predecessor, all amounts required by paragraph (3)(b) to be deducted before the particular time in computing the taxpayer’s mining exploration depletion base. |
+| 8 | `1219(1)(h)(ii)` | subparagraph | - | solely for the purpose of determining the extent and quality of a geothermal resource. |
+| 9 | `1403(1)(a)` | paragraph | - | in the case of a lapse-supported policy effected after 1990, based on rates of interest, mortality and policy lapse only, and |
+| 10 | `2403(1)` | subsection | - | An election referred to in subsection 219(4) of the Act shall be made by a non-resident insurer in respect of a taxation year by filing, with its return of income required by subsection 150(1) of the Act to be filed for the year, a letter in duplicate stating |
+| 11 | `3400` | section | - | For the purposes of paragraphs 122.3(1)(a) and 250(1)(d) of the Act, each international development assistance program of the Canadian International Development Agency that is financed with funds (other than loan assistance funds) provided under External Affairs Vote 30a, Appropriation Act No. |
+| 12 | `5301(8)(a)` | paragraph | - | there shall be added to the amount of the transferee’s first instalment base for its taxation year that includes the particular time the amount of the transferor’s first instalment base for its taxation year that includes the particular time; |
+| 13 | `5905(5.7)` | subsection | - | For the purposes of paragraph (5.5)(a.1), the amount determined under this subsection in respect of the corporation at any time is |
+| 14 | `5907(1.092)(a)(v)(C)(I)` | subclause | - | to be added to the taxable surplus or deducted from the taxable deficit, as the case may be, of the shareholder affiliate, and |
+| 15 | `5907(2.7)(a)` | paragraph | - | if clause 95(2)(a)(ii)(D) of the Act is applicable, by the second affiliate referred to in that clause, |
+| 16 | `6202.1(1)(a)(iii)(B)` | clause | - | all the consideration receivable by the holder on the conversion or exchange of the share is the share described in subclause (A)(I) or the right described in subclause (A)(II), or both, as the case may be, or |
+| 17 | `6203(1)(a)(vi)(A)` | clause | - | provide assistance to acquire the share, |
+| 18 | `6700(a)(i)` | subparagraph | - | An Act Respecting Corporations for the Development of Quebec Business Firms, Statutes of Quebec 1976, c. |
+| 19 | `8308(3)(a)` | paragraph | - | such portion of the remuneration as is treated under the provision as if it were remuneration received in a preceding calendar year for services rendered in that preceding year shall be deemed, for the purpose of determining, as of the particular time and any subsequent time, a redetermined benefit e |
+| 20 | `8515(6)(c)` | paragraph | - | each defined benefit provision of the plan provided the following benefits after the death of a restricted-funding member who dies after retirement benefits under the provision have commenced to be paid to the member, in lieu of the benefits actually provided: |
 
 Source: Income Tax Regulations, consolidation date 2026-06-18.
 Unofficial reproduction. Not an official version.

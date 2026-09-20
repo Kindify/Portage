@@ -178,14 +178,27 @@ same way twice, no automated check in this project would notice. The only test
 that leaves that loop is a person comparing the build against the published text
 on <https://laws-lois.justice.gc.ca>.
 
-Twenty citations per instrument per language - eighty in total - are drawn by a
-seeded sample into `tests/spot_checks/`, and the results are recorded by hand in
-`tests/spot_checks/RESULTS.md`.
+Forty citations, ten per instrument per language, were checked by hand against
+laws-lois.justice.gc.ca on September 18 and 19, 2026, from seeded random samples
+of twenty per file. For each, the checker confirmed that the record's text
+appears on the official site at the citation path the record claims. All forty
+matched. Seven sampled rows were skipped because their text was too short to
+search reliably or was a repealed-provision note; thirty-three were not checked.
+The full sample and results are in `tests/spot_checks/` for anyone who wants to
+extend the check. One convention surfaced: the official site displays provisions
+inside definitions by label path only, while Portage citation paths include the
+defined term in quotation marks so that paths stay unique.
 
-> **Status: not yet completed.** The sample and the results template exist; the
-> checks are in progress. This paragraph will record the date and the outcome
-> once they are done. Until then, no claim is made that the data has been
-> verified against the official site.
+One query raised during checking was followed up and found to be nothing: the
+label on subsection 1206(1) of the French Regulations. The published XML gives
+it as `(1)`, the official site displays `(1)`, and Portage stores `label_raw_fr`
+as `(1)` unaltered. No `(01)` appears anywhere in section 1206 in either
+language, no label was changed, and there is nothing to catalogue.
+
+The samples that were checked are preserved as `verified_2026-09_*.md`. Sample
+generation has since been changed to exclude rows whose first sentence is under
+25 characters or begins with a repealed-provision marker, so a future checker is
+not handed rows that cannot be searched for.
 
 Alongside these, six catalogue files are written by every build and diffed
 line-by-line against committed fixtures. Anomalies are catalogued, never counted:
