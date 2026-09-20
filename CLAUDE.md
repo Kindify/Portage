@@ -278,13 +278,13 @@ cost_latest_estimate, cost_latest_estimate_year: the most recent year with value
 cost_latest_projection, cost_latest_projection_year.
 cost_first_estimate, cost_first_estimate_year: earliest estimate year in the report's window.
 cost_change_abs, cost_change_pct: latest estimate minus first estimate, and the ratio; null if either is non-numeric or the years are equal.
-cost_status: one of costed (numeric in every year), partially_costed (numeric in some years), not_costed (no numeric value in any year), withheld (any X cell). Derived from value_kind only.
-cost_total_or_component: whether the figure used is Finance's Total row or a component row, since some measures publish only components.
+cost_status: one of costed (numeric in every year), partially_costed (numeric in some years), not_costed (Finance published a cost table and no year in it carries a number), no_cost_table (Finance published no cost table at all), withheld (any X cell). Derived from value_kind only; withheld takes precedence. Five values, not four: 53 measures have no cost table, and folding them into not_costed merges a measurement result with a publishing decision.
+cost_figure_basis: which published row the cost figures are read from - total_row, single_component, components_only, multiple_total_rows, or no_cost_table. The last two carry null cost figures: adding components Finance did not add would be arithmetic it did not publish, and five measures publish several Total rows because they publish more than one cost table, where choosing between them would be judgment.
 
 Beneficiaries, from measure_beneficiary_counts:
 
-beneficiaries_latest, beneficiaries_latest_year: only where method='pattern'. Null otherwise, with beneficiaries_raw carrying the published sentence in both cases.
-cost_per_beneficiary: cost_latest_estimate divided by beneficiaries_latest only when the years match; otherwise null and cost_per_beneficiary_note says the years differ.
+beneficiaries_latest, beneficiaries_latest_year: only where method='pattern'. Null otherwise, with beneficiaries_raw_en and beneficiaries_raw_fr carrying the published sentence in both cases. Two columns, not one: a single column would drop the published French sentence whenever an English one exists, and the field is a copied label like the classification labels, which already carry _en / _fr.
+cost_per_beneficiary: cost_latest_estimate divided by beneficiaries_latest only when the years match; otherwise null and cost_per_beneficiary_note says the years differ. In dollars per beneficiary - the cost cell is in millions, so the view multiplies by a million first. Read literally the division would give millions of dollars per beneficiary, which is recomputable but not readable.
 
 Age and history, from measure_history and the objective field:
 
@@ -332,7 +332,7 @@ provision_footprint.sql: for a given citation_path, every measure citing it and 
 Acceptance tests
 Every indicators column has a definitions entry; doc generated from code and tested current.
 Hand recomputation fixtures: cost_change for three named measures from the published tables (Matt supplies the three from the report pages, computes them in a spreadsheet, and the test asserts equality).
-Reorganization deferral: cost_status = not_costed, beneficiaries null, provisions_resolved = 4.
+Reorganization deferral: cost_status = no_cost_table, beneficiaries null, provisions_resolved = 4. Finance published no cost table for this measure at all, which is what the fifth cost_status value exists to say; this test asked for not_costed before that value existed.
 No indicator is non-null where any of its inputs is null.
 Temporal scope: every phrase is a verbatim substring of its provision's text_en; every row has a model, prompt hash and run date in meta.
 Views run without error and return the row counts recorded in a fixture for this edition.
