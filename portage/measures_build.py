@@ -502,6 +502,9 @@ def build_measures(conn, write_catalogue):
         "unresolved_references.csv", sorted(unresolved),
         ["measure", "lang", "instrument", "citation_path", "status", "reason",
          "raw_text"])
+    counts["source_oddities"] = write_catalogue(
+        "source_oddities.csv", SOURCE_ODDITIES,
+        ["instrument", "source", "location", "oddity", "effect"])
     counts["category_lists"] = write_catalogue(
         "finance_category_lists.csv",
         sorted((field, lang, term)
@@ -531,6 +534,50 @@ def build_measures(conn, write_catalogue):
         conn, spot / "references-2.md", 2)
     counts["joined_categorical"] = categorical
     return counts
+
+
+#: Things the published source does that a reader should know about. Each was
+#: found while parsing and is recorded rather than silently accommodated.
+#: `effect` says what Portage does about it. Diffed against a fixture, so
+#: adding one is a deliberate commit.
+SOURCE_ODDITIES = [
+    ("ITA", "report", 'Legal reference, donations of ecologically sensitive land',
+     'The English edition writes "subsections 110.1(1), 118.1(1) and 38(a.2)". '
+     '38(a.2) is a paragraph, not a subsection; the French edition correctly '
+     'says "alinea 38(a.2)".',
+     "Resolved correctly. The grammar keys on the shape of a citation, not on "
+     "the word introducing it, so the mislabel changes nothing."),
+    ("ITA", "report", "Legal reference, several measures",
+     'French writes a paragraph label without its opening bracket - "alineas '
+     '149(1)(c) et d) a d.6)" - and sometimes carries the section number '
+     'inside it - "alinea 38a.2)".',
+     "Normalised to the English bracketed form before extraction. Caused 6 "
+     "false resolutions until fixed; see references-RESULTS.md."),
+    ("ITA", "report", "Legal reference, 11 measures",
+     "Two instruments run together with no separator: "
+     '"subsection 66.1(6)Income Tax Regulations, section 1219".',
+     "Segments are split on instrument names wherever they appear, including "
+     "mid-string."),
+    ("ITR", "report", "Part 7 appendix table",
+     "Additional Information on Relevant Government Programs by Subject has a "
+     "caption id in the French edition but not the English, and 17 body rows, "
+     "so it passes every structural test for a measure.",
+     "Excluded. A measure is a table the Part 3 index links to."),
+    ("ITA", "report", "Field labels, French edition",
+     "Two measures label the Tax field with the name of a departmental branch "
+     "rather than a field name. 25 distinct labels appear for 17 fields.",
+     "Fields are keyed by row position, never by label."),
+    ("ITA", "report", "Cost tables",
+     "A bare hyphen appears where the published legend gives an en dash, and "
+     '"n.d" without its final period where the legend gives "n.d.".',
+     "Mapped to the documented symbols and marked legend_match='variant' in "
+     "cost_tokens.csv."),
+    ("ITA", "act", "93(5.2)(a), French consolidation",
+     "The only XRefInternal element in the corpus. Its text is a bare section "
+     "number but the surrounding prose names a different Act.",
+     "Left unresolved. A bare section number with no instrument qualifier "
+     "never resolves."),
+]
 
 
 #: One seed per round. A round is never re-seeded: the first sample is the

@@ -35,6 +35,7 @@ CATALOGUES = [
     "finance_category_lists.csv",
     "finance_category_map.csv",
     "finance_category_map_ambiguous.csv",
+    "source_oddities.csv",
 ]
 
 

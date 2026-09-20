@@ -297,14 +297,14 @@ subject and objective category are mapped to English through
 `data/finance_category_map.csv`, learned from the measures joined in the first
 pass and vocabulary-checked against the fixed lists Finance publishes on Part 3.
 
-**Reference resolution, reported two ways.** Of the 790 references extracted
-from the report's *Legal reference* field, **611 resolve to a provision - 77.1%**.
+**Reference resolution, reported two ways.** Of the 774 references extracted
+from the report's *Legal reference* field, **600 resolve to a provision - 77.5%**.
 That figure is bounded below 100% by construction: 53 references name an
 instrument this dataset does not hold, chiefly the Excise Tax Act, and 79 name a
 Schedule, Class or Part, which Phase 0 does not model - neither can ever resolve,
 however good the grammar is. Measured over the references that *could* resolve,
-those citing the Income Tax Act or its Regulations, **611 of 675 resolve -
-90.5%**. The remainder are 31 `schedule_or_class`, 26 `not_in_consolidation`,
+those citing the Income Tax Act or its Regulations, **600 of 657 resolve -
+91.3%**. The remainder are 31 `schedule_or_class`, 19 `not_in_consolidation`,
 5 `term_not_joined` and 2 `no_provision`. Every unresolved reference keeps its
 raw text and a status in `data/unresolved_references.csv`.
 

@@ -2,12 +2,13 @@
 
 ## Where things stand
 
-**Phase 0 is released as `v0.1.0`.** Both instruments, both languages, 47 tests
-passing, all four round trips exact, and forty citations verified by hand against
-the official site on 18 and 19 September 2026 with no mismatches.
+**Phase 1 is complete and released as `v0.2.0`.** The Income Tax Act and its
+Regulations in both languages, and the 2026 Report on Federal Tax Expenditures
+linked to them. 105 tests pass. Both precision-sample rounds are checked by
+hand: round 1 found a real bug, round 2 passed 30 of 30 and found two
+refinements.
 
-Next: Phase 1, the tax expenditure report. Scope and rules are in `CLAUDE.md`;
-what follows is the working plan for getting there.
+Next: Phase 2.
 
 ## What Phase 0 delivers
 
@@ -179,14 +180,14 @@ Grammar written first in `docs/reference-rule.md` Part 2, then implemented.
 
 | status | all references | ITA/ITR only |
 |---|---|---|
-| `resolved` | 611 (77.1%) | **611 (90.5%)** |
+| `resolved` | 600 (77.5%) | **600 (91.3%)** |
 | `schedule_or_class` | 79 | 31 |
 | `instrument_not_held` | 53 | - |
-| `not_in_consolidation` | 26 | 26 |
+| `not_in_consolidation` | 19 | 19 |
 | `no_provision` | 12 | 2 |
 | `no_instrument` | 6 | - |
 | `term_not_joined` | 5 | 5 |
-| **total** | **792** | **675** |
+| **total** | **774** | **657** |
 
 A 100% rate would be evidence of a bug: the Excise Tax Act references and the
 Schedule references cannot resolve by construction.
@@ -217,9 +218,7 @@ keyword matching, with three tests added, one of which caught a second variant
 the first fix had missed. Full account in
 `tests/spot_checks/references-RESULTS.md`.
 
-Resolution after the fix: 611 resolved of 792, with 79 `schedule_or_class`,
-53 `instrument_not_held`, 26 `not_in_consolidation`, 12 `no_provision`,
-6 `no_instrument`, 5 `term_not_joined`. Measures joined: 201 `content` plus
+Resolution after both rounds: 600 resolved of 774. Measures joined: 201 `content` plus
 10 `content_categorical` = 211 of 229.
 
 **Waiting on Matt:** `tests/spot_checks/references-2.md` - a fresh seeded sample
@@ -228,28 +227,53 @@ regenerating it would orphan the results it is evidence for.
 
 ---
 
-## Open items
+## Phase 2
 
-**1. The 30-row precision sample has not been checked.** Nothing else in Phase 1
-tells us whether the grammar reads a citation the way a person would.
+Phase 0 made the Act navigable. Phase 1 attached what Finance says each measure
+costs. Phase 2 is what CLAUDE.md has been holding back the whole time:
+**indicators computed from these tables, never stored as judgment inside them.**
 
-**2. 36 measures do not join across languages.** Mostly measures with no
-resolvable reference and no numeric cost - nothing language-independent to join
-on. The open data CSVs were checked as a possible Finance-supplied pairing and
-**cannot serve**: only 39.8% of their rows align, because each file is
-alphabetical in its own language. A name or order tie-breaker would be judgment.
+Before any of it, the two things CLAUDE.md names as Phase 2 scope:
 
-**3. Beneficiary counts are mostly unparsed** - 75 of 458 rows, and this is
-the weakest field in the dataset. The field is prose, and unlike a reference a
-wrong count does not announce itself by failing to resolve.
+1. **Interacting provisions.** Expose the Act's own cross-reference graph -
+   `cross_references` and `definition_ref_candidates` are already built. No
+   curated additions: if Finance did not list a provision, it is not a Tier 1
+   reference, and the graph is what stands in for that.
+2. **Temporal scope extraction** from the Act's text - the "before 2025" and
+   "2040" dates that the Phase 0 fixtures already touch.
 
-**4. Phase 0 items still open:** fragments join by ordinal across languages;
-schedules not captured; table structure not modelled; `history_note` is
-section-level only.
+Then indicators. Each one computed on read, from the published tables, with the
+query that produces it written down beside the number. Nothing derived is
+stored, because a stored indicator is a judgment that outlives the reasoning
+behind it.
 
-**5. Commercial redistribution** remains an open legal question. Not a blocker.
+**What to settle first, before any code:**
 
-## Not in Phase 1
+- **Which indicators?** CLAUDE.md says evidence, not recommendations. An
+  indicator that ranks provisions by cost is evidence; one that ranks them by
+  "value" is not. The line needs to be drawn explicitly, in writing, before
+  anything is computed.
+- **How is an indicator published?** A column, a view, a separate table, or a
+  documented query? A view keeps the computation visible; a table does not.
+- **What happens when the report year changes?** The 2027 edition will
+  renumber, rename and re-cost. The snapshot mechanism handles the data; the
+  question is whether indicators are comparable across editions at all.
+
+### Carried into Phase 2 from Phase 1
+
+- 18 measures per language do not join; nothing language-independent to join on.
+- 174 references do not resolve, 79 of them Schedule or Part forms in
+  instruments this dataset does not hold.
+- Beneficiary counts are prose: 75 of 458 rows parsed.
+- Ranges are endpoints only, so a measure citing a range is not linked to the
+  provisions between them.
+- The Excise Tax Act is cited 53 times and is not held at all. Adding it would
+  resolve most of the remaining references, and is the single largest coverage
+  gain available.
+
+---
+
+## Not in Phase 2
 
 From `CLAUDE.md`: interacting provisions Finance does not list; any indicator,
 ranking or score; temporal scope extraction from the Act's text; any front end.

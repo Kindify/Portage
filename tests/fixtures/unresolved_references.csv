@@ -1,6 +1,5 @@
 measure,lang,instrument,citation_path,status,reason,raw_text
 Abattement d'impôt du Québec,fr,,,no_instrument,no instrument named - a provision number alone is not a citation,Partie VI de la Loi sur les arrangements fiscaux entre le gouvernement fédéral et les provinces Loi sur la réforme des arrangements fiscaux 
-Accelerated Investment Incentive,en,ITA,"66.2(2)(d)""accelerated Canadian development expense""",not_in_consolidation,,"paragraph 66.2(2)(d), definition of accelerated Canadian development expense in subsection 66.2(5), paragraph 66.4(2)I, definition of accele"
 Accelerated Investment Incentive,en,ITR,,schedule_or_class,"Schedule, Class or Part - this dataset holds only the enacted Body of each instrument","subparagraphs 1100(1)(b)(i) and (c)(i), subparagraph 1100(1)(v)(iv), subsections 1100(2), subsection 1104(4), paragraphs 1(a) and 2(a) of Sc"
 Accelerated Investment Incentive,en,ITR,,schedule_or_class,"Schedule, Class or Part - this dataset holds only the enacted Body of each instrument","subparagraphs 1100(1)(b)(i) and (c)(i), subparagraph 1100(1)(v)(iv), subsections 1100(2), subsection 1104(4), paragraphs 1(a) and 2(a) of Sc"
 Accelerated Investment Incentive,en,ITR,,schedule_or_class,"Schedule, Class or Part - this dataset holds only the enacted Body of each instrument","subparagraphs 1100(1)(b)(i) and (c)(i), subparagraph 1100(1)(v)(iv), subsections 1100(2), subsection 1104(4), paragraphs 1(a) and 2(a) of Sc"
@@ -42,7 +41,6 @@ Détaxation des médicaments sur ordonnance,fr,ETA,,schedule_or_class,instrument
 Détaxation des produits alimentaires de base,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Partie III de l'annexe VI de la Loi sur la taxe d'accise
 Détaxation des produits d'hygiène féminine,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Article 1 de la partie II.1 de l'annexe VI de la Loi sur la taxe d'accise
 Education Tax Credit,en,ITA,118.6(2),not_in_consolidation,,subsection 118.6(2)
-Employee benefit plans,en,ITA,"6(1)(g)""employee benefit plan""",not_in_consolidation,,"paragraph 6(1)(g), section 32.1 and subsection 248(1), definition of ""employee benefit plan"""
 Enhanced rebate for new residential rental property,en,ETA,,instrument_not_held,Excise Tax Act is not held by this dataset,section 256.2
 Exemption aux voyageurs,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Article 1 de l'annexe VII de la Loi sur la taxe d'accise
 Exemption from GST and rebate for legal aid services,en,ETA,,instrument_not_held,Excise Tax Act is not held by this dataset,section 258 (rebate)
@@ -97,18 +95,14 @@ Non-imposition de certains avantages d'emploi non monétaires,fr,,,no_instrument
 Non-imposition des gains en capital sur les dons de titres cotés en bourse,fr,ITA,38(a.4),not_in_consolidation,,alinéas 38(a.1) et (a.4) et articles 38.3 et 38.4
 Non-imposition des gains en capital sur les dons de titres cotés en bourse,fr,ITA,38.3,not_in_consolidation,,alinéas 38(a.1) et (a.4) et articles 38.3 et 38.4
 Non-imposition des gains en capital sur les dons de titres cotés en bourse,fr,ITA,38.4,not_in_consolidation,,alinéas 38(a.1) et (a.4) et articles 38.3 et 38.4
-Non-imposition des gains en capital sur les résidences principales,fr,ITA,"40(2)(b)""principal residence""",not_in_consolidation,,"alinéa 40(2)(b), définition de « résidence principale » à l'article 54"
 Non-imposition des indemnités de grève,fr,ITA,,no_provision,instrument named but no provision recognised,Les indemnités de grève ne constituent pas une source de revenu aux termes de la Loi de l'impôt sur le revenu.
-Non-imposition des prestations de décès à concurrence de 10 000 $,fr,ITA,"56(1)(a)(iii)""death benefit""",not_in_consolidation,,"sous-alinéa 56(1)(a)(iii) et paragraphe 248(1), définition de « prestation consécutive au décès »"
 Non-taxation of capital gains on donations of publicly listed securities,en,ITA,38(a.4),not_in_consolidation,,"paragraphs 38(a.1) and (a.4), sections 38.3 and 38.4"
 Non-taxation of capital gains on donations of publicly listed securities,en,ITA,38.3,not_in_consolidation,,"paragraphs 38(a.1) and (a.4), sections 38.3 and 38.4"
 Non-taxation of capital gains on donations of publicly listed securities,en,ITA,38.4,not_in_consolidation,,"paragraphs 38(a.1) and (a.4), sections 38.3 and 38.4"
-Non-taxation of capital gains on principal residences,en,ITA,"40(2)(b)""principal residence""",not_in_consolidation,,"paragraph 40(2)(b), definition of ""principal residence"" in section 54"
 Non-taxation of certain importations,en,OTHER,,schedule_or_class,instrument named but no provision recognised,Schedule VII to the Excise Tax ActNon-Taxable Imported Goods (GST/HST) Regulations
 Non-taxation of certain non-monetary employment benefits,en,,,no_instrument,no instrument named - a provision number alone is not a citation,Administrative concession
 Non-taxation of personal property of status Indians and Indian bands situated on,en,OTHER,,instrument_not_held,Indian Act is not held by this dataset,section 87
 Non-taxation of strike pay,en,ITA,,no_provision,instrument named but no provision recognised,Strike pay is not a source of income under the Income Tax Act.
-"Non-taxation of up to $10,000 of death benefits",en,ITA,"56(1)(a)(iii)""death benefit""",not_in_consolidation,,"subparagraph 56(1)(a)(iii) and subsection 248(1), definition of ""death benefit"""
 Non-taxation à l'importation de certains produits,fr,ETA,,no_provision,instrument named but no provision recognised,Règlement sur les produits importés non taxables (TPS/TVH)
 Partial deduction of and partial input tax credits for meals and entertainment,en,ETA,,instrument_not_held,Excise Tax Act is not held by this dataset,section 236
 Partial inclusion of U.S. Social Security benefits,en,OTHER,,instrument_not_held,Canada-United States Tax Convention is not held by this dataset,"article XVIII, paragraph 5(a)"
@@ -157,7 +151,6 @@ Remboursement pour véhicules à moteur spécialement équipés,fr,ETA,,instrume
 Remboursement pour véhicules à moteur spécialement équipés,fr,ETA,,instrument_not_held,Loi sur la taxe d'accise is not held by this dataset,articles 258.1 et 258.2
 Remboursements aux gouvernements autochtones autonomes,fr,,,no_instrument,no instrument named - a provision number alone is not a citation,Les accords ont force de loi en vertu des dispositions de lois de mise en œuvre d'ententes sur l'autonomie gouvernementale et en vertu d'ent
 Régimes de prestations aux employés,fr,ITA,,term_not_joined,term_not_joined,"paragraphe 248(1), définition « entente d'échelonnement du traitement »"
-Régimes de prestations aux employés,fr,ITA,"6(1)(g)""employee benefit plan""",not_in_consolidation,,"alinéa 6(1)(g), article 32.1 et paragraphe 248(1), définition « régime de prestations aux employés »"
 Seuil de petit fournisseur,fr,ETA,,instrument_not_held,Loi sur la taxe d'accise is not held by this dataset,alinéa 240(1)(a) et article 166
 Seuil de petit fournisseur,fr,ETA,,instrument_not_held,Loi sur la taxe d'accise is not held by this dataset,alinéa 240(1)(a) et article 166
 Small suppliers' threshold,en,ETA,,instrument_not_held,Excise Tax Act is not held by this dataset,paragraph 240(1)(a) and section 166

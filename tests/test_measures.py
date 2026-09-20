@@ -335,3 +335,44 @@ def test_definition_of_term_in_a_bare_section_resolves():
         'Income Tax Act, definition of "taxable Canadian property" in section 248')
     paths = [r["citation_path"] for r in rows]
     assert '248"taxable Canadian property"' in paths, paths
+
+
+def test_a_definition_reference_does_not_also_cite_its_host(conn):
+    """"subsection 248(1), definition of X" is one citation, not two.
+
+    Emitting the bare subsection as well linked the measure to the whole of
+    248(1), which Finance did not cite. Found in round 2 of the precision
+    sample.
+    """
+    bad = conn.execute(
+        """SELECT a.lang, a.citation_path, a.raw_text
+           FROM measure_references a
+           JOIN measure_references b
+             ON b.measure_id = a.measure_id AND b.lang = a.lang
+            AND b.raw_text = a.raw_text
+          WHERE a.citation_path IS NOT NULL
+            AND b.citation_path LIKE a.citation_path || '"%'"""
+    ).fetchall()
+    assert bad == [], [tuple(r) for r in bad[:5]]
+
+
+def test_a_definition_attaches_to_the_provision_nearest_it():
+    """The host is the provision the definition sits in, not the first named.
+
+    "paragraph 40(2)(b), definition of 'principal residence' in section 54"
+    hangs off 54. Attaching it to 40(2)(b) produced a path that does not exist,
+    and the same fault mis-hosted "death benefit" and "employee benefit plan".
+    """
+    from portage.measure_refs import extract
+
+    cases = [
+        ('Income Tax Act, paragraph 40(2)(b), definition of "principal '
+         'residence" in section 54', '54"principal residence"'),
+        ("Income Tax Act, subparagraph 56(1)(a)(iii) and subsection 248(1), "
+         'definition of "death benefit"', '248(1)"death benefit"'),
+        ('Income Tax Act, section 62 and the definition "eligible relocation" '
+         "in subsection 248(1)", '248(1)"eligible relocation"'),
+    ]
+    for text, expected in cases:
+        paths = [r["citation_path"] for r in extract(text)]
+        assert expected in paths, (text[:60], paths)

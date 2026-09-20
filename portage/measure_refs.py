@@ -320,15 +320,25 @@ def extract(field_text, lang="en", term_map=None):
         # A paragraph inside a defined term: 127(9) "investment tax credit"
         # (a.3). See docs/reference-rule.md, "Paragraphs of a definition".
         if definition and code in RESOLVABLE:
-            # Prefer a subsection - "definition of X in subsection 127(9)" -
-            # but a definition can also hang off a bare section, as in
-            # "definition of X in section 248". Both are real keys in Phase 0.
-            host = next(
-                (path for path, _pos, sched in found if "(" in path and not sched),
-                None)
-            if host is None:
-                host = next(
-                    (path for path, _pos, sched in found if not sched), None)
+            # The host is the provision the definition actually sits in, which
+            # is the one nearest the definition phrase - not the first in the
+            # segment. "paragraph 40(2)(b), definition of 'principal residence'
+            # in section 54" hangs off 54, and an earlier version attached it
+            # to 40(2)(b) and produced a path that does not exist.
+            candidates = [(path, pos) for path, pos, sched in found if not sched]
+            after = [(path, pos) for path, pos in candidates
+                     if pos >= definition.end()
+                     and re.match(r"[\s,]*(?:in|at|of|dans|au|du|de|des|"
+                                  r"\xe0|a)\b",
+                                  segment[definition.end():pos])]
+            before = [(path, pos) for path, pos in candidates
+                      if pos < definition.start()]
+            if after:
+                host = min(after, key=lambda x: x[1])[0]
+            elif before:
+                host = max(before, key=lambda x: x[1])[0]
+            else:
+                host = candidates[0][0] if candidates else None
             if host:
                 order += 1
                 raw_term = " ".join(
@@ -350,4 +360,13 @@ def extract(field_text, lang="en", term_map=None):
                     "order_index": order,
                     "reason": reason, "defined_term": raw_term,
                 })
+                # Finance cited the definition, not the provision that holds
+                # it: "subsection 248(1), definition of X" is one citation, not
+                # two. The host row goes whether or not the definition itself
+                # resolved - an unmapped French term does not turn the host
+                # into something Finance cited.
+                rows = [r for r in rows
+                        if not (r["citation_path"] == host
+                                and r["raw_text"] == segment
+                                and not r.get("defined_term"))]
     return rows
