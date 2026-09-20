@@ -177,15 +177,16 @@ Grammar written first in `docs/reference-rule.md` Part 2, then implemented.
 
 **Reference resolution, by status:**
 
-| status | rows | |
+| status | all references | ITA/ITR only |
 |---|---|---|
-| `resolved` | 613 | **77.6%** |
-| `no_provision` | 56 | 7.1% |
-| `instrument_not_held` | 56 | 7.1% |
-| `not_in_consolidation` | 33 | 4.2% |
-| `schedule_or_class` | 20 | 2.5% |
-| `no_instrument` | 7 | 0.9% |
-| `term_not_joined` | 5 | 0.6% |
+| `resolved` | 613 (77.6%) | **613 (91.1%)** |
+| `schedule_or_class` | 68 | 20 |
+| `instrument_not_held` | 53 | - |
+| `not_in_consolidation` | 33 | 33 |
+| `no_provision` | 12 | 2 |
+| `no_instrument` | 6 | - |
+| `term_not_joined` | 5 | 5 |
+| **total** | **790** | **673** |
 
 A 100% rate would be evidence of a bug: the Excise Tax Act references and the
 Schedule references cannot resolve by construction.
@@ -214,22 +215,19 @@ tells us whether the grammar reads a citation the way a person would.
 
 **2. 36 measures do not join across languages.** Mostly measures with no
 resolvable reference and no numeric cost - nothing language-independent to join
-on. A name or order tie-breaker would be judgment.
+on. The open data CSVs were checked as a possible Finance-supplied pairing and
+**cannot serve**: only 39.8% of their rows align, because each file is
+alphabetical in its own language. A name or order tie-breaker would be judgment.
 
-**3. `no_provision` (56) is the largest unresolved bucket** and is dominated by
-Excise Tax Act Schedule forms - "Part V of Schedule V to the Excise Tax Act".
-They name an instrument we do not hold and a structure we do not model, so
-resolving them is out of scope, but the grammar could recognise them as Schedule
-references rather than "no provision recognised".
+**3. Beneficiary counts are mostly unparsed** - 75 of 458 rows, and this is
+the weakest field in the dataset. The field is prose, and unlike a reference a
+wrong count does not announce itself by failing to resolve.
 
-**4. Beneficiary counts are mostly unparsed** - 75 of 458 rows. The field is
-prose.
-
-**5. Phase 0 items still open:** fragments join by ordinal across languages;
+**4. Phase 0 items still open:** fragments join by ordinal across languages;
 schedules not captured; table structure not modelled; `history_note` is
 section-level only.
 
-**6. Commercial redistribution** remains an open legal question. Not a blocker.
+**5. Commercial redistribution** remains an open legal question. Not a blocker.
 
 ## Not in Phase 1
 
