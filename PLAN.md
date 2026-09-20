@@ -84,21 +84,35 @@ results with the four verified samples.
 Rules, table definitions and acceptance tests are in `CLAUDE.md`. This is the
 sequencing and the things to settle first.
 
-### Step 1 - tagged cross-references (finishes Phase 0's last item)
+### Step 1 - tagged cross-references - **DONE**
 
-Build `cross_references` from `XRefExternal`, `XRefInternal` and `DefinitionRef`,
-`method = 'tagged'`, resolving `DefinitionRef` to definition records. This is the
-resolution machinery Phase 1 reuses, which is why it comes first.
+`cross_references` is built: 5,363 rows, every one `method = 'tagged'`, from
+`XRefExternal` and `DefinitionRef` across both instruments and both languages.
+63 tests pass. Details in `docs/decisions.md`; the headline numbers:
 
-**One thing to know going in:** `XRefInternal` is effectively absent. The English
-Act has none and the French Act has exactly one. So the tagged table will be
-`XRefExternal` (1,112 in the Act) plus `DefinitionRef` (1,158), and it will not
-contain provision-to-provision references. That is the gap Phase 1's pattern
-extraction fills, in the report's reference field rather than in the Act's prose.
+| | rows | resolved | |
+|---|---|---|---|
+| `DefinitionRef` | 2,526 | 950 | **37.6%** |
+| `XRefExternal` | 2,837 | 0 | names an instrument, not a provision |
+| **total** | **5,363** | **950** | **17.7%** |
 
-`DefinitionRef` resolution is the interesting part: it should land on the
-definition records keyed by defined term, which is exactly what session 3 built.
-Expect it to exercise the `~fr`, `#2` and fallback paths.
+**The finding that matters for Phase 1:** the source tags **no**
+provision-to-provision references. None in the English Act, the English
+Regulations or the French Regulations; exactly one in the French Act. The
+reference graph the project eventually wants does not exist in the source and
+must be built by pattern extraction. A test asserts the count so that if
+Justice Canada starts tagging them, we hear about it.
+
+Two decisions lowered the resolution rate deliberately: inline definition sites
+are indexed (a term defined by "an *eligible derivative* ... **means**" in the
+provision's own text counts, even with no `<Definition>` wrapper), and ambiguous
+terms are never resolved by picking one. Both are written up in
+`docs/decisions.md`.
+
+**Carried into the reference work:** 81 of 97 unresolved English Regulations
+references match a definition in the *Act* (35 uniquely). Resolving them needs
+the "of the Act" signal from prose, so it belongs with the pattern extraction
+rather than here.
 
 ### Step 2 - inspect the report before parsing it
 

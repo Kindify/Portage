@@ -160,12 +160,14 @@ class _Walker:
         self.counters = defaultdict(int)
         self.seen_paths = set()
         self.dup_terms = defaultdict(int)
+        self.owner_of = {}
+        self.owned = []
 
     def _next(self, parent_path, letter):
         self.counters[(parent_path, letter)] += 1
         return "%s~%s%d" % (parent_path, letter, self.counters[(parent_path, letter)])
 
-    def _emit(self, **kw):
+    def _emit(self, _el=None, **kw):
         self.order += 1
         rec = {
             "act": self.act,
@@ -182,6 +184,12 @@ class _Walker:
         }
         rec.update(kw)
         self.records.append(rec)
+        if _el is not None:
+            # Remember which element produced this record, so references can be
+            # attributed to a provision using the same path logic that built it
+            # rather than a second, drifting implementation.
+            self.owner_of[id(_el)] = rec["citation_path"]
+            self.owned.append(_el)
         return rec
 
     def walk(self, el, prefix, parent_path, skip_direct_text):
@@ -206,6 +214,7 @@ class _Walker:
                 # formula, for example. Dropping it would silently corrupt the
                 # sentence it introduces.
                 self._emit(
+                    _el=child,
                     citation_path=self._next(parent_path, "t"),
                     level="text",
                     parent_path=parent_path or None,
@@ -222,6 +231,7 @@ class _Walker:
                 # FormulaParagraph, Provision). It belongs to the nearest
                 # addressable ancestor but has no identity of its own.
                 self._emit(
+                    _el=child,
                     citation_path=self._next(parent_path, "t"),
                     level="text",
                     parent_path=parent_path or None,
@@ -248,6 +258,7 @@ class _Walker:
                         "duplicate label in the same provision"
                 self.seen_paths.add(path)
                 self._emit(
+                    _el=child,
                     citation_path=path,
                     level=level,
                     parent_path=parent_path,
@@ -291,6 +302,7 @@ class _Walker:
                 self.seen_paths.add(path)
 
                 self._emit(
+                    _el=child,
                     citation_path=path,
                     level="definition",
                     parent_path=parent_path,
@@ -306,6 +318,7 @@ class _Walker:
             elif tag in OPAQUE:
                 level, letter = OPAQUE[tag]
                 self._emit(
+                    _el=child,
                     citation_path=self._next(parent_path, letter),
                     level=level,
                     parent_path=parent_path or None,
@@ -319,6 +332,7 @@ class _Walker:
                 # Capture it whole. Without this branch the walker would descend,
                 # find no child it recognises, and silently drop the text.
                 self._emit(
+                    _el=child,
                     citation_path=self._next(parent_path, "t"),
                     level="text",
                     parent_path=parent_path or None,
@@ -333,6 +347,7 @@ class _Walker:
                 self.walk(child, prefix, parent_path, skip_direct_text=False)
                 if child.tail and child.tail.strip():
                     self._emit(
+                        _el=child,
                         citation_path=self._next(parent_path, "t"),
                         level="text",
                         parent_path=parent_path or None,
@@ -341,8 +356,14 @@ class _Walker:
                     )
 
 
-def parse(xml_path, act, source_url):
-    """Parse one instrument. Returns (records, meta)."""
+def parse_walker(xml_path, act, source_url):
+    """Parse one instrument, returning the walker and meta.
+
+    Callers that only want records use parse(). This exists for the reference
+    extractor, which needs the walker's element-to-path map so that a reference
+    is attributed using the same path logic that built the record - not a second
+    implementation that could drift from it.
+    """
     tree = etree.parse(str(xml_path))
     root = tree.getroot()
 
@@ -358,6 +379,13 @@ def parse(xml_path, act, source_url):
     body = root.find("Body")
     walker = _Walker(act, source_url)
     walker.walk(body, "", "", skip_direct_text=False)
+    walker.body = body
+    return walker, meta
+
+
+def parse(xml_path, act, source_url):
+    """Parse one instrument. Returns (records, meta)."""
+    walker, meta = parse_walker(xml_path, act, source_url)
     return walker.records, meta
 
 

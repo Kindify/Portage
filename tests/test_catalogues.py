@@ -21,6 +21,7 @@ CATALOGUES = [
     "alignment_unverified.csv",
     "definition_join_suspects.csv",
     "alignment_positional.csv",
+    "unresolved_tagged_references.csv",
 ]
 
 

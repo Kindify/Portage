@@ -621,3 +621,53 @@ anyway, since a question asked and answered is worth more in the log than in
 nobody's memory.
 
 ---
+
+## 2026-09-19 - Tagged cross-references: what the source actually marks up
+
+**Built** `cross_references` from the two reference elements the source tags:
+`XRefExternal` (1,423 across both instruments) and `DefinitionRef` (1,259).
+Every row carries `method = 'tagged'`. 5,363 rows across both instruments and
+both languages.
+
+**`XRefInternal` is effectively absent and that is the headline.** The English
+Act, the English Regulations and the French Regulations contain **none**. The
+French Act contains **one**. So the source tags no provision-to-provision
+references at all, and this table cannot be read as a reference graph. A test
+asserts the count so that if Justice Canada starts tagging them, we find out.
+
+**`XRefExternal` resolves to nothing, by design.** It names an *instrument*, not
+a provision - "Income Tax Act", "Inquiries Act" - and 1,539 of them point at
+instruments this dataset does not hold. A further 546 carry no `link` attribute
+at all. Pointing these at a provision would require inventing one.
+
+**`DefinitionRef` carries no attributes whatsoever** - just the term text. There
+is no pointer to the defining provision, so resolution is by matching the term
+against definition sites in the same instrument, and only a **unique** match
+counts. 950 of 2,526 resolve, **37.6%**.
+
+**Resolution rate is reported, not maximised.** Two decisions pushed the rate
+*down* and both were right:
+
+1. **Inline definition sites are indexed.** A term is defined in two structural
+   forms: inside a `<Definition>` element (2,191 in the English Act) and marked
+   up inline in a provision's own `<Text>` with no wrapper (a further 962). ITA
+   10.1(5) reads "an *eligible derivative*, of a taxpayer for a taxation year,
+   **means** a swap agreement..." - a definition by any reading, simply not
+   wrapped. Indexing only the wrapped form left 148 references looking as though
+   nothing defined them, which is false. Including both cut unique resolution
+   from 51.9% to 38.2%, because more real candidates means more real ambiguity.
+2. **Ambiguity is never broken by picking one.** 1,233 references name a term
+   defined in several places - "investment tax credit" is referenced 21 times
+   and defined in several. Taking the nearest or the first would be a guess
+   presented as a result. They stay unresolved with the candidate paths listed.
+
+**Cross-instrument resolution is not attempted.** 81 of 97 unresolved English
+Regulations references match a definition in the *Act* (35 uniquely), because
+the Regulations lean on the Act's definitions. Resolving them needs the prose
+signal - "as defined in subsection 207.5(1) **of the Act**" - which is pattern
+extraction, and belongs with the rest of that work rather than smuggled in here.
+
+**Unresolved rows are kept**, with a stated reason and, where ambiguous, the
+candidate paths, in `data/unresolved_tagged_references.csv` against a fixture.
+
+---

@@ -225,7 +225,7 @@ Full detail in `docs/citation-path-rule.md` and `docs/source-notes.md`.
 Read these before using the data. Each is a deliberate boundary, not a bug, and
 each is catalogued in a file the tests check.
 
-**Cross-references are tagged-only.** The source XML marks references to other
+**Cross-references contain no provision-to-provision links at all.** The source XML marks references to other
 statutes (`XRefExternal`) and to defined terms (`DefinitionRef`), but has no
 markup at all for a reference from one provision to another inside the same
 instrument. Phase 0 ships only the tagged ones, each marked `method = 'tagged'`.

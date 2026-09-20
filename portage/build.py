@@ -12,6 +12,7 @@ import re
 import sqlite3
 
 from .parse import parse
+from .refs import extract
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
@@ -74,6 +75,29 @@ CREATE INDEX idx_sections_parent ON sections(parent_id);
 CREATE INDEX idx_sections_path   ON sections(act, citation_path);
 CREATE INDEX idx_sections_order  ON sections(act, order_index);
 CREATE INDEX idx_sections_align  ON sections(act, alignment);
+
+CREATE TABLE cross_references (
+    id                 INTEGER PRIMARY KEY,
+    act                TEXT    NOT NULL,
+    lang               TEXT    NOT NULL,
+    from_id            INTEGER REFERENCES sections(id),
+    from_citation_path TEXT    NOT NULL,
+    ref_kind           TEXT    NOT NULL,
+    raw_text           TEXT    NOT NULL,
+    reference_type     TEXT,
+    target_link        TEXT,
+    target_act         TEXT,
+    to_citation_path   TEXT,
+    to_id              INTEGER REFERENCES sections(id),
+    resolved           INTEGER NOT NULL DEFAULT 0,
+    unresolved_reason  TEXT,
+    method             TEXT    NOT NULL DEFAULT 'tagged',
+    order_index        INTEGER NOT NULL
+);
+
+CREATE INDEX idx_xref_from ON cross_references(act, from_citation_path);
+CREATE INDEX idx_xref_to   ON cross_references(act, to_citation_path);
+CREATE INDEX idx_xref_kind ON cross_references(act, ref_kind, resolved);
 
 CREATE VIRTUAL TABLE sections_fts_en USING fts5(
     citation_path, heading_en, text_en, content=''
@@ -579,6 +603,51 @@ def build(db_path=DB_PATH):
             gaps.append((act, row[0], row[1], row[2], row[3], row[4],
                          " ".join(row[5].split())[:80]))
 
+    # Phase 1 step 1: tagged cross-references.
+    xref_rows = []
+    for src in SOURCES:
+        for lang in ("en", "fr"):
+            for row in extract(src[lang]["xml"], src["act"], lang, src[lang]["url"]):
+                conn.execute(
+                    """INSERT INTO cross_references
+                       (act, lang, from_citation_path, ref_kind, raw_text,
+                        reference_type, target_link, target_act,
+                        to_citation_path, resolved, unresolved_reason,
+                        method, order_index)
+                       VALUES (?,?,?,?,?,?,?,?,?,?,?,'tagged',?)""",
+                    (row["act"], row["lang"], row["from_citation_path"],
+                     row["ref_kind"], row["raw_text"], row["reference_type"],
+                     row["target_link"], row["target_act"],
+                     row["to_citation_path"], row["resolved"],
+                     row["unresolved_reason"] or None, row["order_index"]))
+                if not row["resolved"]:
+                    xref_rows.append(
+                        (row["act"], row["lang"], row["from_citation_path"],
+                         row["ref_kind"], row["raw_text"][:100],
+                         row["unresolved_reason"], row.get("candidates", "")))
+
+    # Link both ends to section rows now that every reference is in.
+    conn.execute(
+        """UPDATE cross_references SET from_id = (
+               SELECT s.id FROM sections s
+               WHERE s.act = cross_references.act
+                 AND s.citation_path = cross_references.from_citation_path)""")
+    conn.execute(
+        """UPDATE cross_references SET to_id = (
+               SELECT s.id FROM sections s
+               WHERE s.act = cross_references.target_act
+                 AND s.citation_path = cross_references.to_citation_path)
+           WHERE to_citation_path IS NOT NULL""")
+
+    n_xrefs = conn.execute("SELECT COUNT(*) FROM cross_references").fetchone()[0]
+    n_xrefs_resolved = conn.execute(
+        "SELECT COUNT(*) FROM cross_references WHERE resolved=1").fetchone()[0]
+
+    n_xref_unres = _write_catalogue(
+        DATA / "unresolved_tagged_references.csv", sorted(xref_rows),
+        ["act", "lang", "from_citation_path", "ref_kind", "raw_text", "reason",
+         "candidates"])
+
     _set_alignment(conn)
 
     positional_rows = [
@@ -654,6 +723,9 @@ def build(db_path=DB_PATH):
         "rows_alignment_unverified": str(n_unv),
         "rows_definition_join_suspects": str(n_sus),
         "rows_alignment_positional": str(n_pos),
+        "rows_cross_references": str(n_xrefs),
+        "rows_cross_references_resolved": str(n_xrefs_resolved),
+        "rows_unresolved_tagged_references": str(n_xref_unres),
         "rows_label_anomalies": str(n_anom),
         "rows_definition_key_fallbacks": str(n_fb),
         "phase": "0",
@@ -681,7 +753,9 @@ def build(db_path=DB_PATH):
     return {"rows": rows, "addressable": addressable, "both_languages": both,
             "bilingual_gaps": n_gap, "label_anomalies": n_anom,
             "definition_fallbacks": n_fb, "alignment_unverified": n_unv,
-            "definition_join_suspects": n_sus, "alignment_positional": n_pos}
+            "definition_join_suspects": n_sus, "alignment_positional": n_pos,
+            "cross_references": n_xrefs,
+            "cross_references_resolved": n_xrefs_resolved}
 
 
 if __name__ == "__main__":
