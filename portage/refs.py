@@ -48,49 +48,77 @@ def _owner(el, owner_of):
 
 
 def definition_index(records, lang):
-    """Defined term -> the definition records that define it, in one language.
+    """Term -> [(citation_path, 'definition_record')] for one instrument.
 
-    Implements docs/reference-rule.md section 1. Candidates are `<Definition>`
-    records only, matched on `defined_term_en` / `defined_term_fr` after the
-    same normalisation that builds definition citation paths, so the two sides
-    cannot drift apart.
-
-    A record counts in a language only if it carries text in that language: a
-    definition split into `X` and `X~fr` is one candidate per language, not two.
-
-    Known gap, stated in the rule: terms defined inline - `<DefinedTermEn>` in a
-    provision's own `<Text>` with no `<Definition>` wrapper, 962 of them in the
-    English Act - are not candidates. Around 150 references whose term really is
-    defined somewhere come out unresolved because of it.
+    `<Definition>` records only, matched on `defined_term_en` / `defined_term_fr`
+    after the same normalisation that builds definition citation paths, so the
+    two sides cannot drift apart. A record counts in a language only if it
+    carries text in that language, so a definition split into `X` and `X~fr` is
+    one candidate per language rather than two.
     """
     term_col = "defined_term_%s" % lang
     text_col = "text_%s" % lang
     index = defaultdict(list)
     for rec in records:
-        if rec["level"] != "definition":
-            continue
-        if not rec.get(text_col):
+        if rec["level"] != "definition" or not rec.get(text_col):
             continue
         term = normalise_term(rec.get(term_col))
         if term:
-            index[term].append(rec["citation_path"])
+            index[term].append((rec["citation_path"], "definition_record"))
     return index
 
 
-def extract(xml_path, act, lang, source_url, section_records):
+def inline_term_index(walker, lang):
+    """Term -> [(citation_path, 'inline_defined_term')] for one instrument.
+
+    The source defines terms in two structural forms. The second is a
+    `<DefinedTermEn>` / `<DefinedTermFr>` marked up inside a provision's own
+    `<Text>`, with no `<Definition>` wrapper - 964 of them in the English Act,
+    431 in the English Regulations. ITA 10.1(5) is one: "an *eligible
+    derivative*, of a taxpayer for a taxation year, **means** a swap
+    agreement...". It defines the term as plainly as any wrapped definition.
+
+    **These are found by element nesting, not by prose.** An inline site is a
+    DefinedTerm element with no `<Definition>` ancestor. Nothing here looks for
+    the word "means" or any other wording, so the ban on text heuristics is not
+    touched.
+    """
+    tag = "DefinedTermEn" if lang == "en" else "DefinedTermFr"
+    index = defaultdict(list)
+    seen = set()
+    for el in walker.body.iter(tag):
+        if any(a.tag == "Definition" for a in el.iterancestors()):
+            continue
+        term = normalise_term(el.text)
+        if not term:
+            continue
+        owner = _owner(el, walker.owner_of)
+        if owner is None or (term, owner) in seen:
+            continue
+        seen.add((term, owner))
+        index[term].append((owner, "inline_defined_term"))
+    return index
+
+
+def candidate_index(walker, section_records, lang):
+    """Every definition site in one instrument, both structural forms."""
+    index = defaultdict(list)
+    for source in (definition_index(section_records, lang),
+                   inline_term_index(walker, lang)):
+        for term, sites in source.items():
+            index[term].extend(sites)
+    return index
+
+
+def extract(walker, act, lang, same_index, other_index=None, other_act=None):
     """Tagged cross-references for one instrument in one language.
 
-    Implements docs/reference-rule.md. Returns a list of dicts; each carries a
-    `resolution` of 'unique', 'ambiguous' or 'unresolved', and `candidate_paths`
-    listing every definition that matched. Nothing is ever chosen from among
-    several candidates - see the rule's governing principle.
+    Implements docs/reference-rule.md. `same_index` holds definition sites in
+    this instrument and is what decides `resolution`. `other_index` holds sites
+    in the *other* instrument: those are recorded as candidates so a reader can
+    see them, but they never change the resolution, because which instrument's
+    definition governs is a legal question this tool does not answer.
     """
-    walker, _meta = parse_walker(xml_path, act, source_url)
-    index = definition_index(section_records, lang)
-
-    # Walk the body once in document order. Iterating per owned element would
-    # count a reference once for every owned ancestor it has, which inflated an
-    # early run from 2,224 elements to 7,755 rows.
     found = [el for el in walker.body.iter()
              if isinstance(el.tag, str) and el.tag in TAGGED]
 
@@ -116,7 +144,7 @@ def extract(xml_path, act, lang, source_url, section_records):
             "target_act": None,
             "to_citation_path": None,
             "resolution": "unresolved",
-            "candidate_paths": [],
+            "candidates": [],
             "unresolved_reason": "",
             "order_index": order,
         }
@@ -142,29 +170,38 @@ def extract(xml_path, act, lang, source_url, section_records):
             # Rule section 3. Exactly one exists, in the French Act, and its
             # target instrument is named in prose rather than in the markup:
             # "l'article 51 de la Loi de 2012 apportant des modifications
-            # techniques" is not section 51 of this Act. Resolving a bare
-            # section number here would produce a confidently wrong link.
+            # techniques" is not section 51 of this Act. A bare section number
+            # with no instrument qualifier never resolves.
             row["unresolved_reason"] = (
-                "bare section number whose target instrument is named in "
-                "prose, not in the markup")
+                "bare section number with no instrument qualifier - the target "
+                "instrument is named in prose, not in the markup")
 
         else:
-            # Rule section 1. Exact match after the shared normalisation,
-            # against definitions in the same instrument and language.
+            # Rule section 1. Exact match after the shared normalisation.
             term = normalise_term(raw)
-            matches = sorted(index.get(term, [])) if term else []
-            row["candidate_paths"] = matches
-            if len(matches) == 1:
+            same = sorted(same_index.get(term, [])) if term else []
+            other = sorted(other_index.get(term, [])) if (term and other_index) else []
+            row["candidates"] = (
+                [(p, k, act, "same_instrument") for p, k in same]
+                + [(p, k, other_act, "other_instrument") for p, k in other])
+
+            # Resolution is computed over same-instrument candidates only.
+            if len(same) == 1:
                 row["resolution"] = "unique"
-                row["to_citation_path"] = matches[0]
+                row["to_citation_path"] = same[0][0]
                 row["target_act"] = act
-            elif len(matches) > 1:
+            elif len(same) > 1:
                 row["resolution"] = "ambiguous"
                 row["target_act"] = act
                 row["unresolved_reason"] = (
                     "defined in %d places in %s - which one governs here is a "
-                    "scope question this tool does not answer"
-                    % (len(matches), act))
+                    "scope question this tool does not answer" % (len(same), act))
+            elif other:
+                row["unresolved_reason"] = (
+                    "not defined in %s; %d definition(s) of this term in %s are "
+                    "recorded as candidates, but which instrument governs is a "
+                    "legal question this tool does not answer"
+                    % (act, len(other), other_act))
             else:
                 row["unresolved_reason"] = "no definition of this term in %s" % act
 

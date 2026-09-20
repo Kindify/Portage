@@ -70,10 +70,10 @@ def test_candidates_table_matches_the_counts(conn):
     """Every candidate is recorded, and the count on the reference agrees."""
     bad = conn.execute(
         """SELECT COUNT(*) FROM cross_references x
-           WHERE x.candidate_count != (
+           WHERE x.candidate_count + x.candidate_count_other != (
                SELECT COUNT(*) FROM definition_ref_candidates c
                WHERE c.ref_id = x.id)""").fetchone()[0]
-    assert bad == 0, "candidate_count disagrees with definition_ref_candidates"
+    assert bad == 0, "candidate counts disagree with definition_ref_candidates"
 
     orphan = conn.execute(
         """SELECT COUNT(*) FROM definition_ref_candidates c
@@ -111,13 +111,16 @@ def test_resolution_is_unique_or_it_is_not_resolution(conn, act, lang, xml):
     so cannot see terms defined inline in a provision's own text, and it also
     counts the ~fr half of a split pair as a separate site.
     """
-    from portage.refs import definition_index
+    from portage.parse import parse_walker
+    from portage.refs import candidate_index
 
     cur = conn.execute(
         "SELECT act, citation_path, level, defined_term_en, defined_term_fr, "
         "text_en, text_fr FROM sections WHERE act=?", (act,))
     columns = [d[0] for d in cur.description]
-    index = definition_index([dict(zip(columns, r)) for r in cur.fetchall()], lang)
+    records = [dict(zip(columns, r)) for r in cur.fetchall()]
+    walker, _ = parse_walker(xml, act, "u")
+    index = candidate_index(walker, records, lang)
 
     rows = conn.execute(
         "SELECT raw_text, to_citation_path FROM cross_references "
@@ -129,7 +132,7 @@ def test_resolution_is_unique_or_it_is_not_resolution(conn, act, lang, xml):
         assert len(sites) == 1, (
             "%r resolved to %s but is defined in %d places: %s"
             % (raw, target, len(sites), sites[:5]))
-        assert sites[0] == target
+        assert sites[0][0] == target
 
 
 @pytest.mark.parametrize("act,lang,xml", CASES, ids=IDS)
@@ -147,3 +150,93 @@ def test_xrefinternal_is_still_absent(conn, act, lang, xml):
         "XRefInternal count changed for %s %s: found %d, expected %d. "
         "If the source now tags internal references, revisit PLAN.md."
         % (act, lang, n, expected))
+
+
+def test_candidate_kinds_and_scopes_are_known_values(conn):
+    kinds = {r[0] for r in conn.execute(
+        "SELECT DISTINCT candidate_kind FROM definition_ref_candidates")}
+    assert kinds <= {"definition_record", "inline_defined_term"}, kinds
+    scopes = {r[0] for r in conn.execute(
+        "SELECT DISTINCT candidate_scope FROM definition_ref_candidates")}
+    assert scopes <= {"same_instrument", "other_instrument"}, scopes
+
+
+def test_other_instrument_candidates_never_change_resolution(conn):
+    """They are recorded so a reader can see them, and that is all.
+
+    Which instrument's definition governs is a legal question, so a reference
+    with no same-instrument candidate stays unresolved however many
+    other-instrument candidates it has.
+    """
+    leaked = conn.execute(
+        "SELECT COUNT(*) FROM cross_references "
+        "WHERE candidate_count = 0 AND resolution != 'unresolved'"
+    ).fetchone()[0]
+    assert leaked == 0, (
+        "%d references resolved with no same-instrument candidate" % leaked)
+
+    # And the count columns must agree with the rows actually stored.
+    for column, scope in (("candidate_count", "same_instrument"),
+                          ("candidate_count_other", "other_instrument")):
+        bad = conn.execute(
+            """SELECT COUNT(*) FROM cross_references x
+               WHERE x.%s != (
+                   SELECT COUNT(*) FROM definition_ref_candidates c
+                   WHERE c.ref_id = x.id AND c.candidate_scope = ?)"""
+            % column, (scope,)).fetchone()[0]
+        assert bad == 0, "%s disagrees with the candidates table" % column
+
+
+def test_other_instrument_candidates_point_at_the_other_instrument(conn):
+    bad = conn.execute(
+        """SELECT COUNT(*) FROM cross_references x
+           JOIN definition_ref_candidates c ON c.ref_id = x.id
+           WHERE c.candidate_scope = 'other_instrument' AND c.act = x.act"""
+    ).fetchone()[0]
+    assert bad == 0
+
+
+@pytest.mark.parametrize("act,lang,xml", CASES, ids=IDS)
+def test_inline_candidates_are_found_by_nesting_not_by_prose(conn, act, lang, xml):
+    """An inline definition site is a DefinedTerm element outside <Definition>.
+
+    Re-derived from the XML by that structural test alone. If the extractor ever
+    started looking for "means" or any other wording, its inline sites would no
+    longer match this set.
+    """
+    from portage.parse import parse_walker
+    from portage.refs import inline_term_index
+
+    walker, _ = parse_walker(xml, act, "u")
+    expected = {p for sites in inline_term_index(walker, lang).values()
+                for p, _kind in sites}
+
+    stored = {r[0] for r in conn.execute(
+        """SELECT DISTINCT c.citation_path FROM definition_ref_candidates c
+           JOIN cross_references x ON x.id = c.ref_id
+           WHERE x.act=? AND x.lang=? AND c.candidate_kind='inline_defined_term'
+             AND c.candidate_scope='same_instrument'""", (act, lang))}
+    assert stored <= expected, sorted(stored - expected)[:5]
+
+
+def test_bare_section_number_never_resolves(conn):
+    """Phase 1 reference-grammar fixture: ITA French 93(5.2)(a).
+
+    The only XRefInternal in the corpus. Its text is "51", and the prose around
+    it reads "l'article 51 de la Loi de 2012 apportant des modifications
+    techniques" - section 51 of a *different* Act. A bare section number with no
+    instrument qualifier must never resolve, here or in the reference grammar
+    Phase 1 will write for the tax expenditure report.
+    """
+    row = conn.execute(
+        "SELECT raw_text, resolution, to_citation_path, unresolved_reason "
+        "FROM cross_references "
+        "WHERE act='ITA' AND lang='fr' AND from_citation_path='93(5.2)(a)' "
+        "AND ref_kind='XRefInternal'").fetchone()
+    assert row is not None, "the XRefInternal fixture has gone missing"
+    assert row["raw_text"] == "51"
+    assert row["resolution"] == "unresolved"
+    assert row["to_citation_path"] is None, (
+        "a bare section number with no instrument qualifier resolved to %s - "
+        "it means section 51 of another Act entirely" % row["to_citation_path"])
+    assert "no instrument qualifier" in (row["unresolved_reason"] or "")

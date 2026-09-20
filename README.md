@@ -234,16 +234,27 @@ entire corpus contains **one**. References like "Notwithstanding subsections
 graph.**
 
 **A reference has three outcomes, and "ambiguous" is an answer.** Of 5,364
-tagged references, 1,237 resolve to exactly one definition (`unique`), 801 name
-a term defined in several places (`ambiguous`), and 3,326 resolve to nothing
+tagged references, 950 resolve to exactly one definition (`unique`), 1,207 name
+a term defined in several places (`ambiguous`), and 3,207 resolve to nothing
 (`unresolved`). Every candidate definition is recorded in
 `definition_ref_candidates`, and a reference with several candidates **never
 picks one** - "person" is defined in 15 places in the English Act, and which
-definition governs a given sentence is a question of scope that this dataset
-does not answer. Join the candidates table and apply your own rule in the open.
-The 249 terms defined more than once are listed in
-`data/terms_defined_more_than_once.csv`. The rule is in
-`docs/reference-rule.md`.
+definition governs a given sentence is a question of scope this dataset does not
+answer. Join the candidates table and apply your own rule in the open. The 400
+terms defined more than once are listed in
+`data/terms_defined_more_than_once.csv`.
+
+**Candidates come in two kinds and two scopes.** `candidate_kind` is
+`definition_record` (a `<Definition>` element) or `inline_defined_term` (a term
+marked up in a provision's own text with no `<Definition>` wrapper - 964 such
+sites in the English Act, found by element nesting and never by looking for the
+word "means"). `candidate_scope` is `same_instrument` or `other_instrument`.
+**Only same-instrument candidates decide the resolution.** A definition in the
+Act is recorded as a candidate for a Regulations reference so you can see it,
+but it never resolves one: whether the Act's definition governs a word in the
+Regulations is a legal question, usually settled by prose the markup does not
+carry. 691 references have other-instrument candidates. The full rule, with the
+before-and-after numbers, is in `docs/reference-rule.md`.
 
 **Schedules and amendments-not-in-force are not captured.** The `sections` table
 covers the enacted `<Body>`. The file also contains three `<Schedule>` elements -

@@ -13,7 +13,8 @@ import sqlite3
 from collections import defaultdict
 
 from .parse import parse
-from .refs import extract
+from .parse import parse_walker
+from .refs import candidate_index, extract
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
@@ -92,6 +93,7 @@ CREATE TABLE cross_references (
     to_id              INTEGER REFERENCES sections(id),
     resolution         TEXT    NOT NULL,
     candidate_count    INTEGER NOT NULL DEFAULT 0,
+    candidate_count_other INTEGER NOT NULL DEFAULT 0,
     unresolved_reason  TEXT,
     method             TEXT    NOT NULL DEFAULT 'tagged',
     order_index        INTEGER NOT NULL
@@ -106,9 +108,20 @@ CREATE INDEX idx_xref_kind ON cross_references(act, ref_kind, resolution);
 -- Which definition governs at a location is a scope question, and CLAUDE.md
 -- puts scope questions outside the data.
 CREATE TABLE definition_ref_candidates (
-    ref_id        INTEGER NOT NULL REFERENCES cross_references(id),
-    definition_id INTEGER NOT NULL REFERENCES sections(id),
-    citation_path TEXT    NOT NULL,
+    ref_id          INTEGER NOT NULL REFERENCES cross_references(id),
+    definition_id   INTEGER NOT NULL REFERENCES sections(id),
+    act             TEXT    NOT NULL,
+    citation_path   TEXT    NOT NULL,
+    -- 'definition_record' = a <Definition> element.
+    -- 'inline_defined_term' = a DefinedTerm element marked up in a provision's
+    -- own <Text> with no <Definition> wrapper. Found by element nesting, never
+    -- by looking for "means" or any other wording.
+    candidate_kind  TEXT    NOT NULL,
+    -- 'same_instrument' candidates decide the resolution.
+    -- 'other_instrument' candidates are recorded so a reader can see them, and
+    -- never change it: which instrument's definition governs is a legal
+    -- question this tool does not answer.
+    candidate_scope TEXT    NOT NULL,
     PRIMARY KEY (ref_id, definition_id)
 );
 
@@ -630,38 +643,60 @@ def build(db_path=DB_PATH):
     for rec in section_records:
         by_act[rec["act"]].append(rec)
 
-    unresolved_rows = []
+    # One walker and one candidate index per instrument and language, built
+    # before any reference is classified, so the cross-instrument lookup has
+    # the other instrument's index ready.
+    walkers, indexes = {}, {}
     for src in SOURCES:
         for lang in ("en", "fr"):
-            for row in extract(src[lang]["xml"], src["act"], lang,
-                               src[lang]["url"], by_act[src["act"]]):
+            walker, _ = parse_walker(src[lang]["xml"], src["act"], src[lang]["url"])
+            walkers[(src["act"], lang)] = walker
+            indexes[(src["act"], lang)] = candidate_index(
+                walker, by_act[src["act"]], lang)
+
+    acts = [src["act"] for src in SOURCES]
+    unresolved_rows = []
+    for src in SOURCES:
+        act = src["act"]
+        others = [a for a in acts if a != act]
+        other_act = others[0] if len(others) == 1 else None
+        for lang in ("en", "fr"):
+            other_index = indexes.get((other_act, lang)) if other_act else None
+            for row in extract(walkers[(act, lang)], act, lang,
+                               indexes[(act, lang)], other_index, other_act):
+                same = [c for c in row["candidates"] if c[3] == "same_instrument"]
+                other = [c for c in row["candidates"] if c[3] == "other_instrument"]
                 cur = conn.execute(
                     """INSERT INTO cross_references
                        (act, lang, from_citation_path, ref_kind, raw_text,
                         reference_type, target_link, target_act,
                         to_citation_path, resolution, candidate_count,
-                        unresolved_reason, method, order_index)
-                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'tagged',?)""",
+                        candidate_count_other, unresolved_reason, method,
+                        order_index)
+                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'tagged',?)""",
                     (row["act"], row["lang"], row["from_citation_path"],
                      row["ref_kind"], row["raw_text"], row["reference_type"],
                      row["target_link"], row["target_act"],
                      row["to_citation_path"], row["resolution"],
-                     len(row["candidate_paths"]),
+                     len(same), len(other),
                      row["unresolved_reason"] or None, row["order_index"]))
                 ref_id = cur.lastrowid
-                for path in row["candidate_paths"]:
+                for path, kind, cand_act, scope in row["candidates"]:
                     conn.execute(
                         """INSERT OR IGNORE INTO definition_ref_candidates
-                           (ref_id, definition_id, citation_path)
-                           SELECT ?, s.id, ? FROM sections s
+                           (ref_id, definition_id, act, citation_path,
+                            candidate_kind, candidate_scope)
+                           SELECT ?, s.id, ?, ?, ?, ? FROM sections s
                            WHERE s.act=? AND s.citation_path=?""",
-                        (ref_id, path, row["act"], path))
+                        (ref_id, cand_act, path, kind, scope, cand_act, path))
                 if row["resolution"] != "unique":
                     unresolved_rows.append(
                         (row["act"], row["lang"], row["from_citation_path"],
                          row["ref_kind"], row["raw_text"][:100],
                          row["resolution"], row["unresolved_reason"],
-                         "; ".join(row["candidate_paths"][:6])))
+                         "; ".join(p for p, _k, _a, _s in same[:6]),
+                         "; ".join("%s %s" % (a, p)
+                                   for p, _k, a, _s in other[:6])))
 
     conn.execute(
         """UPDATE cross_references SET from_id = (
@@ -684,7 +719,8 @@ def build(db_path=DB_PATH):
     n_xref_unres = _write_catalogue(
         DATA / "unresolved_tagged_references.csv", sorted(unresolved_rows),
         ["act", "lang", "from_citation_path", "ref_kind", "raw_text",
-         "resolution", "reason", "candidates"])
+         "resolution", "reason", "candidates_same_instrument",
+         "candidates_other_instrument"])
 
     # A term defined in more than one place is a finding in its own right, not
     # merely a reason a reference failed to resolve.

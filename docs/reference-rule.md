@@ -59,26 +59,66 @@ defined in several places and the source does not say which one applies here.
 A consumer that needs one answer joins `definition_ref_candidates` and applies
 its own scope rule, in the open, rather than inheriting a silent guess from us.
 
-### Known limitation, stated rather than worked around
+### Two classes of candidate, both structural
 
-This rule matches `defined_term_en` / `defined_term_fr`, which exist only on
-`<Definition>` records. The source also defines terms **inline**, marking
-`<DefinedTermEn>` inside a provision's own `<Text>` with no `<Definition>`
-wrapper - 962 such sites in the English Act against 2,191 wrapped ones. ITA
-10.1(5) is one: *"an eligible derivative, of a taxpayer for a taxation year,
-means a swap agreement..."*.
+A term is defined in the source in two structural forms, and both count:
 
-Those sites are **not** candidates under this rule, so about 150 references
-whose term genuinely is defined somewhere in the Act come out `unresolved`.
-That is a known gap, catalogued with everything else, not a claim that nothing
-defines them.
+| `candidate_kind` | What it is | Count (English Act) |
+|---|---|---|
+| `definition_record` | a `<Definition>` element | 2,387 terms |
+| `inline_defined_term` | a `DefinedTerm` element in a provision's own `<Text>`, with no `<Definition>` wrapper | 964 |
 
-### Cross-instrument references are out of scope here
+ITA 10.1(5) is an inline site: *"an eligible derivative, of a taxpayer for a
+taxation year, **means** a swap agreement..."*. It defines the term as plainly
+as any wrapped definition.
 
-81 of 97 unresolved English Regulations references match a definition in the
-*Act*, because the Regulations lean on the Act's definitions. Resolving them
-needs the "**of the Act**" signal, which exists only in prose. It belongs with
-the pattern extraction work.
+**Inline sites are identified by element nesting, never by prose.** An inline
+site is a `DefinedTermEn` / `DefinedTermFr` element with no `<Definition>`
+ancestor. Nothing looks for the word "means", or any other wording. The ban on
+text heuristics is untouched.
+
+### What adding the inline class did to the numbers
+
+Resolution over the 2,526 `DefinitionRef` rows, by which candidate classes are
+in the index:
+
+| Candidate classes | `unique` | | `ambiguous` | `unresolved` |
+|---|---|---|---|---|
+| `definition_record` only (before) | 1,237 | 49.0% | 801 | 488 |
+| `inline_defined_term` only | 341 | 13.5% | 568 | 1,617 |
+| **both (in force)** | **950** | **37.6%** | **1,207** | **369** |
+
+Of the 950 unique resolutions, 888 land on a `definition_record` and 62 on an
+`inline_defined_term`.
+
+**The unique share fell and that is the right direction.** Unresolved dropped
+from 488 to 369 - 119 references that looked as though nothing in the instrument
+defined them turned out to have a definition after all. Those did not become
+`unique`; most became `ambiguous`, because the term was already defined
+elsewhere too. A term defined in both forms has two real definitions, and saying
+so is more useful than a higher percentage bought by ignoring one of them.
+
+---
+
+## 1b. Candidates in the other instrument
+
+The Regulations lean heavily on the Act's definitions, and a term a reference
+names may be defined only in the other instrument.
+
+Those definitions **are recorded as candidates**, with
+`candidate_scope = 'other_instrument'`, so a reader can see them. **They never
+change the resolution**, which is computed over `same_instrument` candidates
+alone.
+
+**Why.** Whether a definition in the Act governs a word used in the Regulations -
+or the reverse - is a question about how the two instruments relate, and the
+answer is usually carried in prose the markup does not encode: *"as defined in
+subsection 207.5(1) **of the Act**"*. Deciding it from a term match alone would
+be a legal conclusion drawn from a string comparison. The tool does not draw it.
+
+691 references carry other-instrument candidates. 2,384 candidate rows are
+scoped `other_instrument`; those references stay `unresolved`, with a reason
+that names how many were found and where.
 
 ---
 
@@ -132,8 +172,25 @@ bare section number looks exactly like a reference to the current instrument,
 and a rule that resolved it on that basis would produce a confidently wrong
 link. The one case in the corpus is the counter-example.
 
-It carries the reason `bare section number whose target instrument is named in
-prose, not in the markup`.
+It carries the reason `bare section number with no instrument qualifier - the
+target instrument is named in prose, not in the markup`.
+
+### Fixture for the Phase 1 reference grammar
+
+**A bare section number with no instrument qualifier never resolves.**
+
+`93(5.2)(a)` in the French Act is the worked case, and it is kept as a test
+fixture (`test_bare_section_number_never_resolves`) so the rule survives contact
+with the reference grammar Phase 1 has to write for the tax expenditure report.
+That grammar will meet the same shape constantly - "section 51", "paragraph
+20(1)(ss)" - and the safe default is the one this case forces: without an
+instrument qualifier, record the raw text and resolve nothing.
+
+The trap is worth naming precisely. The element is called `XRefInternal`. It sits
+in the Income Tax Act. Its content is a bare section number, and section 51 of
+the Income Tax Act exists. Every signal available in the markup says "resolve
+this to 51". Only the prose says otherwise. A rule that resolved on markup alone
+would have produced a link that is wrong, confident, and invisible.
 
 ---
 
@@ -142,7 +199,8 @@ prose, not in the markup`.
 - It does not read body text. Every reference here exists because the source
   tagged it as an element.
 - It does not choose among candidate definitions.
-- It does not resolve across instruments.
+- It does not resolve across instruments. Other-instrument definitions are
+  recorded as candidates and never counted toward resolution.
 - It does not infer a target from surrounding prose - the `XRefInternal` case
   above shows why that is not a conservative choice but a dangerous one.
 

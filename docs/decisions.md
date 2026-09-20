@@ -733,3 +733,66 @@ unresolved. `XRefInternal` 1, unresolved. `definition_ref_candidates` holds
 3,888 rows; the most candidates for one reference is 15.
 
 ---
+
+## 2026-09-19 - Inline definition sites and other-instrument candidates
+
+**Decided (Matt).** Two additions to the reference rule, both recorded in
+`docs/reference-rule.md` before implementing.
+
+**1. Inline definition sites are now candidates**, `candidate_kind =
+'inline_defined_term'`; existing ones are `'definition_record'`.
+
+The precondition Matt set was that they be identifiable without matching prose.
+They are: an inline site is a `DefinedTermEn` / `DefinedTermFr` element with no
+`<Definition>` ancestor. Element nesting alone - nothing looks for "means" or
+any other wording, so the ban on text heuristics is untouched. There are 964 in
+the English Act, 854 in the French Act, 431 and 373 in the Regulations.
+
+**What it did to the numbers**, over the 2,526 `DefinitionRef` rows:
+
+| Candidate classes | unique | | ambiguous | unresolved |
+|---|---|---|---|---|
+| `definition_record` only | 1,237 | 49.0% | 801 | 488 |
+| `inline_defined_term` only | 341 | 13.5% | 568 | 1,617 |
+| both (in force) | 950 | 37.6% | 1,207 | 369 |
+
+Of the 950 unique resolutions, 888 land on a definition record and 62 on an
+inline site.
+
+**The unique share fell from 49.0% to 37.6% and that is the right direction.**
+Unresolved dropped from 488 to 369: 119 references that appeared to have no
+definition anywhere turned out to have one. Most became `ambiguous` rather than
+`unique`, because the term was already defined elsewhere as well. A term defined
+in both forms has two real definitions. Reporting that is worth more than a
+higher percentage bought by ignoring one of them.
+
+**2. Other-instrument definitions are candidates, never resolutions.**
+`candidate_scope` is `'same_instrument'` or `'other_instrument'`, and resolution
+is computed over same-instrument candidates alone. 691 references carry
+other-instrument candidates across 2,384 candidate rows.
+
+**Why they cannot resolve:** whether a definition in the Act governs a word used
+in the Regulations is a question about how the two instruments relate, and the
+answer is normally carried in prose the markup does not encode - "as defined in
+subsection 207.5(1) **of the Act**". Resolving from a term match alone would be
+a legal conclusion drawn from a string comparison.
+
+**3. The `XRefInternal` case is now a fixture for the Phase 1 grammar.**
+`test_bare_section_number_never_resolves` pins ITA French `93(5.2)(a)`: a bare
+section number with no instrument qualifier never resolves.
+
+It is worth keeping because every signal in the markup points the wrong way. The
+element is called `XRefInternal`. It sits in the Income Tax Act. Its content is
+a bare section number, and section 51 of the Income Tax Act exists. Only the
+surrounding prose - "de la *Loi de 2012 apportant des modifications
+techniques*" - says it means another Act. A rule that trusted the markup would
+have produced a link that is wrong, confident and invisible. The reference
+grammar Phase 1 must write will meet that shape constantly.
+
+**Totals now:** 5,364 references. `DefinitionRef` 2,526 - unique 950, ambiguous
+1,207, unresolved 369. `XRefExternal` 2,837, all unresolved. `XRefInternal` 1,
+unresolved. `definition_ref_candidates` holds 10,459 rows: 3,888 same-instrument
+definition records, 4,187 same-instrument inline sites, 894 and 1,490
+other-instrument.
+
+---
