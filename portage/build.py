@@ -14,6 +14,7 @@ from collections import defaultdict
 
 from .parse import parse
 from .parse import parse_walker
+from .indicators import build_indicators, write_definitions
 from .measures_build import build_measures
 from .refs import candidate_index, extract
 
@@ -793,6 +794,11 @@ def build(db_path=DB_PATH):
     measure_counts = build_measures(
         conn, lambda name, rows, header: _write_catalogue(DATA / name, rows, header))
 
+    # Phase 2: the indicator views and the extractions they read.
+    indicator_counts = build_indicators(
+        conn, lambda name, rows, header: _write_catalogue(DATA / name, rows, header))
+    write_definitions(conn, ROOT / "docs", ROOT / "views")
+
     rows = conn.execute("SELECT COUNT(*) FROM sections").fetchone()[0]
     addressable = conn.execute(
         "SELECT COUNT(*) FROM sections WHERE is_addressable=1").fetchone()[0]
@@ -841,7 +847,15 @@ def build(db_path=DB_PATH):
         "rows_unresolved_tagged_references": str(n_xref_unres),
         "rows_label_anomalies": str(n_anom),
         "rows_definition_key_fallbacks": str(n_fb),
-        "phase": "0 complete; 1 in progress",
+        "rows_objective_category_groups": str(indicator_counts["objective_category_groups"]),
+        "rows_measure_objective_categories": str(indicator_counts["measure_objective_categories"]),
+        "rows_measure_objective_source": str(indicator_counts["measure_objective_source"]),
+        "rows_section_amending_acts": str(indicator_counts["section_amending_acts"]),
+        "rows_measure_figure_basis": str(indicator_counts["measure_figure_basis"]),
+        "rows_measure_reference_edition_diffs": str(
+            indicator_counts["measure_reference_edition_diffs"]),
+        "indicator_views": str(indicator_counts["views"]),
+        "phase": "0 and 1 complete; 2 in progress",
         "schema_version": "1",
         "session": "4 - Act and Regulations, both languages",
         "official": "no - unofficial reproduction, not an official version",
@@ -870,7 +884,9 @@ def build(db_path=DB_PATH):
             "measures": n_measures, "measure_references": n_mrefs,
             "measure_refs_resolved": n_mrefs_ok,
             "cross_references": n_xrefs, "xref_unique": n_unique,
-            "xref_ambiguous": n_ambig, "terms_multi_defined": n_multi}
+            "xref_ambiguous": n_ambig, "terms_multi_defined": n_multi,
+            "indicator_views": indicator_counts["views"],
+            "amending_acts": indicator_counts["section_amending_acts"]}
 
 
 if __name__ == "__main__":

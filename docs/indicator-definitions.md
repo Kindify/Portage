@@ -1,15 +1,13 @@
 # Indicator definitions
 
-**Definitions settled; no SQL written yet.** This is the list of views, what
-each one means, and what null means in it, written before implementation - the
-same order as the citation-path rule and the reference grammar. The four open
-questions at the foot of the first draft were answered by Matt on 2026-09-20 and
-are folded in below.
+**This file is generated.** `python -m portage.build` writes it from the view
+definitions in `portage.sqlite` and the prose in `portage/indicators.py`. A
+test asserts that the copy on disk matches what the generator produces, and
+that every column of `indicators` has an entry and every entry names a real
+column. Edit `portage/indicators.py`, then rebuild - editing this file by hand
+will fail the test.
 
-Once the views exist, this file is **generated**: each entry's SQL comes from the
-view definition in the database and the prose comes from a dict in code. A test
-asserts the file is current, and the build fails if a view exists with no entry
-or an entry with no view.
+The preamble below is written by hand and is not derived from the SQL.
 
 ---
 
@@ -34,228 +32,34 @@ the answer is null and the reason is a column.
 
 ## Where the views live
 
-In `portage.sqlite`, as `CREATE VIEW`. Not a stored table: a stored indicator is
-a judgment that outlives the reasoning behind it, and a view forces the
+In `portage.sqlite`, as `CREATE VIEW`. Not a stored table: a stored indicator
+is a judgment that outlives the reasoning behind it, and a view forces the
 computation to stay visible and to be re-derived from the source tables every
-time it is read. The static site materialises them at export time.
+time it is read. The same SQL is exported to `views/` as one file per view, for
+reading without opening the database.
 
-**One thing this forces.** SQLite views cannot take parameters, so the two views
-CLAUDE.md describes as "parameterized on a year" are not parameterized. They
-**expose the year as a column** and the reader supplies the threshold:
-`WHERE end_year < 2027`. There are deliberately no per-threshold views. Choosing
-the year is the reader's judgment, and a view called `v_end_date_before_2027`
-would make that choice look like a finding.
-
----
-
-## 1. `indicators` - one row per measure
-
-**One row per `measures` row**, not per language: 247 rows, matching `measures`
-exactly. The numeric indicators are language-independent; only the copied
-classification labels differ, and those carry `_en` / `_fr` suffixes, the same
-shape `measures` already uses. Doubling every row to carry a handful of
-translated labels would make the language a property of the measure, which it
-is not.
-
-`join_method` is carried through from `measures` - `content`,
-`content_categorical`, or null - so that **the 36 unjoined singles are visible
-in every indicator query**. A single is a real measure whose other-language
-record could not be paired; its classification labels will be present in one
-language and null in the other, and a reader filtering on `subject_en` would
-otherwise lose the 18 French-only measures without noticing.
-
-| column | meaning | null when |
-|---|---|---|
-| `measure_id` | key into `measures` | never |
-| `join_method` | how the two editions were paired | the measure is a single, present in one language only |
-| `name_en`, `name_fr` | measure name as published | that language has no record for this measure |
-
-Every column below is computed from Phase 0 and Phase 1 tables.
-
-### Cost, from `measure_costs`
-
-The **figure used** for a measure is Finance's `Total` row where the measure
-publishes one, and the measure's single component row where it does not. Of 183
-measures with any cost rows: 52 publish a Total, 130 publish exactly one
-component, and **1 publishes several components with no Total**. That one
-measure gets null cost figures and `cost_figure_basis = 'components_only'`,
-because adding components together would be arithmetic Finance did not publish.
-
-| column | meaning | null when |
-|---|---|---|
-| `cost_figure_basis` | `total_row`, `single_component`, or `components_only` | never |
-| `cost_latest_estimate` | value of the most recent year whose `value_kind` is `estimate`; projections excluded | no estimate in any year, or basis is `components_only` |
-| `cost_latest_estimate_year` | that year | same |
-| `cost_latest_estimate_raw` | the published cell text for that figure | same |
-| `cost_latest_projection` | most recent year with `value_kind = 'projection'` | no projection |
-| `cost_latest_projection_year` | that year | same |
-| `cost_first_estimate` | earliest year with `value_kind = 'estimate'` in the report's window (2020-2027) | no estimate |
-| `cost_first_estimate_year` | that year | same |
-| `cost_change_abs` | `cost_latest_estimate - cost_first_estimate` | either input null, **or the two years are the same** |
-| `cost_change_pct` | `cost_change_abs / cost_first_estimate` | either input null, years equal, **or `cost_first_estimate` is 0** |
-| `cost_status` | one of five - see below | never |
-| `cost_withheld_years` | count of cells with `value_kind = 'withheld_confidential'` | never; 0 where none |
-
-**`cost_status` has five values**, one more than CLAUDE.md lists:
-
-| value | meaning |
-|---|---|
-| `costed` | a numeric value in every year of the window |
-| `partially_costed` | numeric in some years, not all |
-| `not_costed` | Finance published a cost table, and no year carries a number |
-| `no_cost_table` | Finance published **no cost table at all** for this measure |
-| `withheld` | any cell is `X`, withheld by Finance for confidentiality |
-
-`no_cost_table` is the addition. 46 measures have no cost rows whatever, and
-folding them into `not_costed` merged two different statements: *Finance
-published a table showing no estimate* and *Finance published no table*. The
-first is a measurement result; the second is a publishing decision. A reader
-asking "what is uncosted" usually means the first.
-
-Derived from `value_kind` alone, never from the numbers. `withheld` takes
-precedence when any cell is `X`, because the reader needs to know the series is
-incomplete by Finance's choice rather than by absence of data.
-
-**Division by zero is a real case**: a first estimate of 0 is published for some
-measures. `cost_change_pct` is null there, not infinite.
-
-### Beneficiaries, from `measure_beneficiary_counts`
-
-| column | meaning | null when |
-|---|---|---|
-| `beneficiaries_latest` | the count, only where `method = 'pattern'` | method is `none` - the published sentence carried no single number-and-year pair |
-| `beneficiaries_latest_year` | its year | same |
-| `beneficiaries_raw` | the published sentence, **always**, whether or not a count was parsed | never, where the field is non-empty |
-| `cost_per_beneficiary` | `cost_latest_estimate / beneficiaries_latest` | either input null, **or the two years differ** |
-| `cost_per_beneficiary_note` | `years_differ` where that is why it is null, else null | when the ratio is computed or both inputs are null |
-
-**Expected coverage is low and that is the honest state**: only 75 of 458
-beneficiary rows carry a parsed count. Most of this column will be null.
-
-### Age and history, from `measure_history`
-
-| column | meaning | null when |
-|---|---|---|
-| `introduced_year` | earliest year in the measure's history rows | no history row carries a parseable year |
-| `last_change_year` | latest year in those rows | same |
-| `years_since_last_change` | `report_year (2026) - last_change_year` | `last_change_year` null |
-| `history_events` | count of history rows | never; 0 where none |
-
-`introduced_year` is **the earliest year Finance lists in this field**, which is
-not necessarily the year the measure was enacted. The column name says
-"introduced" because that is what the field is about; the definition says what
-it actually measures.
-
-### Objective source year, from the objective field
-
-| column | meaning | null when |
-|---|---|---|
-| `objective_source_year` | the year in the parenthetical Finance attaches to the objective, e.g. "(Budget 1998)" | no parenthetical, or no year in it |
-| `objective_source_raw` | the parenthetical as published | same |
-| `objective_source_method` | `pattern` where a year was read, `none` otherwise | never |
-
-### Classification, copied from Finance with no interpretation
-
-`category`, `objective_category`, `subject`, `ccofog_code`, `type_of_tax`,
-`type_of_measure` - each copied verbatim from the `measures` row. Null where
-Finance left the field empty.
-
-| column | meaning | null when |
-|---|---|---|
-| `objective_category_internal` | 1 if Finance's Part 3 lists this category under "Objectives that are internal to the tax system", else 0 | `objective_category` is null |
-| `has_overlapping_program` | 1 if "other relevant government programs" is non-null and not "n/a", else 0 | the field is null |
-| `overlapping_program_raw` | that field as published | field null |
-
-Finance's Part 3 puts 12 categories under "internal to the tax system" and 10
-under "Other objectives". **The list ships as a fixture**, so a change in
-Finance's grouping shows up as a failing test rather than a silent
-reclassification. `has_overlapping_program` is Finance's statement that related
-spending exists, and nothing more.
-
-A measure may carry several categories in one field - the cells run them
-together. `objective_category_internal` is 1 only where **every** category
-present is internal; where they are mixed it is 0, and
-`objective_category_mixed` is 1 so the reader can tell the two cases apart.
-
-### Legal footprint, from `measure_references` joined to `sections`
-
-| column | meaning | null when |
-|---|---|---|
-| `provisions_cited` | count of reference rows for the measure | never; 0 where none |
-| `provisions_resolved` | count with `status = 'resolved'` | never; 0 |
-| `provisions_not_in_consolidation` | count with that status - the as-of-date mismatch between the report (31 Dec 2025) and the consolidation (18 Jun 2026) | never; 0 |
-| `sections_touched` | distinct top-level sections among resolved paths | never; 0 |
-| `shared_with_measures` | count of *other* measures citing at least one of the same resolved `citation_path`s | never; 0 |
-| `amending_acts_count` | number of amending-statute entries in the Phase 0 `history_note` of each cited section, summed | null where **no** cited section has a history note |
-| `amending_acts_method` | `pattern` | never |
-
-`amending_acts_count` **double counts by design**: a section cited by several
-measures contributes its amending entries to each. It is a property of the
-measure's legal footprint, not a partition of the Act. Notes are semicolon
-separated after a `[NOTE: ...]` prefix; 1,240 sections carry one. Unparsed notes
-go to a catalogue with a fixture.
-
-### Temporal scope, from `provision_temporal_scope`
-
-| column | meaning | null when |
-|---|---|---|
-| `earliest_end_date` | earliest `end` bound across the measure's **cited** provisions | no cited provision has an end bound |
-| `latest_end_date` | latest such bound | same |
-| `has_step_down` | 1 if any cited provision has a `step-down` bound, else 0 | no cited provision has any extracted scope |
-
-**Whether a date has passed is not computed.** There is no `is_expired`, no
-`days_remaining`, no comparison against the build date. The reader compares
-against their own date, because "expired" depends on when you ask and on facts
-outside this dataset.
+**One thing this forces.** SQLite views cannot take parameters, so the two
+views CLAUDE.md describes as "parameterized on a year" are not parameterized.
+They **expose the year as a column** and the reader supplies the threshold:
+`WHERE end_year < 2027`. There are deliberately no per-threshold views.
+Choosing the year is the reader's judgment, and a view called
+`v_end_date_before_2027` would make that choice look like a finding.
 
 ---
 
-## 2. Supporting tables
+## Which edition each number is read from
 
-### `provision_temporal_scope` - the one extraction that needs a model
+Costs, references and beneficiary counts are stored one row per language.
+Reading both would count a measure twice, so `measure_figure_basis` records one
+edition per measure and every indicator reads from it: English wherever the
+measure has an English record, French for the 18 measures that exist only in
+French.
 
-**Scope: the cited provisions only**, not the whole Act - roughly 400 distinct
-provisions behind ~600 resolved references. Extracting scope from the entire Act
-would be a different project, and nothing in Phase 2 needs it.
-
-One row per date-bounded condition found in a cited provision's text:
-`section_id`, the phrase **exactly as it appears**, `bound_kind`
-(`start` / `end` / `step_down`), the date or year, `method = 'extracted_llm'`.
-
-Rules, all from CLAUDE.md:
-
-- the phrase must be a **verbatim substring** of `text_en`, asserted by a test
-  for every row;
-- the model never infers a date the text does not state;
-- prompt, model name and run date recorded in `meta`;
-- the API is called from a batch script, **never from the build**, and its
-  output is committed as data with a fixture;
-- a precision sample of 30 rows for hand checking, same protocol as Phase 1.
-
-### `measure_provision_overlap`
-
-One row per pair of measures sharing a resolved `citation_path`, with the path.
-A pure join, no threshold, no score.
-
----
-
-## 3. Canned-question views
-
-Each is a **filter**, never a ranking. None carries an `ORDER BY` that implies
-importance; ordering is the reader's action.
-
-| view | returns | note |
-|---|---|---|
-| `v_not_costed` | measures with `cost_status = 'not_costed'` | |
-| `v_withheld` | measures with any `X` cell, and the count | Finance withheld for confidentiality; not an absence of data |
-| `v_no_beneficiary_count` | measures where `beneficiaries_latest` is null, with the published sentence | mostly a statement about the field's prose, not the measure |
-| `v_end_bound_by_year` | one row per provision end bound, with `end_year` as a column | the reader filters: `WHERE end_year < 2027` |
-| `v_last_change_by_year` | one row per measure with `last_change_year` as a column | same |
-| `v_objective_internal` | measures whose every objective category is internal to the tax system | Finance's grouping, from the fixture |
-| `v_overlapping_programs` | measures where `has_overlapping_program = 1`, with the field text | |
-| `v_shared_provisions` | resolved `citation_path`s cited by more than one measure, with the measures | |
-| `v_not_in_consolidation` | measures citing a provision absent from the consolidation, with the paths | the six-month as-of gap, not an error by anyone |
-| `v_provision_footprint` | for every resolved `citation_path`: the measures citing it, and the measures sharing its top-level section | the "for a given path" filter is the reader's `WHERE` |
+This changes no figure. The cost signatures - year, value and `value_kind` -
+match exactly for all 172 measures that carry both editions, which is what the
+Phase 1 join was built on. References are not quite so clean: six measures
+resolve differently in the two editions, and they are catalogued in
+`data/measure_reference_edition_diffs.csv` rather than reconciled.
 
 ---
 
@@ -267,13 +71,640 @@ importance; ordering is the reader's action.
 3. **`cost_status`**: five values, `no_cost_table` added.
 4. **Temporal scope**: cited provisions only.
 
-## Still open
+---
 
-Nothing blocking. Two things to decide while writing the SQL, both small:
+## Views
 
-- Whether `sections_touched` counts the top-level section of a path like
-  `110(1)(d)` as `110`, which is the obvious reading, or as the `sections` row
-  whose level is `section`. They are the same thing in every case checked, but
-  the SQL has to pick one and the doc should say which.
-- Whether `v_provision_footprint` returns one row per (path, measure) pair or
-  one per path with a count. The first is more useful and much longer.
+| view | rows in this build | what it returns |
+|---|---|---|
+| `measure_resolved_provisions` | 332 | Every resolved provision a measure cites, one row per reference, with the top-level section it sits in. |
+| `measure_provision_overlap` | 230 | One row per pair of measures that cite the same resolved provision, with the provision. |
+| `indicators` | 247 | One row per measure - 247, matching `measures` exactly, not one row per language. |
+| `v_not_costed` | 10 | Measures where Finance published a cost table and no year in it carries a number. |
+| `v_withheld` | 9 | Measures with at least one cost cell published as "X", which Finance's own legend defines as withheld for confidentiality. |
+| `v_no_beneficiary_count` | 172 | Measures with no parsed beneficiary count, with the published sentence in both languages. |
+| `v_end_bound_by_year` | 0 | One row per extracted end bound on a provision a measure cites, with the year as a column. |
+| `v_last_change_by_year` | 247 | One row per measure with the latest year Finance lists in its implementation and recent history field, as a column for the reader to filter on. |
+| `v_objective_internal` | 70 | Measures every one of whose objective categories Finance's Part 3 lists under "Objectives that are internal to the tax system". |
+| `v_overlapping_programs` | 208 | Measures where Finance's "other relevant government programs" field names something. |
+| `v_shared_provisions` | 34 | Resolved provisions cited by more than one measure, with the measures. |
+| `v_not_in_consolidation` | 13 | Measures citing a provision the consolidation does not contain, with the reference as published. |
+| `v_provision_footprint` | 332 | For every resolved provision: the measure citing it, and the number of other measures that cite the same provision or another provision of the same section. |
+
+---
+
+## `indicators`, column by column
+
+The formula is the SQL below; this is the meaning and the null rule beside it.
+
+| column | meaning | null when |
+|---|---|---|
+| `measure_id` | Key into `measures`. | never |
+| `join_method` | How the two editions were paired in Phase 1 - `content`, `content_categorical`, or null. | the measure is a single, present in one edition only |
+| `name_en` | The measure name as published in the English edition. | the English edition has no record for this measure |
+| `name_fr` | The measure name as published in the French edition. | the French edition has no record for this measure |
+| `cost_figure_basis` | Which published row is taken as the measure's cost figure - `total_row`, `single_component`, `components_only`, `multiple_total_rows` or `no_cost_table`. From `measure_figure_basis`. | never |
+| `cost_figure_row_label` | The published label of that row, verbatim. | the basis is `components_only`, `multiple_total_rows` or `no_cost_table` - there is no single published row to name |
+| `cost_edition` | Which edition's cost rows were read. English wherever the measure has them; the two editions' cost signatures match exactly, so this changes no figure, only which rows are counted. | the measure has no cost rows in either edition |
+| `cost_latest_estimate` | Value in millions of dollars of the most recent year on the figure row whose `value_kind` is `estimate`. Projections are excluded. | no year on the figure row is an estimate, or there is no figure row |
+| `cost_latest_estimate_year` | That year. | as `cost_latest_estimate` |
+| `cost_latest_estimate_raw` | The published cell text behind that figure, carried through so Finance's own notation travels with the number. | as `cost_latest_estimate` |
+| `cost_latest_projection` | Value of the most recent year on the figure row whose `value_kind` is `projection`. Finance marks projections in the column header - `(P)` in English, `(proj.)` in French - so this is published, not inferred. | no year on the figure row is a projection, or there is no figure row |
+| `cost_latest_projection_year` | That year. | as `cost_latest_projection` |
+| `cost_latest_projection_raw` | The published cell text. | as `cost_latest_projection` |
+| `cost_first_estimate` | Value of the earliest year on the figure row whose `value_kind` is `estimate`, within the report's window of 2020 to 2027. | as `cost_latest_estimate` |
+| `cost_first_estimate_year` | That year. | as `cost_first_estimate` |
+| `cost_first_estimate_raw` | The published cell text. | as `cost_first_estimate` |
+| `cost_change_abs` | `cost_latest_estimate` minus `cost_first_estimate`, in millions of dollars. Not adjusted for inflation and not annualised. | either input is null, or the two years are the same year |
+| `cost_change_pct` | `cost_change_abs` divided by `cost_first_estimate`, as a ratio rather than a percentage - 0.5 means half as much again. | either input is null, the years are equal, or `cost_first_estimate` is 0 |
+| `cost_status` | One of `costed` (a numeric cell in every published year), `partially_costed` (in some), `not_costed` (in none), `no_cost_table` (Finance published no cost table at all) or `withheld` (at least one cell is `X`). Read across every cost row of the measure, not only the figure row, so a caption row carrying no numbers does not make a costed measure look partial. Derived from `value_kind` alone, never from the numbers. `withheld` takes precedence. | never |
+| `cost_withheld_years` | Count of distinct years in which at least one cell is published as `X`, which Finance's legend defines as withheld for confidentiality. A withheld cell is not an absence of data and is never a zero. | never; 0 where none |
+| `beneficiaries_latest` | The count from `measure_beneficiary_counts`, most recent year first, only where `method = 'pattern'`. | the published sentence carried no single number-and-year pair a pattern could read - 172 of 247 measures |
+| `beneficiaries_latest_year` | That year. | as `beneficiaries_latest` |
+| `beneficiaries_raw_en` | Finance's number-of-beneficiaries field as published in English, whether or not a count was parsed from it. | the English edition has no record for this measure, or left the field empty |
+| `beneficiaries_raw_fr` | The same field as published in French. | as `beneficiaries_raw_en`, for French |
+| `cost_per_beneficiary` | `cost_latest_estimate` converted to dollars and divided by `beneficiaries_latest`. Dollars per beneficiary, not millions. | either input is null, the two years differ, or the count is 0 |
+| `cost_per_beneficiary_note` | `years_differ` where that is why the ratio is null. | the ratio was computed, or an input was missing for some other reason |
+| `introduced_year` | The earliest year Finance lists in the implementation and recent history field. This is the earliest year **in that field**, which is not necessarily the year the measure was enacted. | no history row carries a year a pattern could read |
+| `last_change_year` | The latest such year. | as `introduced_year` |
+| `years_since_last_change` | `report_year` (2026) minus `last_change_year`. | `last_change_year` is null |
+| `history_events` | Count of history rows Finance lists for the measure. | never; 0 where none |
+| `objective_source_year` | The year in the trailing parenthetical Finance attaches to the objective field - `(Budget 1998)` gives 1998. Where the parenthetical names several documents the last year is taken. Nothing is read from the sentence itself. | the objective has no trailing parenthetical, or none with a year in it |
+| `objective_source_raw` | That parenthetical as published, without its brackets. | the objective has no trailing parenthetical |
+| `objective_source_method` | `pattern` where a year was read, else `none`. | never |
+| `category_en` | Finance's category field, verbatim - structural, non-structural, or refundable credit. | Finance left the field empty, or the edition has no record |
+| `category_fr` | The same field in French. | as `category_en` |
+| `objective_category_en` | Finance's objective category field, verbatim. A measure may carry several, run together in one cell. | as `category_en` |
+| `objective_category_fr` | The same field in French. | as `category_en` |
+| `subject_en` | Finance's subject field, verbatim. | as `category_en` |
+| `subject_fr` | The same field in French. | as `category_en` |
+| `ccofog_code_en` | Finance's CCOFOG 2014 code, verbatim. | as `category_en` |
+| `ccofog_code_fr` | The same field in French. | as `category_en` |
+| `type_of_tax_en` | Finance's tax field, verbatim. | as `category_en` |
+| `type_of_tax_fr` | The same field in French. | as `category_en` |
+| `type_of_measure_en` | Finance's type-of-measure field, verbatim. | as `category_en` |
+| `type_of_measure_fr` | The same field in French. | as `category_en` |
+| `objective_category_internal` | 1 where every objective category the measure carries is one Finance's Part 3 lists under "Objectives that are internal to the tax system", else 0. Finance's own grouping, read from each edition's own markup and shipped as a fixture. | no category in the measure's cell matched Finance's published vocabulary - 9 measures, catalogued in `data/objective_categories_unmatched.csv` |
+| `objective_category_mixed` | 1 where the measure carries both internal and other categories, so that an `objective_category_internal` of 0 can be told apart from a measure with no internal category at all. | as `objective_category_internal` |
+| `has_overlapping_program` | 1 where Finance's "other relevant government programs" field names something, 0 where it says n/a. Finance's statement that related spending exists, and nothing more - not a duplication finding. | the field is empty in both editions |
+| `overlapping_program_raw_en` | That field as published in English. | as `category_en` |
+| `overlapping_program_raw_fr` | The same field in French. | as `category_en` |
+| `provisions_cited` | Count of reference rows Finance lists for the measure, in the edition named by `measure_figure_basis.reference_lang`. | never; 0 where none |
+| `provisions_resolved` | Of those, the count with `status = 'resolved'`. | never; 0 |
+| `provisions_not_in_consolidation` | Of those, the count with `status = 'not_in_consolidation'` - the gap between the report's as-of date of 31 December 2025 and the consolidation's of 18 June 2026. | never; 0 |
+| `sections_touched` | Distinct top-level sections among the resolved paths. The section is the leading run of the citation path before the first `(`, `"` or `~`, so `110(1)(d)` is section 110 and `54"principal residence"` is section 54. | never; 0 |
+| `shared_with_measures` | Count of other measures citing at least one of the same resolved citation paths. A pure join over `measure_provision_overlap`. | never; 0 |
+| `amending_acts_count` | Summed over the distinct top-level sections the measure cites: the number of statute entries in that section's Phase 0 `history_note` after the first. Entries are semicolon separated after the `[NOTE: ...]` prefix; the first entry is the enactment that put the section there, so the rest are amendments. **Double counts by design**: a section cited by several measures contributes to each, because this is a property of the measure's legal footprint and not a partition of the Act. | no section the measure cites carries a history note |
+| `amending_acts_method` | `pattern` wherever a count was produced. | `amending_acts_count` is null |
+| `earliest_end_date` | Earliest `end` bound extracted from the text of the provisions the measure cites. Whether that date has passed is **not** computed: there is no `is_expired` and no comparison against the build date, because "expired" depends on when you ask and on facts outside this dataset. | no cited provision has an extracted end bound - every row, until Phase 2 step 3 fills `provision_temporal_scope` |
+| `latest_end_date` | The latest such bound. | as `earliest_end_date` |
+| `has_step_down` | 1 where any cited provision has a `step_down` bound, else 0. | no cited provision has any extracted temporal scope |
+
+---
+
+## `measure_resolved_provisions`
+
+Every resolved provision a measure cites, one row per reference, with the
+top-level section it sits in. This is the join the legal-footprint indicators
+and four of the canned views are built on, kept in one place so that the rule
+for reading a section number out of a citation path is written once. Only the
+edition named in `measure_figure_basis.reference_lang` is read, so a measure
+present in both languages is not counted twice.
+
+**Columns:** `measure_id`, `lang`, `order_index`, `act`, `section_id`, `citation_path`, `top_section`
+
+**Rows in this build:** 332
+
+```sql
+CREATE VIEW measure_resolved_provisions AS
+SELECT  r.measure_id,
+        r.lang,
+        r.order_index,
+        s.act,
+        s.id            AS section_id,
+        s.citation_path,
+        SUBSTR(s.citation_path, 1, MIN(
+            CASE WHEN INSTR(s.citation_path,'(')>0 THEN INSTR(s.citation_path,'(')-1 ELSE LENGTH(s.citation_path) END,
+            CASE WHEN INSTR(s.citation_path,'"')>0 THEN INSTR(s.citation_path,'"')-1 ELSE LENGTH(s.citation_path) END,
+            CASE WHEN INSTR(s.citation_path,'~')>0 THEN INSTR(s.citation_path,'~')-1 ELSE LENGTH(s.citation_path) END))              AS top_section
+FROM measure_references r
+JOIN measure_figure_basis b
+     ON b.measure_id = r.measure_id AND b.reference_lang = r.lang
+JOIN sections s ON s.id = r.section_id
+WHERE r.status = 'resolved';
+```
+
+---
+
+## `measure_provision_overlap`
+
+One row per pair of measures that cite the same resolved provision, with the
+provision. A pure join: no threshold, no score, and no statement that sharing a
+provision means anything. Each unordered pair appears once in each direction,
+so that a query filtered to one measure sees all of its partners.
+
+**Columns:** `measure_id`, `other_measure_id`, `act`, `citation_path`
+
+**Rows in this build:** 230
+
+```sql
+CREATE VIEW measure_provision_overlap AS
+SELECT  a.measure_id   AS measure_id,
+        b2.measure_id  AS other_measure_id,
+        a.act,
+        a.citation_path
+FROM measure_resolved_provisions a
+JOIN measure_resolved_provisions b2
+     ON b2.act = a.act
+    AND b2.citation_path = a.citation_path
+    AND b2.measure_id <> a.measure_id
+GROUP BY a.measure_id, b2.measure_id, a.act, a.citation_path;
+```
+
+---
+
+## `indicators`
+
+One row per measure - 247, matching `measures` exactly, not one row per
+language. The numeric indicators are language-independent; the copied
+classification labels carry `_en` / `_fr` suffixes. `join_method` is carried
+through so that the 36 measures that could not be paired across the two
+editions stay visible in every query made over this view.
+
+Every column is computed here from the Phase 0 and Phase 1 tables and from the
+Phase 2 extraction tables. Nothing is stored, nothing is imputed, and a null
+input produces a null output rather than a zero.
+
+**Columns:** `measure_id`, `join_method`, `name_en`, `name_fr`, `cost_figure_basis`, `cost_figure_row_label`, `cost_edition`, `cost_latest_estimate`, `cost_latest_estimate_year`, `cost_latest_estimate_raw`, `cost_latest_projection`, `cost_latest_projection_year`, `cost_latest_projection_raw`, `cost_first_estimate`, `cost_first_estimate_year`, `cost_first_estimate_raw`, `cost_change_abs`, `cost_change_pct`, `cost_status`, `cost_withheld_years`, `beneficiaries_latest`, `beneficiaries_latest_year`, `beneficiaries_raw_en`, `beneficiaries_raw_fr`, `cost_per_beneficiary`, `cost_per_beneficiary_note`, `introduced_year`, `last_change_year`, `years_since_last_change`, `history_events`, `objective_source_year`, `objective_source_raw`, `objective_source_method`, `category_en`, `category_fr`, `objective_category_en`, `objective_category_fr`, `subject_en`, `subject_fr`, `ccofog_code_en`, `ccofog_code_fr`, `type_of_tax_en`, `type_of_tax_fr`, `type_of_measure_en`, `type_of_measure_fr`, `objective_category_internal`, `objective_category_mixed`, `has_overlapping_program`, `overlapping_program_raw_en`, `overlapping_program_raw_fr`, `provisions_cited`, `provisions_resolved`, `provisions_not_in_consolidation`, `sections_touched`, `shared_with_measures`, `amending_acts_count`, `amending_acts_method`, `earliest_end_date`, `latest_end_date`, `has_step_down`
+
+**Rows in this build:** 247
+
+```sql
+CREATE VIEW indicators AS
+WITH base AS (
+    SELECT
+        m.id                AS measure_id,
+        b.cost_lang, b.cost_basis, b.cost_row_label,
+        b.reference_lang, b.text_lang,
+
+        (SELECT c.value_millions FROM measure_costs c
+          WHERE c.measure_id = m.id AND c.lang = b.cost_lang
+            AND c.row_label = b.cost_row_label AND c.value_kind = 'estimate'
+          ORDER BY c.year DESC LIMIT 1)                 AS latest_estimate,
+        (SELECT c.year FROM measure_costs c
+          WHERE c.measure_id = m.id AND c.lang = b.cost_lang
+            AND c.row_label = b.cost_row_label AND c.value_kind = 'estimate'
+          ORDER BY c.year DESC LIMIT 1)                 AS latest_estimate_year,
+        (SELECT c.raw_value FROM measure_costs c
+          WHERE c.measure_id = m.id AND c.lang = b.cost_lang
+            AND c.row_label = b.cost_row_label AND c.value_kind = 'estimate'
+          ORDER BY c.year DESC LIMIT 1)                 AS latest_estimate_raw,
+        (SELECT c.value_millions FROM measure_costs c
+          WHERE c.measure_id = m.id AND c.lang = b.cost_lang
+            AND c.row_label = b.cost_row_label AND c.value_kind = 'estimate'
+          ORDER BY c.year ASC LIMIT 1)                  AS first_estimate,
+        (SELECT c.year FROM measure_costs c
+          WHERE c.measure_id = m.id AND c.lang = b.cost_lang
+            AND c.row_label = b.cost_row_label AND c.value_kind = 'estimate'
+          ORDER BY c.year ASC LIMIT 1)                  AS first_estimate_year,
+        (SELECT c.raw_value FROM measure_costs c
+          WHERE c.measure_id = m.id AND c.lang = b.cost_lang
+            AND c.row_label = b.cost_row_label AND c.value_kind = 'estimate'
+          ORDER BY c.year ASC LIMIT 1)                  AS first_estimate_raw,
+        (SELECT c.value_millions FROM measure_costs c
+          WHERE c.measure_id = m.id AND c.lang = b.cost_lang
+            AND c.row_label = b.cost_row_label AND c.value_kind = 'projection'
+          ORDER BY c.year DESC LIMIT 1)                 AS latest_projection,
+        (SELECT c.year FROM measure_costs c
+          WHERE c.measure_id = m.id AND c.lang = b.cost_lang
+            AND c.row_label = b.cost_row_label AND c.value_kind = 'projection'
+          ORDER BY c.year DESC LIMIT 1)                 AS latest_projection_year,
+        (SELECT c.raw_value FROM measure_costs c
+          WHERE c.measure_id = m.id AND c.lang = b.cost_lang
+            AND c.row_label = b.cost_row_label AND c.value_kind = 'projection'
+          ORDER BY c.year DESC LIMIT 1)                 AS latest_projection_raw,
+
+        (SELECT COUNT(DISTINCT c.year) FROM measure_costs c
+          WHERE c.measure_id = m.id AND c.lang = b.cost_lang) AS years_published,
+        (SELECT COUNT(DISTINCT c.year) FROM measure_costs c
+          WHERE c.measure_id = m.id AND c.lang = b.cost_lang
+            AND c.value_kind IN ('estimate','projection'))    AS years_numeric,
+        (SELECT COUNT(DISTINCT c.year) FROM measure_costs c
+          WHERE c.measure_id = m.id AND c.lang = b.cost_lang
+            AND c.value_kind = 'withheld_confidential')       AS withheld_years,
+
+        (SELECT bc.count FROM measure_beneficiary_counts bc
+          WHERE bc.measure_id = m.id AND bc.method = 'pattern'
+          ORDER BY bc.year DESC LIMIT 1)                AS beneficiaries_latest,
+        (SELECT bc.year FROM measure_beneficiary_counts bc
+          WHERE bc.measure_id = m.id AND bc.method = 'pattern'
+          ORDER BY bc.year DESC LIMIT 1)                AS beneficiaries_latest_year,
+
+        (SELECT MIN(h.year) FROM measure_history h
+          WHERE h.measure_id = m.id AND h.year IS NOT NULL)   AS introduced_year,
+        (SELECT MAX(h.year) FROM measure_history h
+          WHERE h.measure_id = m.id AND h.year IS NOT NULL)   AS last_change_year,
+        (SELECT COUNT(*) FROM measure_history h
+          WHERE h.measure_id = m.id)                          AS history_events,
+
+        (SELECT os.year FROM measure_objective_source os
+          WHERE os.measure_id = m.id AND os.lang = b.text_lang) AS objective_source_year,
+        (SELECT os.raw_text FROM measure_objective_source os
+          WHERE os.measure_id = m.id AND os.lang = b.text_lang) AS objective_source_raw,
+        (SELECT os.method FROM measure_objective_source os
+          WHERE os.measure_id = m.id AND os.lang = b.text_lang) AS objective_source_method,
+
+        (SELECT COUNT(*) FROM measure_objective_categories oc
+          WHERE oc.measure_id = m.id AND oc.lang = b.text_lang) AS objective_categories,
+        (SELECT COUNT(*) FROM measure_objective_categories oc
+          WHERE oc.measure_id = m.id AND oc.lang = b.text_lang
+            AND oc.group_name = 'internal')                    AS objective_categories_internal,
+
+        (SELECT COUNT(*) FROM measure_references r
+          WHERE r.measure_id = m.id AND r.lang = b.reference_lang) AS provisions_cited,
+        (SELECT COUNT(*) FROM measure_references r
+          WHERE r.measure_id = m.id AND r.lang = b.reference_lang
+            AND r.status = 'resolved')                             AS provisions_resolved,
+        (SELECT COUNT(*) FROM measure_references r
+          WHERE r.measure_id = m.id AND r.lang = b.reference_lang
+            AND r.status = 'not_in_consolidation')                 AS provisions_not_in_consolidation,
+        (SELECT COUNT(DISTINCT p.act || ' ' || p.top_section)
+           FROM measure_resolved_provisions p
+          WHERE p.measure_id = m.id)                               AS sections_touched,
+        (SELECT COUNT(DISTINCT o.other_measure_id)
+           FROM measure_provision_overlap o
+          WHERE o.measure_id = m.id)                               AS shared_with_measures,
+        (SELECT SUM(aa.amending_entries) FROM (
+            SELECT DISTINCT p.act, p.top_section
+              FROM measure_resolved_provisions p
+             WHERE p.measure_id = m.id) cited
+          JOIN sections t ON t.act = cited.act
+                         AND t.citation_path = cited.top_section
+                         AND t.level = 'section'
+          JOIN section_amending_acts aa ON aa.section_id = t.id)   AS amending_acts_count,
+
+        (SELECT MIN(COALESCE(t.bound_date, PRINTF('%04d', t.bound_year)))
+           FROM provision_temporal_scope t
+           JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+          WHERE p.measure_id = m.id AND t.bound_kind = 'end')      AS earliest_end_date,
+        (SELECT MAX(COALESCE(t.bound_date, PRINTF('%04d', t.bound_year)))
+           FROM provision_temporal_scope t
+           JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+          WHERE p.measure_id = m.id AND t.bound_kind = 'end')      AS latest_end_date,
+        (SELECT COUNT(*)
+           FROM provision_temporal_scope t
+           JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+          WHERE p.measure_id = m.id)                               AS temporal_rows,
+        (SELECT COUNT(*)
+           FROM provision_temporal_scope t
+           JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+          WHERE p.measure_id = m.id AND t.bound_kind = 'step_down') AS step_down_rows
+    FROM measures m
+    JOIN measure_figure_basis b ON b.measure_id = m.id
+)
+SELECT
+    m.id                            AS measure_id,
+    m.join_method,
+    m.name_en,
+    m.name_fr,
+
+    b.cost_basis                    AS cost_figure_basis,
+    b.cost_row_label                AS cost_figure_row_label,
+    b.cost_lang                     AS cost_edition,
+    b.latest_estimate               AS cost_latest_estimate,
+    b.latest_estimate_year          AS cost_latest_estimate_year,
+    b.latest_estimate_raw           AS cost_latest_estimate_raw,
+    b.latest_projection             AS cost_latest_projection,
+    b.latest_projection_year        AS cost_latest_projection_year,
+    b.latest_projection_raw         AS cost_latest_projection_raw,
+    b.first_estimate                AS cost_first_estimate,
+    b.first_estimate_year           AS cost_first_estimate_year,
+    b.first_estimate_raw            AS cost_first_estimate_raw,
+    CASE WHEN b.latest_estimate IS NOT NULL
+          AND b.first_estimate  IS NOT NULL
+          AND b.latest_estimate_year <> b.first_estimate_year
+         THEN b.latest_estimate - b.first_estimate END       AS cost_change_abs,
+    CASE WHEN b.latest_estimate IS NOT NULL
+          AND b.first_estimate  IS NOT NULL
+          AND b.latest_estimate_year <> b.first_estimate_year
+          AND b.first_estimate <> 0
+         THEN (b.latest_estimate - b.first_estimate) / b.first_estimate END
+                                                             AS cost_change_pct,
+    CASE WHEN b.years_published = 0          THEN 'no_cost_table'
+         WHEN b.withheld_years  > 0          THEN 'withheld'
+         WHEN b.years_numeric   = 0          THEN 'not_costed'
+         WHEN b.years_numeric   = b.years_published THEN 'costed'
+         ELSE 'partially_costed' END                         AS cost_status,
+    b.withheld_years                AS cost_withheld_years,
+
+    b.beneficiaries_latest,
+    b.beneficiaries_latest_year,
+    m.number_of_beneficiaries_en    AS beneficiaries_raw_en,
+    m.number_of_beneficiaries_fr    AS beneficiaries_raw_fr,
+    CASE WHEN b.latest_estimate IS NOT NULL
+          AND b.beneficiaries_latest IS NOT NULL
+          AND b.beneficiaries_latest <> 0
+          AND b.latest_estimate_year = b.beneficiaries_latest_year
+         THEN b.latest_estimate * 1000000.0 / b.beneficiaries_latest END
+                                                             AS cost_per_beneficiary,
+    CASE WHEN b.latest_estimate IS NOT NULL
+          AND b.beneficiaries_latest IS NOT NULL
+          AND b.latest_estimate_year <> b.beneficiaries_latest_year
+         THEN 'years_differ' END                             AS cost_per_beneficiary_note,
+
+    b.introduced_year,
+    b.last_change_year,
+    CASE WHEN b.last_change_year IS NOT NULL
+         THEN m.report_year - b.last_change_year END         AS years_since_last_change,
+    b.history_events,
+
+    b.objective_source_year,
+    b.objective_source_raw,
+    b.objective_source_method,
+
+    m.category_en, m.category_fr,
+    m.objective_category_en, m.objective_category_fr,
+    m.subject_en, m.subject_fr,
+    m.ccofog_2014_code_en AS ccofog_code_en,
+    m.ccofog_2014_code_fr AS ccofog_code_fr,
+    m.tax_en AS type_of_tax_en, m.tax_fr AS type_of_tax_fr,
+    m.type_of_measure_en, m.type_of_measure_fr,
+    CASE WHEN b.objective_categories = 0 THEN NULL
+         WHEN b.objective_categories_internal = b.objective_categories THEN 1
+         ELSE 0 END                                          AS objective_category_internal,
+    CASE WHEN b.objective_categories = 0 THEN NULL
+         WHEN b.objective_categories_internal > 0
+          AND b.objective_categories_internal < b.objective_categories THEN 1
+         ELSE 0 END                                          AS objective_category_mixed,
+    CASE WHEN COALESCE(m.other_relevant_government_programs_en,
+                       m.other_relevant_government_programs_fr) IS NULL THEN NULL
+         WHEN TRIM(LOWER(COALESCE(m.other_relevant_government_programs_en,
+                                  m.other_relevant_government_programs_fr)))
+              IN ('n/a','s.o.','s. o.','n.a.') THEN 0
+         ELSE 1 END                                          AS has_overlapping_program,
+    m.other_relevant_government_programs_en AS overlapping_program_raw_en,
+    m.other_relevant_government_programs_fr AS overlapping_program_raw_fr,
+
+    b.provisions_cited,
+    b.provisions_resolved,
+    b.provisions_not_in_consolidation,
+    b.sections_touched,
+    b.shared_with_measures,
+    b.amending_acts_count,
+    CASE WHEN b.amending_acts_count IS NOT NULL THEN 'pattern' END
+                                                             AS amending_acts_method,
+
+    b.earliest_end_date,
+    b.latest_end_date,
+    CASE WHEN b.temporal_rows = 0 THEN NULL
+         WHEN b.step_down_rows > 0 THEN 1 ELSE 0 END         AS has_step_down
+FROM measures m
+JOIN base b ON b.measure_id = m.id;
+```
+
+---
+
+## `v_not_costed`
+
+Measures where Finance published a cost table and no year in it carries a
+number. This is a measurement result, not a publishing decision: measures with
+no cost table at all are `no_cost_table` and are not here. The view says
+nothing about whether a measure should be costed.
+
+**Columns:** `measure_id`, `name_en`, `name_fr`, `join_method`, `cost_figure_basis`, `cost_status`, `provisions_cited`, `provisions_resolved`
+
+**Rows in this build:** 10
+
+```sql
+CREATE VIEW v_not_costed AS
+SELECT measure_id, name_en, name_fr, join_method, cost_figure_basis,
+       cost_status, provisions_cited, provisions_resolved
+FROM indicators
+WHERE cost_status = 'not_costed';
+```
+
+---
+
+## `v_withheld`
+
+Measures with at least one cost cell published as "X", which Finance's own
+legend defines as withheld for confidentiality. A withheld cell is not an
+absence of data and is never a zero; the count of years affected is given so a
+reader can see how much of the series is missing by Finance's choice.
+
+**Columns:** `measure_id`, `name_en`, `name_fr`, `join_method`, `cost_withheld_years`, `cost_status`, `cost_figure_basis`
+
+**Rows in this build:** 9
+
+```sql
+CREATE VIEW v_withheld AS
+SELECT measure_id, name_en, name_fr, join_method,
+       cost_withheld_years, cost_status, cost_figure_basis
+FROM indicators
+WHERE cost_withheld_years > 0;
+```
+
+---
+
+## `v_no_beneficiary_count`
+
+Measures with no parsed beneficiary count, with the published sentence in
+both languages. Mostly this is a statement about the prose of Finance's
+"number of beneficiaries" field rather than about the measure: only 75 of the
+published sentences carry a single number-and-year pair that a pattern can
+read, and all 75 are in the English edition.
+
+**Columns:** `measure_id`, `name_en`, `name_fr`, `join_method`, `beneficiaries_raw_en`, `beneficiaries_raw_fr`
+
+**Rows in this build:** 172
+
+```sql
+CREATE VIEW v_no_beneficiary_count AS
+SELECT measure_id, name_en, name_fr, join_method,
+       beneficiaries_raw_en, beneficiaries_raw_fr
+FROM indicators
+WHERE beneficiaries_latest IS NULL;
+```
+
+---
+
+## `v_end_bound_by_year`
+
+One row per extracted end bound on a provision a measure cites, with the
+year as a column. The view is not filtered to any year: SQLite views take no
+parameters, and a view named for a threshold would make the choice of
+threshold look like a finding. The reader supplies it -
+`WHERE end_year < 2027`. Whether a bound has passed is not computed here.
+
+Empty until Phase 2 step 3 fills `provision_temporal_scope`.
+
+**Columns:** `measure_id`, `name_en`, `name_fr`, `act`, `citation_path`, `phrase`, `bound_kind`, `bound_date`, `end_year`, `method`
+
+**Rows in this build:** 0
+
+```sql
+CREATE VIEW v_end_bound_by_year AS
+SELECT p.measure_id,
+       m.name_en, m.name_fr,
+       p.act, p.citation_path,
+       t.phrase,
+       t.bound_kind,
+       t.bound_date,
+       COALESCE(t.bound_year, CAST(SUBSTR(t.bound_date,1,4) AS INTEGER)) AS end_year,
+       t.method
+FROM provision_temporal_scope t
+JOIN measure_resolved_provisions p ON p.section_id = t.section_id
+JOIN measures m ON m.id = p.measure_id
+WHERE t.bound_kind = 'end';
+```
+
+---
+
+## `v_last_change_by_year`
+
+One row per measure with the latest year Finance lists in its implementation
+and recent history field, as a column for the reader to filter on. A null year
+means no history event carried a year a pattern could read, which is not the
+same as no change.
+
+**Columns:** `measure_id`, `name_en`, `name_fr`, `join_method`, `introduced_year`, `last_change_year`, `years_since_last_change`, `history_events`
+
+**Rows in this build:** 247
+
+```sql
+CREATE VIEW v_last_change_by_year AS
+SELECT measure_id, name_en, name_fr, join_method,
+       introduced_year, last_change_year, years_since_last_change,
+       history_events
+FROM indicators;
+```
+
+---
+
+## `v_objective_internal`
+
+Measures every one of whose objective categories Finance's Part 3 lists
+under "Objectives that are internal to the tax system". Finance's grouping,
+read from each edition's own markup and shipped as a fixture. Measures carrying
+both internal and other categories are excluded here and are marked
+`objective_category_mixed` in `indicators`.
+
+**Columns:** `measure_id`, `name_en`, `name_fr`, `join_method`, `objective_category_en`, `objective_category_fr`, `category_en`, `category_fr`, `cost_status`
+
+**Rows in this build:** 70
+
+```sql
+CREATE VIEW v_objective_internal AS
+SELECT measure_id, name_en, name_fr, join_method,
+       objective_category_en, objective_category_fr,
+       category_en, category_fr, cost_status
+FROM indicators
+WHERE objective_category_internal = 1;
+```
+
+---
+
+## `v_overlapping_programs`
+
+Measures where Finance's "other relevant government programs" field names
+something. This is Finance's statement that related spending exists and nothing
+more: it is not a duplication finding, and the field text travels with the flag
+so a reader can see what was actually said.
+
+**Columns:** `measure_id`, `name_en`, `name_fr`, `join_method`, `overlapping_program_raw_en`, `overlapping_program_raw_fr`
+
+**Rows in this build:** 208
+
+```sql
+CREATE VIEW v_overlapping_programs AS
+SELECT measure_id, name_en, name_fr, join_method,
+       overlapping_program_raw_en, overlapping_program_raw_fr
+FROM indicators
+WHERE has_overlapping_program = 1;
+```
+
+---
+
+## `v_shared_provisions`
+
+Resolved provisions cited by more than one measure, with the measures. A
+provision appearing here is one Finance's report reaches from several
+directions; the view counts the measures and lists them, and draws no
+conclusion from the count.
+
+**Columns:** `act`, `citation_path`, `measures_citing`, `measure_ids`
+
+**Rows in this build:** 34
+
+```sql
+CREATE VIEW v_shared_provisions AS
+SELECT p.act,
+       p.citation_path,
+       COUNT(DISTINCT p.measure_id) AS measures_citing,
+       GROUP_CONCAT(DISTINCT p.measure_id) AS measure_ids
+FROM measure_resolved_provisions p
+GROUP BY p.act, p.citation_path
+HAVING COUNT(DISTINCT p.measure_id) > 1;
+```
+
+---
+
+## `v_not_in_consolidation`
+
+Measures citing a provision the consolidation does not contain, with the
+reference as published. This is the as-of-date gap - the report states the law
+as at 31 December 2025 and the consolidation is dated 18 June 2026 - and it is
+not an error by Finance or by Justice Canada.
+
+**Columns:** `measure_id`, `name_en`, `name_fr`, `raw_text`, `instrument`, `citation_path`, `lang`, `reason`
+
+**Rows in this build:** 13
+
+```sql
+CREATE VIEW v_not_in_consolidation AS
+SELECT r.measure_id,
+       m.name_en, m.name_fr,
+       r.raw_text,
+       r.instrument,
+       r.citation_path,
+       r.lang,
+       r.reason
+FROM measure_references r
+JOIN measure_figure_basis b
+     ON b.measure_id = r.measure_id AND b.reference_lang = r.lang
+JOIN measures m ON m.id = r.measure_id
+WHERE r.status = 'not_in_consolidation';
+```
+
+---
+
+## `v_provision_footprint`
+
+For every resolved provision: the measure citing it, and the number of other
+measures that cite the same provision or another provision of the same section.
+One row per (provision, measure) pair, which is the longer shape and the useful
+one - a reader asking about a single provision filters
+`WHERE citation_path = '20(1)(ss)'` and sees each measure on its own row.
+
+**Columns:** `act`, `citation_path`, `top_section`, `measure_id`, `name_en`, `name_fr`, `other_measures_citing_provision`, `other_measures_in_section`
+
+**Rows in this build:** 332
+
+```sql
+CREATE VIEW v_provision_footprint AS
+SELECT p.act,
+       p.citation_path,
+       p.top_section,
+       p.measure_id,
+       m.name_en,
+       m.name_fr,
+       (SELECT COUNT(DISTINCT q.measure_id) FROM measure_resolved_provisions q
+         WHERE q.act = p.act AND q.citation_path = p.citation_path
+           AND q.measure_id <> p.measure_id)            AS other_measures_citing_provision,
+       (SELECT COUNT(DISTINCT q.measure_id) FROM measure_resolved_provisions q
+         WHERE q.act = p.act AND q.top_section = p.top_section
+           AND q.measure_id <> p.measure_id)            AS other_measures_in_section
+FROM measure_resolved_provisions p
+JOIN measures m ON m.id = p.measure_id
+GROUP BY p.act, p.citation_path, p.measure_id;
+```

@@ -1,0 +1,248 @@
+measure_id,cost_basis,cost_edition,cost_row_label,reference_edition,distinct_row_labels
+1,single_component,en,Personal and corporate income tax,en,1
+2,no_cost_table,,,en,0
+3,no_cost_table,,,en,0
+4,total_row,en,Total,en,3
+5,no_cost_table,,,en,0
+6,total_row,en,Total,,3
+7,total_row,en,Total,,3
+8,no_cost_table,,,en,0
+9,total_row,en,Total – personal and corporate income tax,en,4
+10,no_cost_table,,,en,0
+11,no_cost_table,,,en,0
+12,single_component,en,Corporate income tax,en,1
+13,single_component,en,Corporate income tax,en,1
+14,single_component,en,Personal income tax,en,1
+15,single_component,en,Personal income tax,en,1
+16,single_component,en,Personal income tax,en,1
+17,total_row,en,Total,en,7
+18,total_row,en,Total,en,10
+19,single_component,en,Personal income tax,en,1
+20,components_only,en,,en,2
+21,single_component,en,Personal and corporate income tax,en,1
+22,single_component,en,Personal and corporate income tax,en,1
+23,single_component,en,Personal income tax,en,1
+24,single_component,en,Corporate income tax,en,1
+25,single_component,en,Personal and corporate income tax,en,1
+26,single_component,en,Personal income tax,en,1
+27,single_component,en,Canada Workers Benefit – personal income tax,en,1
+28,single_component,en,Corporate income tax,en,1
+29,total_row,en,Total,en,3
+30,no_cost_table,,,en,0
+31,total_row,en,Total,en,10
+32,single_component,en,Corporate income tax,en,1
+33,no_cost_table,,,en,0
+34,total_row,en,Total – personal income tax,en,8
+35,single_component,en,Personal income tax,en,1
+36,single_component,en,Corporate income tax,,1
+37,single_component,en,Corporate income tax,en,1
+38,single_component,en,Corporate income tax,en,1
+39,single_component,en,Corporate income tax,en,1
+40,single_component,en,Personal income tax,en,1
+41,single_component,en,Personal income tax,en,1
+42,single_component,en,Personal income tax,en,1
+43,total_row,en,Total – corporate income tax,en,5
+44,total_row,en,Total,en,3
+45,no_cost_table,,,en,0
+46,no_cost_table,,,en,0
+47,single_component,en,Corporate income tax,en,1
+48,single_component,en,Personal income tax,en,1
+49,no_cost_table,,,en,0
+50,single_component,en,Personal income tax,en,1
+51,no_cost_table,,,en,0
+52,single_component,en,Personal income tax,en,1
+53,single_component,en,Personal income tax,en,1
+54,total_row,en,Total,en,6
+55,total_row,en,Total,en,3
+56,single_component,en,Personal income tax,en,1
+57,single_component,en,Personal income tax,en,1
+58,no_cost_table,,,en,0
+59,no_cost_table,,,en,0
+60,no_cost_table,,,en,0
+61,total_row,en,Total,en,3
+62,total_row,en,Total,en,3
+63,no_cost_table,,,en,0
+64,total_row,en,Total,en,6
+65,total_row,en,Total – personal income tax,en,4
+66,no_cost_table,,,en,0
+67,no_cost_table,,,en,0
+68,single_component,en,Personal income tax,en,1
+69,single_component,en,Personal income tax,en,1
+70,total_row,en,Total – personal income tax,en,4
+71,total_row,en,Total,en,3
+72,single_component,en,Personal income tax,en,1
+73,single_component,en,Personal income tax,en,1
+74,single_component,en,Personal income tax,en,1
+75,single_component,en,Personal income tax,en,1
+76,single_component,en,Goods and Services Tax,en,1
+77,no_cost_table,,,en,0
+78,no_cost_table,,,en,0
+79,single_component,en,Corporate income tax,en,1
+80,single_component,en,Goods and Services Tax,en,1
+81,single_component,en,Goods and Services Tax,en,1
+82,single_component,en,Goods and Services Tax,en,1
+83,single_component,en,Goods and Services Tax,en,1
+84,single_component,en,Goods and Services Tax,en,1
+85,single_component,en,Goods and Services Tax,en,1
+86,single_component,en,Goods and Services Tax,en,1
+87,single_component,en,Goods and Services Tax,en,1
+88,single_component,en,Goods and Services Tax,en,1
+89,single_component,en,Goods and Services Tax,en,1
+90,single_component,en,Personal income tax,en,1
+91,total_row,en,Total – personal and corporate income tax,en,6
+92,total_row,en,Total,en,3
+93,no_cost_table,,,en,0
+94,no_cost_table,,,en,0
+95,single_component,en,Corporate income tax,en,1
+96,single_component,en,Goods and Services Tax,,1
+97,single_component,en,Personal income tax,en,1
+98,total_row,en,Total,en,3
+99,single_component,en,Goods and Services Tax,en,1
+100,total_row,en,Total – personal income tax,en,4
+101,single_component,en,Goods and Services Tax,en,1
+102,single_component,en,Personal and corporate income tax,en,1
+103,total_row,en,Total,en,3
+104,single_component,en,Personal income tax,en,1
+105,no_cost_table,,,en,0
+106,single_component,en,Corporate income tax,en,1
+107,total_row,en,Total,en,3
+108,single_component,en,Personal income tax,en,1
+109,single_component,en,Personal income tax,en,1
+110,total_row,en,Total – personal income tax,en,4
+111,no_cost_table,,,en,0
+112,total_row,en,Total,en,6
+113,single_component,en,Personal income tax,en,1
+114,single_component,en,Personal income tax,en,1
+115,single_component,en,Personal income tax,en,1
+116,multiple_total_rows,en,,en,14
+117,total_row,en,Total,en,3
+118,single_component,en,Personal income tax,en,1
+119,single_component,en,Personal income tax,en,1
+120,no_cost_table,,,en,0
+121,single_component,en,Personal income tax,en,1
+122,single_component,en,Personal income tax,en,1
+123,single_component,en,Personal income tax,en,1
+124,single_component,en,Personal income tax,en,1
+125,no_cost_table,,,en,0
+126,no_cost_table,,,en,0
+127,no_cost_table,,,en,0
+128,total_row,en,Total – personal and corporate income tax,en,1
+129,single_component,en,Personal income tax,en,1
+130,no_cost_table,,,en,0
+131,no_cost_table,,,en,0
+132,single_component,en,Personal income tax,en,1
+133,no_cost_table,,,en,0
+134,single_component,en,Personal income tax,en,1
+135,single_component,en,Personal income tax,en,1
+136,single_component,en,Personal income tax,en,1
+137,single_component,en,Personal income tax,en,1
+138,total_row,en,Total,en,4
+139,total_row,en,Total,en,6
+140,total_row,en,Total,en,3
+141,single_component,en,Personal income tax,en,1
+142,single_component,en,Personal income tax,en,1
+143,single_component,en,Personal income tax,en,1
+144,single_component,en,Personal income tax,en,1
+145,single_component,en,Personal income tax,en,1
+146,single_component,en,Corporate income tax,en,1
+147,total_row,en,Total – personal income tax,en,4
+148,single_component,en,Corporate income tax,en,1
+149,single_component,en,Goods and Services Tax,en,1
+150,single_component,en,Goods and Services Tax,en,1
+151,single_component,en,Goods and Services Tax,en,1
+152,single_component,en,Goods and Services Tax,en,1
+153,single_component,en,Goods and Services Tax,en,1
+154,single_component,en,Goods and Services Tax,en,1
+155,single_component,en,Goods and Services Tax,en,1
+156,total_row,en,Total – Goods and Services Tax,en,4
+157,single_component,en,Goods and Services Tax,en,1
+158,total_row,en,Total,en,3
+159,total_row,en,Total,en,3
+160,single_component,en,Personal income tax,en,1
+161,total_row,en,Total – corporate income tax,en,4
+162,single_component,en,Goods and Services Tax,en,1
+163,single_component,en,Personal income tax,en,1
+164,single_component,en,Personal income tax,en,1
+165,total_row,en,Total – personal income tax,en,4
+166,total_row,en,Total – personal income tax,en,4
+167,single_component,en,Personal income tax,en,1
+168,single_component,en,Personal income tax,en,1
+169,total_row,en,Total,en,10
+170,single_component,en,Personal income tax,en,1
+171,total_row,en,Total,en,3
+172,single_component,en,Goods and Services Tax,en,1
+173,single_component,en,Personal income tax,en,1
+174,single_component,en,Personal income tax,en,1
+175,single_component,en,Personal income tax,en,1
+176,single_component,en,Goods and Services Tax,en,1
+177,single_component,en,Corporate income tax,en,1
+178,single_component,en,Corporate income tax,en,1
+179,no_cost_table,,,en,0
+180,single_component,en,Personal income tax,en,1
+181,total_row,en,Total – personal income tax,en,3
+182,total_row,en,Total – personal income tax,en,3
+183,multiple_total_rows,en,,en,5
+184,single_component,en,Personal and corporate income tax,en,1
+185,no_cost_table,,,en,0
+186,single_component,en,Personal income tax,en,1
+187,single_component,en,Personal income tax,en,1
+188,single_component,en,Personal income tax,en,1
+189,single_component,en,Personal income tax,en,1
+190,single_component,en,Personal income tax,en,1
+191,single_component,en,Personal income tax,,1
+192,single_component,en,Personal and corporate income tax,en,1
+193,total_row,en,Total,en,6
+194,single_component,en,Goods and Services Tax,en,1
+195,single_component,en,Personal income tax,en,1
+196,single_component,en,Personal income tax,en,1
+197,single_component,en,Goods and Services Tax,en,1
+198,single_component,en,Goods and Services Tax,en,1
+199,single_component,en,Goods and Services Tax,en,1
+200,single_component,en,Goods and Services Tax,en,1
+201,single_component,en,Goods and Services Tax,en,1
+202,total_row,en,Total,,3
+203,total_row,en,Total,,3
+204,no_cost_table,,,en,0
+205,single_component,en,Personal and corporate income tax,en,1
+206,single_component,en,Corporate income tax,en,1
+207,single_component,en,Personal income tax,en,1
+208,no_cost_table,,,en,0
+209,no_cost_table,,,en,0
+210,single_component,en,Corporate income tax,,1
+211,no_cost_table,,,en,0
+212,no_cost_table,,,en,0
+213,single_component,en,Goods and Services Tax,en,1
+214,no_cost_table,,,en,0
+215,single_component,en,Goods and Services Tax,en,1
+216,no_cost_table,,,en,0
+217,no_cost_table,,,en,0
+218,total_row,en,Total,en,3
+219,single_component,en,Personal income tax,en,1
+220,multiple_total_rows,en,,en,10
+221,multiple_total_rows,en,,en,10
+222,multiple_total_rows,en,,en,10
+223,no_cost_table,,,en,0
+224,no_cost_table,,,en,0
+225,no_cost_table,,,en,0
+226,no_cost_table,,,en,0
+227,single_component,en,Goods and Services Tax,en,1
+228,single_component,en,Goods and Services Tax,en,1
+229,no_cost_table,,,en,0
+230,single_component,fr,Impôt sur le revenu des sociétés,,1
+231,single_component,fr,Impôt sur le revenu des sociétés,fr,1
+232,single_component,fr,Impôt sur le revenu des particuliers,fr,1
+233,single_component,fr,Impôt sur le revenu des particuliers,fr,1
+234,no_cost_table,,,fr,0
+235,total_row,fr,Total,,3
+236,no_cost_table,,,fr,0
+237,total_row,fr,Total – Impôt sur le revenu des particuliers et des sociétés,fr,1
+238,total_row,fr,Total,fr,6
+239,total_row,fr,Total,fr,6
+240,total_row,fr,Total,fr,6
+241,no_cost_table,,,fr,0
+242,total_row,fr,Total,fr,3
+243,no_cost_table,,,fr,0
+244,no_cost_table,,,fr,0
+245,single_component,fr,Taxe sur les produits et services,fr,1
+246,no_cost_table,,,fr,0
+247,no_cost_table,,,fr,0

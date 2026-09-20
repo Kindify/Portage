@@ -3,7 +3,7 @@
 ## Where things stand
 
 **Phase 0 and Phase 1 are complete and released** - `v0.1.0` and `v0.2.0`.
-**Phase 2 is in progress: step 1 of 4 is done.**
+**Phase 2 is in progress: steps 1 and 2 of 4 are done.**
 
 Start here, then read `CLAUDE.md`. Where this file and CLAUDE.md differ,
 **CLAUDE.md governs**, with four amendments Matt adopted on 2026-09-20, recorded
@@ -16,8 +16,9 @@ in `docs/decisions.md` and summarised under Phase 2 below.
 | `portage.sqlite` | built by `python -m portage.build` in about a minute |
 | Phase 0 | 49,032 provision records, ITA and ITR, both languages, consolidation 2026-06-18 |
 | Phase 1 | 229 tax expenditure measures per language, 774 references, 6,440 cost cells |
-| tests | 105, `pytest` |
-| catalogues | 18, each diffed against a committed fixture in `tests/fixtures/` |
+| Phase 2 | 13 views, 60 indicator columns, 6 new extraction tables |
+| tests | 105 + 22 Phase 2, `pytest` |
+| catalogues | 24, each diffed against a committed fixture in `tests/fixtures/` |
 | hand checks | 40 provision spot checks + 60 reference checks, all recorded |
 
 ### The documents, and what each is for
@@ -30,7 +31,8 @@ in `docs/decisions.md` and summarised under Phase 2 below.
 | `docs/source-notes.md` | what the real source data looks like, checked not assumed |
 | `docs/citation-path-rule.md` | how a provision becomes a citation path |
 | `docs/reference-rule.md` | how a reference resolves - Part 1 tagged, Part 2 the report |
-| `docs/indicator-definitions.md` | **Phase 2 step 1 output**: every view, its meaning, its null rules |
+| `docs/indicator-definitions.md` | **generated** by the build: every view, its SQL, and every indicator column's meaning and null rule. Edit `portage/indicators.py`, not this file. |
+| `views/*.sql` | the same view SQL as one file per view, for reading without opening the database |
 | `tests/spot_checks/` | the hand-verification samples and their results |
 
 ### Three rules that have been earned the hard way
@@ -257,26 +259,72 @@ component, 1 publishes several with no Total); Finance's Part 3 groups objective
 categories into 12 internal and 10 other; 1,240 sections carry a history note,
 semicolon-separated after a `[NOTE: ...]` prefix.
 
-### Step 2 - the SQL - **NEXT**
+### Step 2 - the SQL - **DONE**
 
-In this order:
+`portage/indicators.py`. 13 views in `portage.sqlite`, exported to `views/`,
+documented in a generated `docs/indicator-definitions.md`, 22 tests.
 
-1. **`indicators` first**, because everything else reads from it. Build it
-   column group by column group in the order the doc lists them - cost,
-   beneficiaries, history, objective source, classification, legal footprint -
-   and leave the temporal-scope columns null until step 3 supplies the table.
-2. **Then the ten canned views**, each a filter over `indicators` or the base
-   tables. None carries an `ORDER BY` that implies importance.
-3. **Then the generator and its test**: the prose lives in a dict in code, the
-   SQL is read back from `sqlite_master`, the doc is written from both, and a
-   test asserts the file on disk matches what the generator produces.
+| view | rows |
+|---|---|
+| `indicators` | 247, one per measure, 60 columns |
+| `measure_resolved_provisions` | 332 |
+| `measure_provision_overlap` | 230 |
+| `v_not_costed` / `v_withheld` | 10 / 9 |
+| `v_no_beneficiary_count` | 172 |
+| `v_last_change_by_year` | 247 |
+| `v_objective_internal` | 70 |
+| `v_overlapping_programs` | 208 |
+| `v_shared_provisions` | 34 |
+| `v_not_in_consolidation` | 13 |
+| `v_provision_footprint` | 332 |
+| `v_end_bound_by_year` | 0 until step 3 |
 
-Two small things the doc leaves open, to decide while writing the SQL: whether
-`sections_touched` takes the top-level section from the path string or from the
-`sections` row, and whether `v_provision_footprint` returns one row per
-(path, measure) pair or one per path with a count.
+Six **extraction tables** feed them, each with a `method` column and a fixture:
+`objective_category_groups`, `measure_objective_categories`,
+`measure_objective_source`, `section_amending_acts`, `measure_figure_basis`,
+and `provision_temporal_scope` (created empty for step 3).
 
-### Step 3 - temporal scope - **AFTER STEP 2**
+**Both open questions answered.** The top-level section is cut out of a
+citation path at the first `(`, `"` or `~` - the quote matters, because
+`54"principal residence"` would otherwise yield a section that does not exist.
+`v_provision_footprint` returns one row per (provision, measure) pair.
+
+**Six findings from writing the SQL**, all in `docs/decisions.md`:
+
+1. **Five measures publish several `Total` rows**, not the one the definitions
+   doc expected, because they publish more than one cost table and
+   `measure_costs` has no table index. For the three donation measures the
+   second table totals *a group of related measures*; for farm savings accounts
+   the third Total is the measure's own; for non-capital loss carry-overs there
+   are five subtotals and no grand Total. No rule gets all five right, so all
+   five get null cost figures and `cost_figure_basis = 'multiple_total_rows'`.
+2. **Finance's measure cells do not always use Finance's own Part 3
+   vocabulary** - 18 cells, including two French cells with entirely different
+   wording from the French list. Nine measures get a null
+   `objective_category_internal` rather than a guessed one.
+3. **Six measures resolve differently in the two editions.** Indicators read
+   one edition per measure (English where it exists), recorded in
+   `measure_figure_basis`; the disagreements are catalogued, not reconciled.
+4. **All 75 parsed beneficiary counts are English.** The pattern reads English
+   prose only, so a French-only measure can never carry one.
+5. **`amending_acts_count` excludes the first entry in a history note**, which
+   is the enactment that put the section there rather than an amendment. Both
+   numbers are stored.
+6. **The internal / other grouping is read from each edition's own markup** -
+   English marks the headings with `<strong>`, French with `<h5>` - rather than
+   reading the French groups off the English order.
+
+**Two places the build now departs from CLAUDE.md as written**, both flagged in
+`docs/decisions.md` and both consequences of amendments Matt already adopted:
+
+- CLAUDE.md's acceptance test 3 asks for `cost_status = 'not_costed'` on the
+  reorganization deferral. It is **`no_cost_table`** - Finance published no cost
+  table for it at all, which is what the fifth value exists to say. The other
+  two assertions in that test pass as written.
+- `cost_per_beneficiary` is **dollars**, not millions of dollars, per
+  beneficiary.
+
+### Step 3 - temporal scope - **NEXT**
 
 The one extraction in Phase 2 that needs a model, and the only part of this
 project that calls an API. CLAUDE.md's rules are strict and are not negotiable:
@@ -292,18 +340,27 @@ project that calls an API. CLAUDE.md's rules are strict and are not negotiable:
 Scope is the cited provisions only. Expect this to be the slowest step and the
 one most likely to produce a finding about the Act rather than about the code.
 
-### Step 4 - acceptance tests
+### Step 4 - acceptance tests - **MOSTLY DONE**
 
-Listed in CLAUDE.md. Two need Matt before they can be written:
+Written in `tests/test_indicators.py`. The mechanical ones pass: every column
+has a definitions entry and the doc is regenerated and diffed; the
+reorganization deferral resolves to 55, 85, 87 and 88 with no cost table; no
+indicator is non-null where an input is null; no view carries a top-level
+`ORDER BY`; every derived top-level section is a real section; Finance's
+grouping is 12 and 10 in both languages. **View row counts** are recorded in
+`tests/fixtures/view_row_counts.csv`.
 
-- **Hand recomputation fixtures**: three measures' `cost_change` computed by
-  Matt in a spreadsheet from the published pages, asserted equal. He supplies
-  the three.
-- **View row counts** recorded in a fixture for this edition.
+**Waiting on Matt - one thing.** `tests/fixtures/cost_change_by_hand.csv` has a
+header and no rows. CLAUDE.md asks for three measures whose `cost_change` Matt
+computes in a spreadsheet from the published pages; the test reads the fixture
+and asserts equality, and skips while the fixture is empty. Any three measures
+with `cost_status = 'costed'` will do - `SELECT name_en, cost_first_estimate,
+cost_latest_estimate, cost_change_abs FROM indicators WHERE cost_status =
+'costed'` lists the candidates, and the point is to check them against the
+report pages rather than against that query.
 
-The others are mechanical: every column has a definitions entry; the
-reorganization deferral is `not_costed` with `provisions_resolved = 4`; no
-indicator is non-null where an input is null; temporal phrases are verbatim.
+The temporal-scope tests - verbatim phrases, and model, prompt hash and run
+date in `meta` - are written and vacuous until step 3 fills the table.
 
 ---
 

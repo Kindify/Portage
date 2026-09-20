@@ -1286,3 +1286,110 @@ A fault that is internally consistent passes all of them. Thirty citations read
 by a person is the only check that comes from outside that loop.
 
 ---
+
+## 2026-09-20 - Phase 2 step 2: the SQL, and six things the data decided
+
+The views are written and built. Six decisions had to be made while writing
+them that the definitions document could not have anticipated, because each of
+them came out of the data rather than out of the design.
+
+**Indicators read one edition per measure, recorded in `measure_figure_basis`.**
+Costs, references and beneficiary counts are stored one row per language, so
+counting both would have made every joined measure's `provisions_cited` twice
+what Finance published. English is read wherever the measure has an English
+record, French for the 18 measures that exist only in French. This changes no
+figure: the cost signatures - year, value and `value_kind` - match exactly for
+all 172 measures carrying both editions, which is what the Phase 1 join was
+built on in the first place.
+
+References are not as clean. **Six measures resolve differently in the two
+editions**, now catalogued in `data/measure_reference_edition_diffs.csv`. The
+clearest is *Employee benefit plans*: English resolves five provisions, French
+four, because the French definition "entente d'échelonnement du traitement"
+did not join a term while "salary deferral arrangement" did. Preferring English
+gets the better answer here, which is luck rather than a rule, so the
+disagreements are catalogued rather than reconciled.
+
+**`cost_figure_basis` has a fifth value: `multiple_total_rows`.** The
+definitions doc expected one measure to publish components with no Total. Five
+more turned out to publish **several Totals**, because they publish more than
+one cost table and `measure_costs` carries no table index. For three of them -
+the donations of cultural property, ecologically sensitive land and publicly
+listed securities - the second table totals *a group of related donation
+measures*, not the measure being described, so taking the last Total would
+overstate the cost by an order of magnitude and taking the first would be a
+reading of which table is the measure's own. For *farm savings accounts* the
+third Total is the right one, and for *non-capital loss carry-overs* there are
+five qualified subtotals and no grand Total at all. **No rule gets all five
+right**, so all five get null cost figures and are catalogued in
+`data/measure_cost_basis.csv` with every other measure's basis beside them.
+
+A qualified Total - "Total - personal income tax" - counts as a Total where a
+measure publishes exactly one and no unqualified one, which is 17 measures. It
+is the only total Finance published for them.
+
+**`amending_acts_count` excludes the first entry in a history note.** The
+entries are semicolon separated, and the first names the enactment that put the
+section there - "R.S., 1985, c. 1 (5th Supp.), s. 3" for a section carried
+over, "1998, c. 19, s. 24" for one added in 1998. Counting it would have made
+`amending_acts_count` wrong by one everywhere and never zero. Both numbers are
+stored - `statute_entries` and `amending_entries` - so the choice is visible
+rather than baked in. All 1,240 notes parse; the unparsed catalogue exists and
+is empty.
+
+**Finance's measure cells do not always use Finance's own vocabulary.** 18
+category cells name a term that is not in the Part 3 list: "To recognize
+expenses incurred to earn business or property income" where the list has
+"...employment income", a bare "Other" where the list has "To achieve an
+economic objective - other", and two French cells using entirely different
+wording from the French list - "Encourager ou attirer les investissements" for
+"Incitation à l'investissement", "Soutenir la concurrence" for "Soutien à la
+compétitivité". Nine measures end up with a null `objective_category_internal`
+in consequence. **Nothing is mapped by similarity**; the mismatches are
+catalogued in `data/objective_categories_unmatched.csv`. Guessing that
+"Soutenir la concurrence" means "To support competitiveness" is a judgment, and
+a small one is still one.
+
+**The internal / other grouping is read from each edition's own markup.** The
+two editions mark the group headings up differently - English uses a `<strong>`
+paragraph ending in a colon, French an `<h5>` - and the two lists happen to run
+in the same order. Reading the French groups off the English order would have
+worked and would have been the seventh time position was used as a join key.
+Each is read from its own page: 12 internal and 10 other in both, asserted by a
+test.
+
+**The top-level section is cut out of a citation path at the first `(`, `"` or
+`~`.** This was one of the two questions the definitions doc left open. The
+`"` matters: `54"principal residence"` is a definition inside section 54, and
+cutting only at `(` would have produced a "section" that does not exist. A test
+asserts that every derived section is a real `level='section'` row.
+
+**`v_provision_footprint` returns one row per (provision, measure) pair**, the
+other open question, answered the longer way. A reader asking about one
+provision filters on it and sees each measure on its own row.
+
+### Two changes a reader of CLAUDE.md should know about
+
+**CLAUDE.md's Phase 2 acceptance test 3 asks for `cost_status = 'not_costed'`
+on the reorganization deferral. It is `no_cost_table`.** Finance published no
+cost table for that measure at all, and the fifth `cost_status` value Matt
+adopted on 2026-09-20 exists precisely to separate that from a table showing no
+estimate. The other two assertions in that test - beneficiaries null,
+`provisions_resolved = 4` - pass as written.
+
+**`cost_per_beneficiary` is dollars, not millions.** CLAUDE.md says
+"`cost_latest_estimate` divided by `beneficiaries_latest`", which read literally
+gives millions of dollars per beneficiary. The view multiplies by a million
+first, so the number is dollars per beneficiary, and the definition says so.
+Both are recomputable from the published sources; this one is readable.
+
+**`beneficiaries_raw` became `beneficiaries_raw_en` and `_fr`.** The definitions
+doc specified one column. One column means dropping a published French sentence
+whenever an English one exists, which is not what "bilingual from the start"
+means. It is a copied label, so it follows the `_en` / `_fr` rule the other
+copied labels follow.
+
+Worth recording beside it: **all 75 parsed beneficiary counts are English.**
+The pattern reads English prose only, so a French-only measure can never carry
+a count. That is a coverage gap in Phase 1, not a Phase 2 decision, and it is
+visible in `v_no_beneficiary_count`.

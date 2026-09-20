@@ -36,6 +36,16 @@ CATALOGUES = [
     "finance_category_map.csv",
     "finance_category_map_ambiguous.csv",
     "source_oddities.csv",
+    # Phase 2. objective_categories_unmatched is the one that matters most
+    # here: Finance's measure cells do not always use Finance's own Part 3
+    # vocabulary, and each mismatch is a measure whose
+    # objective_category_internal is null rather than guessed.
+    "objective_category_groups.csv",
+    "objective_categories_unmatched.csv",
+    "measure_objective_source.csv",
+    "amending_acts_unparsed.csv",
+    "measure_cost_basis.csv",
+    "measure_reference_edition_diffs.csv",
 ]
 
 

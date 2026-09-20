@@ -1,0 +1,352 @@
+"""Phase 2 acceptance tests.
+
+CLAUDE.md lists seven. Four are mechanical and are here. Two need Matt before
+they can assert anything - the hand-recomputed cost changes and the temporal
+scope precision sample - and each has an empty fixture that turns into a real
+test the moment he fills it in. The seventh, the temporal-scope verbatim rule,
+is here and is vacuous until Phase 2 step 3 fills the table; it is written now
+so that it fails the first time a row arrives that breaks it.
+"""
+
+import csv
+import pathlib
+
+import pytest
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+FIXTURES = ROOT / "tests" / "fixtures"
+
+
+# -- 1. Every column is defined, and the doc is current ---------------------
+
+def test_every_indicator_column_has_a_definition(conn):
+    from portage.indicators import COLUMN_NOTES
+
+    cols = [r[1] for r in conn.execute("PRAGMA table_info(indicators)")]
+    missing = [c for c in cols if c not in COLUMN_NOTES]
+    extra = [k for k in COLUMN_NOTES if k not in cols]
+    assert not missing, "columns with no definition entry: %s" % missing
+    assert not extra, "definition entries for columns that do not exist: %s" % extra
+
+
+def test_the_definitions_doc_is_current(conn):
+    """The file on disk must be what the generator produces.
+
+    The build regenerates the file, so this cannot catch a hand edit on its own
+    - a hand edit shows up as a git diff after the next build. What it catches
+    is a generator that writes something other than what it returns, and the
+    two assertions below are the substantive ones: every view and every column
+    has to actually appear in the file, not merely in the dict the file is
+    generated from.
+    """
+    from portage.indicators import VIEWS, generate_definitions
+
+    on_disk = (ROOT / "docs" / "indicator-definitions.md").read_text(encoding="utf-8")
+    generated = generate_definitions(conn)
+    assert on_disk.splitlines() == generated.splitlines(), (
+        "docs/indicator-definitions.md is stale - rebuild to regenerate it")
+
+    for name, _prose, _sql in VIEWS:
+        assert "\n## `%s`\n" % name in on_disk, "no section for view %s" % name
+    for col in (r[1] for r in conn.execute("PRAGMA table_info(indicators)")):
+        assert "| `%s` |" % col in on_disk, "no table row for column %s" % col
+
+
+def test_every_view_has_prose(conn):
+    from portage.indicators import VIEWS
+
+    declared = {name for name, _prose, _sql in VIEWS}
+    built = {r[0] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='view'")}
+    assert declared == built
+    for name, prose, _sql in VIEWS:
+        assert len(prose.split()) > 20, "%s has no real prose entry" % name
+
+
+# -- 2. Hand recomputation, supplied by Matt --------------------------------
+
+def test_cost_change_matches_the_hand_computed_fixture(conn):
+    """Cost changes Matt computed in a spreadsheet from the published pages.
+
+    The fixture is empty until he supplies the three measures CLAUDE.md asks
+    for. An empty fixture passes; a wrong number does not.
+    """
+    path = FIXTURES / "cost_change_by_hand.csv"
+    rows = [r for r in csv.DictReader(open(path, encoding="utf-8"))
+            if r["measure_name_en"].strip()]
+    if not rows:
+        pytest.skip("no hand-computed rows yet - see PLAN.md, Phase 2 step 4")
+    for row in rows:
+        got = conn.execute(
+            """SELECT cost_first_estimate, cost_latest_estimate, cost_change_abs
+                 FROM indicators WHERE name_en = ?""",
+            (row["measure_name_en"],)).fetchone()
+        assert got is not None, "no measure named %r" % row["measure_name_en"]
+        assert got["cost_first_estimate"] == pytest.approx(float(row["first_estimate"]))
+        assert got["cost_latest_estimate"] == pytest.approx(float(row["latest_estimate"]))
+        assert got["cost_change_abs"] == pytest.approx(float(row["change_abs"]))
+
+
+# -- 3. The CLAUDE.md fixture measure ---------------------------------------
+
+def test_the_reorganization_deferral(conn):
+    """CLAUDE.md's Phase 2 fixture, with one value changed by an amendment.
+
+    CLAUDE.md asks for cost_status = 'not_costed'. Finance published no cost
+    table at all for this measure, and the fifth value Matt adopted on
+    2026-09-20 distinguishes that from a table showing no estimate. The
+    assertion is 'no_cost_table' for that reason and no other.
+    """
+    row = conn.execute(
+        "SELECT * FROM indicators WHERE name_en = ?",
+        ("Deferral for asset transfers to a corporation and corporate "
+         "reorganizations",)).fetchone()
+    assert row is not None
+    assert row["cost_status"] == "no_cost_table"
+    assert row["cost_figure_basis"] == "no_cost_table"
+    assert row["cost_latest_estimate"] is None
+    assert row["beneficiaries_latest"] is None
+    assert row["provisions_resolved"] == 4
+
+    paths = [r[0] for r in conn.execute(
+        """SELECT citation_path FROM measure_resolved_provisions
+            WHERE measure_id = ? ORDER BY citation_path""", (row["measure_id"],))]
+    assert paths == ["55", "85", "87", "88"]
+
+
+def test_paragraph_20_1_ss(conn):
+    """Phase 1's fixture, still resolving through the Phase 2 view."""
+    rows = [r[0] for r in conn.execute(
+        """SELECT citation_path FROM measure_resolved_provisions
+            WHERE citation_path = '20(1)(ss)' AND act = 'ITA'""")]
+    assert rows == ["20(1)(ss)"]
+
+
+# -- 4. No indicator is non-null where an input is null ---------------------
+
+@pytest.mark.parametrize("label,sql", [
+    ("cost_change_abs without both estimates, or with equal years",
+     """SELECT COUNT(*) FROM indicators WHERE cost_change_abs IS NOT NULL
+         AND (cost_first_estimate IS NULL OR cost_latest_estimate IS NULL
+              OR cost_first_estimate_year = cost_latest_estimate_year)"""),
+    ("cost_change_pct with a null or zero first estimate",
+     """SELECT COUNT(*) FROM indicators WHERE cost_change_pct IS NOT NULL
+         AND (cost_change_abs IS NULL OR cost_first_estimate IS NULL
+              OR cost_first_estimate = 0)"""),
+    ("cost_per_beneficiary without both inputs in the same year",
+     """SELECT COUNT(*) FROM indicators WHERE cost_per_beneficiary IS NOT NULL
+         AND (cost_latest_estimate IS NULL OR beneficiaries_latest IS NULL
+              OR cost_latest_estimate_year <> beneficiaries_latest_year)"""),
+    ("years_since_last_change without a last change year",
+     """SELECT COUNT(*) FROM indicators WHERE years_since_last_change IS NOT NULL
+         AND last_change_year IS NULL"""),
+    ("a cost figure without a figure row to read it from",
+     """SELECT COUNT(*) FROM indicators WHERE cost_figure_row_label IS NULL
+         AND (cost_latest_estimate IS NOT NULL OR cost_first_estimate IS NOT NULL
+              OR cost_latest_projection IS NOT NULL)"""),
+    ("amending_acts_method without a count",
+     """SELECT COUNT(*) FROM indicators
+         WHERE (amending_acts_method IS NULL) <> (amending_acts_count IS NULL)"""),
+    ("beneficiaries_latest_year without a count",
+     """SELECT COUNT(*) FROM indicators WHERE beneficiaries_latest_year IS NOT NULL
+         AND beneficiaries_latest IS NULL"""),
+    ("objective_category_internal with no matched category",
+     """SELECT COUNT(*) FROM indicators i WHERE i.objective_category_internal IS NOT NULL
+         AND NOT EXISTS (SELECT 1 FROM measure_objective_categories c
+                          WHERE c.measure_id = i.measure_id)"""),
+])
+def test_no_indicator_survives_a_null_input(conn, label, sql):
+    assert conn.execute(sql).fetchone()[0] == 0, label
+
+
+def test_columns_documented_as_never_null_are_never_null(conn):
+    """The null rules in the definitions are assertions, not commentary.
+
+    Every column whose documented rule begins "never" is checked against the
+    data. This is the one test where the doc and the test are the same thing:
+    a column that starts producing nulls fails here until either the data or
+    the definition is fixed.
+    """
+    from portage.indicators import COLUMN_NOTES
+
+    offenders = []
+    for col, (_meaning, null_when) in sorted(COLUMN_NOTES.items()):
+        if not null_when.startswith("never"):
+            continue
+        n = conn.execute(
+            'SELECT COUNT(*) FROM indicators WHERE "%s" IS NULL' % col).fetchone()[0]
+        if n:
+            offenders.append((col, n))
+    assert not offenders, (
+        "columns documented as never null that are null: %s" % offenders)
+
+
+def test_a_cost_estimate_is_never_zero_standing_in_for_missing(conn):
+    """Finance's non-numeric tokens must never have become numbers."""
+    assert conn.execute(
+        """SELECT COUNT(*) FROM measure_costs
+            WHERE value_millions IS NOT NULL
+              AND value_kind NOT IN ('estimate','projection')""").fetchone()[0] == 0
+
+
+# -- 5. Temporal scope ------------------------------------------------------
+
+def test_every_temporal_phrase_is_verbatim(conn):
+    """CLAUDE.md: the phrase must be a substring of the provision's text_en.
+
+    Vacuous until Phase 2 step 3 fills the table, and written now so that it
+    is already in place when the first row arrives.
+    """
+    bad = []
+    for sid, phrase in conn.execute(
+            "SELECT section_id, phrase FROM provision_temporal_scope"):
+        text = conn.execute(
+            "SELECT text_en FROM sections WHERE id=?", (sid,)).fetchone()[0]
+        if not text or phrase not in text:
+            bad.append((sid, phrase))
+    assert not bad, "phrases that are not verbatim substrings: %s" % bad[:5]
+
+
+def test_temporal_scope_records_its_provenance(conn):
+    """A model extraction with no model, prompt and date recorded is not data."""
+    n = conn.execute("SELECT COUNT(*) FROM provision_temporal_scope").fetchone()[0]
+    if n == 0:
+        pytest.skip("provision_temporal_scope is empty - Phase 2 step 3")
+    keys = {r[0] for r in conn.execute("SELECT key FROM meta")}
+    for required in ("temporal_scope_model", "temporal_scope_prompt_sha256",
+                     "temporal_scope_run_date"):
+        assert required in keys, "meta is missing %s" % required
+
+
+# -- 6. The views run, and return what the fixture records ------------------
+
+def test_view_row_counts_match_the_fixture(conn):
+    from portage.indicators import VIEWS
+
+    expected = {r["view"]: int(r["rows"]) for r in
+                csv.DictReader(open(FIXTURES / "view_row_counts.csv", encoding="utf-8"))}
+    actual = {name: conn.execute('SELECT COUNT(*) FROM "%s"' % name).fetchone()[0]
+              for name, _p, _s in VIEWS}
+    assert actual == expected, (
+        "view row counts differ from the fixture. If this is intended, update "
+        "tests/fixtures/view_row_counts.csv in its own commit and say why.")
+
+
+# -- Structure and principle ------------------------------------------------
+
+def test_indicators_has_one_row_per_measure(conn):
+    assert (conn.execute("SELECT COUNT(*) FROM indicators").fetchone()[0]
+            == conn.execute("SELECT COUNT(*) FROM measures").fetchone()[0])
+
+
+def _has_top_level_order_by(sql):
+    """True where a view orders its own rows.
+
+    An ORDER BY inside a parenthesised subquery is *selection* - "the most
+    recent year whose value_kind is estimate" is written that way - and says
+    nothing about the order the view hands its rows back in. Only an ORDER BY
+    at paren depth zero does that, so depth is what this counts.
+    """
+    depth, lowered = 0, sql.lower()
+    i = 0
+    while i < len(lowered):
+        ch = lowered[i]
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+        elif depth == 0 and lowered.startswith("order by", i):
+            return True
+        i += 1
+    return False
+
+
+def test_no_view_orders_its_rows(conn):
+    """No ordering is baked into the data - sorting is the reader's action.
+
+    A top-level ORDER BY in a canned view would present one arrangement as the
+    natural one, which for a dataset about tax expenditures is exactly the
+    judgment this project does not make.
+    """
+    offenders = [name for name, sql in conn.execute(
+        "SELECT name, sql FROM sqlite_master WHERE type='view'")
+        if _has_top_level_order_by(sql)]
+    assert not offenders, "views with a top-level ORDER BY: %s" % offenders
+
+
+def test_every_section_touched_is_a_real_section(conn):
+    """The top-level section is cut out of a citation path by string rule."""
+    bad = [tuple(r) for r in conn.execute(
+        """SELECT DISTINCT p.act, p.citation_path, p.top_section
+             FROM measure_resolved_provisions p
+            WHERE NOT EXISTS (SELECT 1 FROM sections s
+                               WHERE s.act = p.act
+                                 AND s.citation_path = p.top_section
+                                 AND s.level = 'section')""")]
+    assert not bad, "paths whose top-level section does not exist: %s" % bad[:5]
+
+
+def test_finance_groups_its_objective_categories_twelve_and_ten(conn):
+    """Finance's Part 3 grouping, read from each edition's own markup.
+
+    A change in Finance's grouping must fail here rather than silently
+    reclassify measures.
+    """
+    counts = {(r[0], r[1]): r[2] for r in conn.execute(
+        """SELECT lang, group_name, COUNT(*) FROM objective_category_groups
+            GROUP BY lang, group_name""")}
+    assert counts == {("en", "internal"): 12, ("en", "other"): 10,
+                      ("fr", "internal"): 12, ("fr", "other"): 10}
+
+
+def test_a_measure_with_several_total_rows_has_no_cost_figure(conn):
+    """Several cost tables means several Totals, and choosing is judgment.
+
+    Five measures publish more than one table. Adding the Totals together
+    would be arithmetic Finance did not publish, and picking one would be a
+    reading of which table is the measure's own - which for the three donation
+    measures would be wrong, since their second table totals a group of
+    measures rather than the one being described.
+    """
+    rows = conn.execute(
+        """SELECT cost_latest_estimate, cost_first_estimate, cost_change_abs,
+                  cost_figure_row_label
+             FROM indicators
+            WHERE cost_figure_basis IN ('multiple_total_rows','components_only')""")
+    for row in rows:
+        assert all(v is None for v in tuple(row))
+
+
+def test_amending_counts_come_from_the_history_notes(conn):
+    """Every section with a note is parsed, and the count excludes the first
+    entry, which is the enactment that put the section there."""
+    with_note = conn.execute(
+        "SELECT COUNT(*) FROM sections WHERE history_note IS NOT NULL").fetchone()[0]
+    parsed = conn.execute("SELECT COUNT(*) FROM section_amending_acts").fetchone()[0]
+    unparsed = len(list(csv.DictReader(
+        open(ROOT / "data" / "amending_acts_unparsed.csv", encoding="utf-8"))))
+    assert parsed + unparsed == with_note
+    assert conn.execute(
+        """SELECT COUNT(*) FROM section_amending_acts
+            WHERE amending_entries <> statute_entries - 1""").fetchone()[0] == 0
+
+
+def test_each_measure_reads_from_exactly_one_edition(conn):
+    """A measure present in both editions must not be counted twice."""
+    assert conn.execute(
+        """SELECT COUNT(*) FROM measure_figure_basis b
+            WHERE b.reference_lang IS NOT NULL
+              AND NOT EXISTS (SELECT 1 FROM measure_references r
+                               WHERE r.measure_id = b.measure_id
+                                 AND r.lang = b.reference_lang)""").fetchone()[0] == 0
+    doubled = [tuple(r) for r in conn.execute(
+        """SELECT i.measure_id, i.provisions_cited, both.n
+             FROM indicators i
+             JOIN (SELECT measure_id, COUNT(*) AS n
+                     FROM measure_references
+                    GROUP BY measure_id
+                   HAVING COUNT(DISTINCT lang) = 2) both
+               ON both.measure_id = i.measure_id
+            WHERE i.provisions_cited >= both.n""")]
+    assert not doubled, (
+        "measures whose reference count spans both editions: %s" % doubled[:5])

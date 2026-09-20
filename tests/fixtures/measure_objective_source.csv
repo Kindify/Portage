@@ -1,0 +1,459 @@
+measure_id,lang,method,year,raw_text
+1,en,none,,
+1,fr,none,,
+2,en,none,,
+2,fr,none,,
+3,en,pattern,2013,"Technical Guide to Class 43.1 and 43.2, Natural Resources Canada, 2013"
+3,fr,pattern,2013,"Catégories 43.1 et 43.2 – Guide technique, Ressources naturelles Canada, 2013"
+4,en,pattern,2015,"Prime Minister of Canada news release, February 19, 2015"
+4,fr,pattern,2015,"communiqué du premier ministre du Canada, le 19 février 2015"
+5,en,pattern,1969,"Proposals for Tax Reform, 1969"
+5,fr,pattern,1969,"Propositions de réforme fiscale, 1969"
+6,en,none,,
+6,fr,none,,
+7,en,none,,
+7,fr,none,,
+8,en,none,,
+8,fr,none,,
+9,en,pattern,2020,"Prime Minister of Canada news release, March 2, 2020"
+9,fr,pattern,2020,"communiqué de presse du premier ministre du Canada, le 2 mars 2020"
+10,en,pattern,2012,"Technical Guide to Canadian Renewable and Conservation Expenses, Natural Resources Canada, 2012"
+10,fr,pattern,2012,"Guide technique relatif aux frais liés aux énergies renouvelables et à l'économie d'énergie au Canada, Ressources naturelles Canada, 2012"
+11,en,pattern,2015,Budget 2015
+11,fr,pattern,2015,budget de 2015
+12,en,pattern,2007,Budget 2007
+12,fr,pattern,2007,budget de 2007
+13,en,none,,
+13,fr,none,,
+14,en,pattern,2005,Budget 2005
+14,fr,pattern,2005,budget de 2005
+15,en,pattern,2009,Budget 1972; Budget 2009
+15,fr,pattern,2009,budget de 1972; budget de 2009
+16,en,pattern,2007,Budget 2001; Budget 2007
+16,fr,pattern,2007,"budget de 2001, budget de 2007"
+17,en,pattern,2006,Budget 2006
+17,fr,pattern,2006,budget de 2006
+18,en,pattern,1977,Budget 1977
+18,fr,pattern,1977,budget de 1977
+19,en,pattern,2017,Budget 2017
+19,fr,pattern,2017,budget de 2017
+20,en,none,,
+20,fr,none,,
+21,en,none,,
+21,fr,none,,
+22,en,none,,
+22,fr,none,,
+23,en,pattern,2006,Budget 2006
+23,fr,pattern,2006,budget de 2006
+24,en,none,,
+24,fr,none,,
+25,en,none,,
+25,fr,none,,
+26,en,pattern,2019,Budget 2019
+26,fr,pattern,2019,budget de 2019
+27,en,pattern,2021,Budget 2007; Budget 2009; Budget 2018; Budget 2021
+27,fr,pattern,2021,budget de 2007; budget de 2009; budget de 2018; budget de 2021
+28,en,pattern,1995,"Canadian Heritage news release, December 12, 1995"
+28,fr,pattern,1995,"communiqué de Patrimoine canadien, le 12 décembre 1995"
+29,en,pattern,2019,Budget 2019
+29,fr,pattern,2019,budget de 2019
+30,en,pattern,1971,"Summary of 1971 Tax Reform Legislation, 1971"
+30,fr,pattern,1971,Résumé de la législation sur la réforme fiscale de 1971
+31,en,pattern,1983,Budget 1983
+31,fr,pattern,1983,budget de 1983
+32,en,none,,
+32,fr,none,,
+33,en,pattern,1969,"Report of the Royal Commission on Taxation, vol. 4, 1966; Proposals for Tax Reform, 1969"
+33,fr,pattern,1969,"Rapport de la Commission royale d'enquête sur la fiscalité, vol. 4, 1966; Propositions de réforme fiscale, 1969"
+34,en,pattern,1987,"Report of the Royal Commission on Taxation, vol. 3, 1966; 1987 Tax Reform"
+34,fr,pattern,1987,"Rapport de la Commission royale d'enquête sur la fiscalité, vol. 3, 1966; réforme fiscale de 1987"
+35,en,pattern,1998,Budget 1992; Budget 1998
+35,fr,pattern,1998,"budget de 1992, budget de 1998"
+36,en,pattern,2023,Budget 2023
+36,fr,pattern,2023,budget de 2023
+37,en,none,,
+37,fr,none,,
+38,en,pattern,2022,Budget 2022 and the 2022 Fall Economic Statement
+38,fr,pattern,2022,budget de 2022 et Énoncé économique de l'automne de 2022
+39,en,pattern,2023,Budget 2023
+39,fr,pattern,2023,budget de 2023
+40,en,pattern,2018,2018 Fall Economic Statement
+40,fr,pattern,2018,Énoncé économique de l'automne 2018
+41,en,pattern,1998,"Report of the Royal Commission on Taxation, vol. 3, 1966; Budget 1998"
+41,fr,pattern,1998,"Rapport de la Commission royale d'enquête sur la fiscalité, vol. 3, 1966; budget de 1998"
+42,en,pattern,1987,"Musical Instruments: Income Tax Reform, 1987"
+42,fr,pattern,1987,"Instruments de musique : Réforme de l'impôt direct, 1987"
+43,en,pattern,1966,"Report of the Royal Commission on Taxation, vol. 3, 1966"
+43,fr,pattern,1966,"Rapport de la Commission royale d'enquête sur la fiscalité, vol. 3, 1966"
+44,en,pattern,1997,Budget 1997
+44,fr,pattern,1997,budget de 1997
+45,en,none,,
+45,fr,none,,
+46,en,pattern,1998,Budget 1998
+46,fr,pattern,1998,budget de 1998
+47,en,pattern,1998,Budget 1998
+47,fr,pattern,1998,budget de 1998
+48,en,pattern,1990,"Government response to the Report of the Standing Committee on Communications and Culture Respecting the Status of the Artist, 1990"
+48,fr,pattern,1990,"réponse du gouvernement au rapport du Comité permanent des communications et de la culture sur le statut de l'artiste, 1990"
+49,en,none,,
+49,fr,none,,
+50,en,pattern,1949,"Budget, March 1949"
+50,fr,pattern,1949,budget de mars 1949
+51,en,pattern,1985,Budget 1985
+51,fr,pattern,1985,budget de 1985
+52,en,pattern,2006,Budget 2006
+52,fr,pattern,2006,budget de 2006
+53,en,pattern,2001,Budget 2001
+53,fr,pattern,2001,budget de 2001
+54,en,pattern,2004,Budget 1985; Budget 2004
+54,fr,pattern,2004,budget de 1985; budget de 2004
+55,en,none,,
+55,fr,none,,
+56,en,none,,
+56,fr,none,,
+57,en,none,,
+57,fr,none,,
+58,en,none,,
+58,fr,none,,
+59,en,pattern,2006,Budget 1973; Budget 2006
+59,fr,pattern,2006,budget de 1973; budget de 2006
+60,en,pattern,1971,Budget 1971
+60,fr,pattern,1971,budget de 1971
+61,en,pattern,1976,Budget 1976
+61,fr,pattern,1976,budget de 1976
+62,en,pattern,1974,Budget May 1974
+62,fr,pattern,1974,budget de mai 1974
+63,en,pattern,2014,"Department of Finance Canada news release 88-155, December 12, 1988; Department of Finance Canada news release 2009-024, March 5, 2009; Budget 2014"
+63,fr,pattern,2014,"communiqué 88‑155 du ministère des Finances Canada, le 12 décembre 1988; communiqué 2009‑024 du ministère des Finances Canada, le 5 mars 2009; budget de 2014"
+64,en,pattern,1982,"Explanatory Notes for Act to Amend the Income Tax Act, December 1982"
+64,fr,pattern,1982,"notes explicatives accompagnant le projet de loi modifiant la Loi de l'impôt sur le revenu, décembre 1982"
+65,en,pattern,2024,Budget 2023 and Budget 2024
+65,fr,pattern,2024,budgets de 2023 et de 2024
+66,en,pattern,1971,"Summary of 1971 Tax Reform Legislation, 1971"
+66,fr,pattern,1971,Résumé de la législation sur la réforme fiscale de 1971
+67,en,pattern,1960,Budget 1960
+67,fr,pattern,1960,budget de 1960
+68,en,pattern,2004,Budget 1989; Budget 2000; Budget 2004
+68,fr,pattern,2004,budget de 1989; budget de 2000; budget de 2004
+69,en,pattern,2005,Budget 1997; Budget 2005
+69,fr,pattern,2005,budget de 1997; budget de 2005
+70,en,none,,
+70,fr,none,,
+71,en,pattern,1974,"Proposals for Tax Reform, 1969; Summary of 1971 Tax Reform Legislation; Budget, May 6, 1974; Budget, November 18, 1974"
+71,fr,pattern,1974,"Propositions de réforme fiscale, 1969; Résumé du projet de loi sur la réforme fiscale de 1971; budget du 6 mai 1974; budget du 18 novembre 1974"
+72,en,pattern,1972,Budget 1972
+72,fr,pattern,1972,budget de 1972
+73,en,pattern,1966,"Report of the Royal Commission on Taxation, vol. 3, 1966"
+73,fr,pattern,1966,"Rapport de la Commission royale d'enquête sur la fiscalité, vol. 3, 1966"
+74,en,pattern,2023,2023 Fall Economic Statement
+74,fr,pattern,2023,Énoncé économique de l'automne 2023
+75,en,pattern,1984,Budget 1977; Budget 1984
+75,fr,pattern,1984,"budget de 1977, budget de 1984"
+76,en,none,,
+76,fr,none,,
+77,en,none,,
+77,fr,none,,
+78,en,none,,
+78,fr,none,,
+79,en,pattern,1962,Budget 1960; Budget 1962
+79,fr,pattern,1962,budget de 1960; budget de 1962
+80,en,pattern,1989,"Report on the Technical Paper on the Goods and Services Tax, November 1989"
+80,fr,pattern,1989,"Rapport sur le document technique sur la taxe sur les produits et services, novembre 1989"
+81,en,pattern,1989,"Goods and Services Tax: Technical Paper, August 1989"
+81,fr,pattern,1989,"Taxe sur les produits et services – Document technique, août 1989"
+82,en,pattern,1989,"Goods and Services Tax, December 1989"
+82,fr,pattern,1989,"Taxe sur les produits et services, décembre 1989"
+83,en,none,,
+83,fr,none,,
+84,en,pattern,1989,"Goods and Services Tax: Technical Paper, August 1989"
+84,fr,pattern,1989,"Taxe sur les produits et services – Document technique, août 1989"
+85,en,none,,
+85,fr,none,,
+86,en,pattern,2014,"Department of Finance Canada news release 2014-009, January 24, 2014"
+86,fr,pattern,2014,"communiqué 2014-009 du ministère des Finances Canada, le 24 janvier 2014"
+87,en,pattern,1989,"Goods and Services Tax: Technical Paper, August 1989"
+87,fr,pattern,1989,"Taxe sur les produits et services – Document technique, août 1989"
+88,en,none,,
+88,fr,none,,
+89,en,pattern,1989,"Goods and Services Tax: Technical Paper, August 1989"
+89,fr,pattern,1989,"Taxe sur les produits et services – Document technique, août 1989"
+90,en,pattern,1971,"Summary of 1971 Tax Reform Legislation, 1971"
+90,fr,pattern,1971,Résumé de la législation sur la réforme fiscale de 1971
+91,en,none,,
+91,fr,none,,
+92,en,pattern,2024,2024 Fall Economic Statement
+92,fr,pattern,2024,Énoncé économique de l'automne de 2024
+93,en,pattern,1996,Budget 1996
+93,fr,pattern,1996,budget de 1996
+94,en,none,,
+94,fr,none,,
+95,en,pattern,1997,"Department of Finance Canada news release, July 30, 1997"
+95,fr,pattern,1997,"communiqué du ministère des Finances Canada, le 30 juillet 1997"
+96,en,none,,
+96,fr,none,,
+97,en,pattern,2009,Budget 2009
+97,fr,pattern,2009,budget de 2009
+98,en,pattern,2003,"Improving the Income Taxation of the Resource Sector in Canada, 2003"
+98,fr,pattern,2003,"Amélioration de l'imposition du revenu du secteur des ressources naturelles au Canada, 2003"
+99,en,pattern,2007,Budget 2007
+99,fr,pattern,2007,budget de 2007
+100,en,pattern,1987,June 1987 Tax Reform White Paper
+100,fr,pattern,1987,Livre blanc de la réforme fiscale de juin 1987
+101,en,none,,
+101,fr,none,,
+102,en,none,,
+102,fr,none,,
+103,en,none,,
+103,fr,none,,
+104,en,pattern,2015,Budget 2015
+104,fr,pattern,2015,budget de 2015
+105,en,none,,
+105,fr,none,,
+106,en,pattern,1960,Budget 1960
+106,fr,pattern,1960,budget de 1960
+107,en,pattern,2007,Budget 2007
+107,fr,pattern,2007,budget de 2007
+108,en,pattern,2022,Budget 2022
+108,fr,pattern,2022,budget de 2022
+109,en,pattern,1985,Budget 1985
+109,fr,pattern,1985,budget de 1985
+110,en,pattern,2007,"Budget 1985; The Lifetime Capital Gains Exemption: An Evaluation, Department of Finance Canada, 1995; Budget 2006; Budget 2007"
+110,fr,pattern,2007,"budget de 1985; L'exonération cumulative des gains en capital – Une évaluation, ministère des Finances Canada, 1995; budget de 2006; budget de 2007"
+111,en,none,,
+111,fr,none,,
+112,en,pattern,1962,Budget 1962
+112,fr,pattern,1962,budget de 1962
+113,en,pattern,2005,Budget 1942; Budget 1997; Budget 2005
+113,fr,pattern,2005,budget de 1942; budget de 1997; budget de 2005
+114,en,pattern,1998,Budget 1971; Budget 1998
+114,fr,pattern,1998,budget de 1971; budget de 1998
+115,en,pattern,2022,Budget 2022
+115,fr,pattern,2022,budget de 2022
+116,en,pattern,2006,Budget 1983; Budget 2004; Budget 2006
+116,fr,pattern,2006,budget de 1983; budget de 2004; budget de 2006
+117,en,pattern,1995,"House of Commons Debates, vol. 3, 1965; Department of Finance Canada news release, June 19, 1995"
+117,fr,pattern,1995,"Débats de la Chambre des communes, vol. 3, 1965; communiqué du ministère des Finances Canada, le 19 juin 1995"
+118,en,none,,
+118,fr,none,,
+119,en,pattern,1998,Budget 1998
+119,fr,pattern,1998,budget de 1998
+120,en,none,,
+120,fr,none,,
+121,en,pattern,1981,"Summary of 1971 Tax Reform Legislation, 1971; Budget 1981"
+121,fr,pattern,1981,Résumé de la législation sur la réforme fiscale de 1971; budget de 1981
+122,en,pattern,2006,"Budget 1942; New Veterans Charter, 2006"
+122,fr,pattern,2006,"budget de 1942; Nouvelle Charte des anciens combattants, 2006"
+123,en,pattern,1971,Budget 1971
+123,fr,pattern,1971,budget de 1971
+124,en,pattern,2017,"Budget 2004; National Defence news release NR-04.028, April 14, 2004; National Defence news release, May 18, 2017"
+124,fr,pattern,2017,"budget de 2004; communiqué NR-04.028 du ministère de la Défense nationale, le 14 avril 2004; communiqué de la Défense nationale, le 18 mai 2017"
+125,en,none,,
+125,fr,none,,
+126,en,pattern,1977,Budget 1977
+126,fr,pattern,1977,budget de 1977
+127,en,none,,
+127,fr,none,,
+128,en,none,,
+128,fr,none,,
+129,en,pattern,2005,"New Veterans Charter, 2005"
+129,fr,pattern,2005,"Nouvelle Charte des anciens combattants, 2005"
+130,en,none,,
+130,fr,none,,
+131,en,none,,
+131,fr,none,,
+132,en,none,,
+132,fr,none,,
+133,en,pattern,1975,"The Tax Treatment of Charities, Discussion Paper, June 23, 1975"
+133,fr,pattern,1975,"Le régime fiscal des organismes de charité : document d'étude, le 23 juin 1975"
+134,en,pattern,1981,Budget 1981
+134,fr,pattern,1981,budget de 1981
+135,en,pattern,1959,Budget 1959
+135,fr,pattern,1959,budget de 1959
+136,en,none,,
+136,fr,none,,
+137,en,pattern,2008,Budget 1986; Budget 2008
+137,fr,pattern,2008,"budget de 1986, budget de 2008"
+138,en,none,,
+138,fr,none,,
+139,en,pattern,2000,"Proposals for Tax Reform, 1969; The White Paper: Tax Reform 1987; Budget 2000; 2000 Economic Statement and Budget Update"
+139,fr,pattern,2000,"Propositions de réforme fiscale, 1969; Livre blanc, Réforme fiscale, 1987; budget de 2000; Énoncé économique et mise à jour budgétaire de 2000"
+140,en,pattern,2005,Budget 2005
+140,fr,pattern,2005,budget de 2005
+141,en,pattern,1974,Budget November 1974
+141,fr,pattern,1974,budget de novembre 1974
+142,en,pattern,2006,"Tax Fairness Plan, 2006"
+142,fr,pattern,2006,"Plan d'équité fiscale, 2006"
+143,en,pattern,2025,Budget 2025
+143,fr,pattern,2025,budget de 2025
+144,en,none,,
+144,fr,none,,
+145,en,none,,
+145,fr,none,,
+146,en,pattern,2015,Budget 2015
+146,fr,pattern,2015,budget de 2015
+147,en,none,,
+147,fr,none,,
+148,en,pattern,2021,Budget 2021
+148,fr,pattern,2021,budget de 2021
+149,en,pattern,1996,"Department of Finance Canada news release 1996-076, October 23, 1996"
+149,fr,pattern,1996,"communiqué 1996-076 du ministère des Finances Canada, le 23 octobre 1996"
+150,en,pattern,1989,"Goods and Services Tax: Technical Paper, August 1989"
+150,fr,pattern,1989,"Taxe sur les produits et services – Document technique, août 1989"
+151,en,pattern,2004,"Department of Finance Canada news release 2004-007, February 3, 2004"
+151,fr,pattern,2004,"communiqué 2004-007 du ministère des Finances Canada, le 3 février 2004"
+152,en,pattern,1997,"Goods and Services Tax Consolidated Explanatory Notes, April 1997"
+152,fr,pattern,1997,"Notes explicatives consolidées sur la taxe sur les produits et services, avril 1997"
+153,en,pattern,2000,Budget 2000
+153,fr,pattern,2000,budget de 2000
+154,en,pattern,1989,"Goods and Services Tax, December 1989"
+154,fr,pattern,1989,"Taxe sur les produits et services, décembre 1989"
+155,en,pattern,1989,"Goods and Services Tax, December 1989"
+155,fr,pattern,1989,"Taxe sur les produits et services, décembre 1989"
+156,en,pattern,1989,"Goods and Services Tax: Technical Paper, August 1989"
+156,fr,pattern,1989,"Taxe sur les produits et services – Document technique, août 1989"
+157,en,none,,
+157,fr,none,,
+158,en,pattern,1996,"Economic and Fiscal Statement, 1992; Budget 1996"
+158,fr,pattern,1996,Énoncé économique et budgétaire de 1992; budget de 1996
+159,en,none,,
+159,fr,none,,
+160,en,pattern,2006,Budget 2006
+160,fr,pattern,2006,budget de 2006
+161,en,pattern,1995,Budget 1995
+161,fr,pattern,1995,budget de 1995
+162,en,none,,
+162,fr,none,,
+163,en,pattern,2014,Budget 2014
+163,fr,pattern,2014,budget de 2014
+164,en,pattern,1998,Budget 1998
+164,fr,pattern,1998,budget de 1998
+165,en,pattern,1989,"Pension Reform: Improvements in Tax Assistance for Retirement Saving, Department of Finance Canada, 1989"
+165,fr,pattern,1989,"La réforme des pensions : Amélioration de l'aide fiscale à l'épargne-retraite, ministère des Finances, 1989"
+166,en,pattern,1989,"Pension Reform: Improvements in Tax Assistance for Retirement Saving, Department of Finance Canada, 1989"
+166,fr,pattern,1989,"La réforme des pensions : Amélioration de l'aide fiscale à l'épargne-retraite, ministère des Finances, 1989"
+167,en,pattern,2003,"Economic Statement and Budget Update, October 2000; Budget 2003"
+167,fr,pattern,2003,"Énoncé économique et mise à jour budgétaire, octobre 2000; budget de 2003"
+168,en,pattern,1987,Budget 1987
+168,fr,pattern,1987,budget de 1987
+169,en,none,,
+169,fr,none,,
+170,en,pattern,2014,Budget 2014
+170,fr,pattern,2014,budget de 2014
+171,en,pattern,2021,2021 Economic and Fiscal Update
+171,fr,pattern,2021,Mise à jour économique et budgétaire de 2021
+172,en,pattern,1989,"Goods and Services Tax: Technical Paper, August 1989"
+172,fr,pattern,1989,"Taxe sur les produits et services – Document technique, août 1989"
+173,en,pattern,1999,Budget 1999
+173,fr,pattern,1999,budget de 1999
+174,en,pattern,1966,"Report of the Royal Commission on Taxation, vol. 3, 1966"
+174,fr,pattern,1966,"Rapport de la Commission royale d'enquête sur la fiscalité, vol. 3, 1966"
+175,en,pattern,1998,Budget 1998
+175,fr,pattern,1998,budget de 1998
+176,en,none,,
+176,fr,none,,
+177,en,pattern,2022,2022 Fall Economic Statement
+177,fr,pattern,2022,Énoncé économique de l'automne de 2022
+178,en,none,,
+178,fr,none,,
+179,en,pattern,2007,"Proposals for Tax Reform, 1969; Budget 2007"
+179,fr,pattern,2007,"Propositions de réforme fiscale, 1969; budget de 2007"
+180,en,none,,
+180,fr,none,,
+181,en,none,,
+181,fr,none,,
+182,en,none,,
+182,fr,none,,
+183,en,none,,
+183,fr,none,,
+184,en,none,,
+184,fr,none,,
+185,en,pattern,1966,"Report of the Royal Commission on Taxation, vol. 3, 1966"
+185,fr,pattern,1966,"Rapport de la Commission royale d'enquête sur la fiscalité, vol. 3, 1966"
+186,en,pattern,1998,Budget 1998
+186,fr,pattern,1998,budget de 1998
+187,en,pattern,2022,Budget 2022
+187,fr,pattern,2022,budget de 2022
+188,en,pattern,2008,Budget 2008
+188,fr,pattern,2008,budget de 2008
+189,en,pattern,2016,Budget 2016
+189,fr,pattern,2016,budget de 2016
+190,en,pattern,2006,Budget 2006
+190,fr,pattern,2006,budget de 2006
+191,en,none,,
+191,fr,none,,
+192,en,none,,
+192,fr,none,,
+193,en,none,,
+193,fr,none,,
+194,en,pattern,2012,"Department of Finance Canada news release 2012-061, June 1, 2012"
+194,fr,pattern,2012,"communiqué 2012-061 du ministère des Finances Canada, le 1er juin 2012"
+195,en,pattern,1960,Budget 1960
+195,fr,pattern,1960,budget de 1960
+196,en,pattern,2011,Budget 2011
+196,fr,pattern,2011,budget de 2011
+197,en,pattern,1989,"Goods and Services Tax: Technical Paper, August 1989"
+197,fr,pattern,1989,"Taxe sur les produits et services – Document technique, août 1989"
+198,en,none,,
+198,fr,none,,
+199,en,none,,
+199,fr,none,,
+200,en,none,,
+200,fr,none,,
+201,en,none,,
+201,fr,none,,
+202,en,pattern,2025,Budget 2025
+202,fr,pattern,2025,budget de 2025
+203,en,none,,
+204,en,pattern,2015,Budget 2015
+205,en,none,,
+206,en,pattern,2003,"Improving the Income Taxation of the Resource Sector in Canada, March 3, 2003"
+207,en,pattern,2022,Budget 2022
+208,en,none,,
+209,en,pattern,1969,"Proposals for Tax Reform, 1969"
+210,en,pattern,2024,Budget 2024
+211,en,pattern,1986,Budget 1979; Budget 1986
+211,fr,pattern,1986,budget de 1979; budget de 1986
+212,en,pattern,1989,"Goods and Services Tax: Technical Paper, August 1989"
+213,en,none,,
+213,fr,none,,
+214,en,pattern,1989,"Goods and Services Tax: Technical Paper, August 1989"
+214,fr,pattern,1989,"Taxe sur les produits et services – Document technique, août 1989"
+215,en,pattern,1989,"Goods and Services Tax, December 1989"
+215,fr,pattern,1989,"Taxe sur les produits et services, décembre 1989"
+216,en,none,,
+217,en,none,,
+218,en,none,,
+219,en,pattern,2015,Budget 2015
+220,en,pattern,1998,Budget 1998
+221,en,pattern,2006,Budget 2000; Budget 2006
+222,en,pattern,1997,Budget 1997
+223,en,none,,
+223,fr,none,,
+224,en,none,,
+224,fr,none,,
+225,en,none,,
+226,en,none,,
+226,fr,none,,
+227,en,pattern,2010,"Department of Finance Canada news release 2010-101, October 28, 2010"
+228,en,pattern,1998,"Department of Finance Canada news release 1998-036, April 3, 1998"
+228,fr,pattern,1998,"communiqué 1998-036 du ministère des Finances Canada, le 3 avril 1998"
+229,en,pattern,1989,"Goods and Services Tax, December 1989"
+229,fr,pattern,1989,"Taxe sur les produits et services, décembre 1989"
+230,fr,pattern,2024,budget de 2024
+231,fr,pattern,2003,"Amélioration de l'imposition du revenu du secteur des ressources naturelles au Canada, le 3 mars 2003"
+232,fr,pattern,2022,budget de 2022
+233,fr,pattern,2015,budget de 2015
+234,fr,pattern,2015,budget de 2015
+235,fr,none,,
+236,fr,pattern,1989,"Taxe sur les produits et services – Document technique, août 1989"
+237,fr,none,,
+238,fr,pattern,1998,budget de 1998
+239,fr,pattern,2006,budget de 2000; budget de 2006
+240,fr,pattern,1997,budget de 1997
+241,fr,none,,
+242,fr,none,,
+243,fr,none,,
+244,fr,none,,
+245,fr,pattern,2010,"communiqué 2010-101 du ministère des Finances Canada, le 28 octobre 2010"
+246,fr,none,,
+247,fr,pattern,1969,"Propositions de réforme fiscale, 1969"

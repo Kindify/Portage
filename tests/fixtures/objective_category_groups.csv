@@ -1,0 +1,45 @@
+lang,group_name,order_index,term_as_published,heading_as_published
+en,internal,1,To reduce administration or compliance costs,Objectives that are internal to the tax system:
+en,internal,2,To provide relief for special circumstances,Objectives that are internal to the tax system:
+en,internal,3,To assess tax liability over a multi-year period,Objectives that are internal to the tax system:
+en,internal,4,To prevent double taxation,Objectives that are internal to the tax system:
+en,internal,5,To recognize non-discretionary expenses (ability to pay),Objectives that are internal to the tax system:
+en,internal,6,To recognize expenses incurred to earn employment income,Objectives that are internal to the tax system:
+en,internal,7,To recognize education costs,Objectives that are internal to the tax system:
+en,internal,8,To promote the fairness of the tax system,Objectives that are internal to the tax system:
+en,internal,9,To ensure a neutral tax treatment across similar situations,Objectives that are internal to the tax system:
+en,internal,10,To implement intergovernmental tax arrangements,Objectives that are internal to the tax system:
+en,internal,11,To implement a judicial decision,Objectives that are internal to the tax system:
+en,internal,12,General revenue raising,Objectives that are internal to the tax system:
+en,other,13,To extend or modify the unit of taxation,Other objectives:
+en,other,14,To provide income support or tax relief,Other objectives:
+en,other,15,To encourage savings,Other objectives:
+en,other,16,To encourage or attract investment,Other objectives:
+en,other,17,To encourage investment in education,Other objectives:
+en,other,18,To encourage employment,Other objectives:
+en,other,19,To support competitiveness,Other objectives:
+en,other,20,To support business activity,Other objectives:
+en,other,21,To achieve an economic objective – other,Other objectives:
+en,other,22,To achieve a social objective,Other objectives:
+fr,internal,1,Réduction des coûts d'administration ou de conformité,Objectifs inhérents au régime fiscal
+fr,internal,2,Allègement dans des circonstances particulières,Objectifs inhérents au régime fiscal
+fr,internal,3,Évaluation de l'impôt à payer sur une période de plusieurs années,Objectifs inhérents au régime fiscal
+fr,internal,4,Évitement de la double imposition,Objectifs inhérents au régime fiscal
+fr,internal,5,Reconnaissance de dépenses non discrétionnaires (capacité de payer),Objectifs inhérents au régime fiscal
+fr,internal,6,Reconnaissance de dépenses engagées pour gagner un revenu d'emploi,Objectifs inhérents au régime fiscal
+fr,internal,7,Reconnaissance de frais d'études,Objectifs inhérents au régime fiscal
+fr,internal,8,Promotion de l'équité du régime fiscal,Objectifs inhérents au régime fiscal
+fr,internal,9,Neutralité du traitement fiscal dans des situations semblables,Objectifs inhérents au régime fiscal
+fr,internal,10,Mise en application d'arrangements fiscaux intergouvernementaux,Objectifs inhérents au régime fiscal
+fr,internal,11,Application d'une décision judiciaire,Objectifs inhérents au régime fiscal
+fr,internal,12,Accroissement général des revenus,Objectifs inhérents au régime fiscal
+fr,other,13,Élargissement ou modification de l'unité d'imposition,Autres objectifs
+fr,other,14,Soutien du revenu ou allègement fiscal,Autres objectifs
+fr,other,15,Incitation à l'épargne,Autres objectifs
+fr,other,16,Incitation à l'investissement,Autres objectifs
+fr,other,17,Incitation à l'investissement dans l'éducation,Autres objectifs
+fr,other,18,Incitation à l'emploi,Autres objectifs
+fr,other,19,Soutien à la compétitivité,Autres objectifs
+fr,other,20,Soutien de l'activité commerciale,Autres objectifs
+fr,other,21,Atteinte d'un objectif économique – autres,Autres objectifs
+fr,other,22,Atteinte d'un objectif social,Autres objectifs

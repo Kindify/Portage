@@ -9,8 +9,9 @@ navigable at the subsection level.
 
 ## Status
 
-**Phase 0 complete.** Both instruments, both languages.
-`python -m portage.build` produces `portage.sqlite`:
+**Phase 0 and Phase 1 complete**, released as `v0.1.0` and `v0.2.0`.
+**Phase 2 in progress**: the indicator views are built; the temporal-scope
+extraction is not. `python -m portage.build` produces `portage.sqlite`:
 
 | | |
 |---|---|
@@ -19,10 +20,14 @@ navigable at the subsection level.
 | total | **49,032 rows**, 41,817 addressable provisions |
 | consolidation date | 2026-06-18 |
 | round trip, all four files | **exact, zero normalisation** |
-| tests | 41 passing |
+| tax expenditure measures | 229 per language, 774 references, 6,440 cost cells |
+| indicator views | 13, over 247 measures |
+| tests | 136, all passing |
+| hand checks | 40 provision spot checks, 60 reference checks, all recorded |
 
-Still to come in Phase 1: the `cross_references` table, and internal
-(untagged) references. See `PLAN.md`.
+What is not built yet: the temporal-scope extraction (`v_end_bound_by_year`
+returns nothing until it is), and one hand-recomputation fixture. See
+`PLAN.md`.
 
 ## What this is
 
@@ -39,9 +44,24 @@ Plus a table of cross-references between provisions, full-text search indexes
 over the English and French text, and a `meta` table recording exactly which
 source and snapshot the file was built from.
 
+Plus the Department of Finance's *Report on Federal Tax Expenditures 2026* as
+data - 229 measures per language, with their legal references resolved to the
+provisions above, their cost tables, their histories - and a set of SQL views
+that compute indicators over both. Every indicator column's formula, inputs and
+null rule is in `docs/indicator-definitions.md`, which the build generates from
+the view SQL.
+
+**The views compute facts, not judgments.** There is no score, no ranking, no
+weight, and no column that says what a reader should conclude. A measure with no
+cost estimate has a null cost, never a zero. Nothing computes whether a date has
+passed. Sorting is the reader's action, not the dataset's.
+
 ## What this is not
 
 - It is not an interpretation of the Act. It reproduces text and structure.
+- It does not say which tax expenditures are worth keeping, or which are
+  loopholes, or which are candidates for anything. The indicators make those
+  questions answerable by a person; they do not answer them.
 - It is not legal or tax advice, and it makes no recommendations.
 - It is not a consolidation service. It is a snapshot, dated in `meta`.
 - It is not authoritative. For anything that matters, check the official
