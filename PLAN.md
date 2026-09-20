@@ -169,7 +169,7 @@ Grammar written first in `docs/reference-rule.md` Part 2, then implemented.
 
 | table | rows |
 |---|---|
-| `measures` | 265 (193 paired + 36 English-only + 36 French-only) |
+| `measures` | 249 (209 paired + 20 English-only + 20 French-only) |
 | `measure_references` | 790 |
 | `measure_costs` | 6,440 |
 | `measure_history` | 681 |
@@ -198,10 +198,16 @@ in the open data CSV and all 559 match.
 sections 55, 85, 87 and 88 with no cost estimate in any year; the measure citing
 paragraph 20(1)(ss) resolves to `20(1)(ss)`.
 
-**Six catalogues**, each diffed against a committed fixture:
-`field_label_variants.csv` (43 rows - a new label at any position fails the
-build), `cost_tokens.csv` (11 symbol rows), `unresolved_references.csv`,
-`measure_join_gaps.csv`, `measures_without_references.csv`, and the Phase 0 six.
+**Measures join in two passes.** 193 pair on references and cost values
+(`join_method='content'`); a second pass on Finance's categorical fields -
+CCOFOG codes, tax, objective category, subject - pairs a further 16
+(`'content_categorical'`). **209 of 229 joined; 20 stay single per language.**
+The Part 3 category lists supply the vocabulary, but are alphabetical in their
+own language, so the French-to-English lookup is learned from the first-pass
+pairs and vocabulary-checked. All 16 categorical pairs are correct read as
+names, which the signature never saw.
+
+**Fourteen catalogues**, each diffed against a committed fixture.
 
 **Waiting on Matt:** `tests/spot_checks/references.md` - 30 resolved references
 to check by hand. Resolution is mechanical, so what it checks is whether the

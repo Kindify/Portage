@@ -40,6 +40,11 @@ CREATE TABLE measures (
     source_url_fr   TEXT,
     retrieved_date  TEXT NOT NULL,
     bilingual_gap   INTEGER NOT NULL DEFAULT 0,
+    -- 'content'             joined on reference set and cost values
+    -- 'content_categorical' joined on CCOFOG codes, tax, objective category
+    --                       and subject, after the first pass found no match
+    -- NULL                  not joined; the record is a single
+    join_method     TEXT,
     %s
 );
 
@@ -141,6 +146,118 @@ def _beneficiary_rows(text):
     return [(int(year), int(digits), text, "pattern")]
 
 
+#: Part 3 publishes a fixed list for Subject and for the objective categories,
+#: as <p> elements inside a two-column div.row.
+_LIST_HEADINGS = {
+    "subject": ("Subject", "Th\u00e8me"),
+    "objective_category": ("Objective", "Objectif"),
+}
+
+
+def category_lists():
+    """Finance's fixed category lists from Part 3, per language.
+
+    Returns {field: {lang: [term, ...]}}. These define the vocabulary; they do
+    **not** pair across languages - each list is alphabetical in its own
+    language, so "Arts and culture" sits opposite "Arrangements fiscaux
+    intergouvernementaux". Pairing by position would be wrong, which is why the
+    lookup below is derived from evidence instead.
+    """
+    out = {}
+    for field, (en_head, fr_head) in _LIST_HEADINGS.items():
+        out[field] = {}
+        for lang, heading in (("en", en_head), ("fr", fr_head)):
+            name, _url = PAGES[(lang, 3)]
+            doc = LH.fromstring((SNAPSHOT / name).read_bytes())
+            terms = []
+            for h in doc.xpath("//main//h3|//main//h4"):
+                title = text_of(h)
+                if heading.lower() not in title.lower():
+                    continue
+                for sib in h.itersiblings():
+                    if sib.tag in ("h2", "h3", "h4"):
+                        break
+                    if sib.tag == "div" and "row" in (sib.get("class") or ""):
+                        terms += [text_of(x) for x in sib.xpath(".//p")]
+                if terms:
+                    break
+            # Drop the group headings ("Objectives that are internal to the
+            # tax system:"), which label the list rather than belonging to it.
+            out[field][lang] = [t for t in terms if t and not t.endswith(":")]
+    return out
+
+
+def derive_category_map(joined, lists):
+    """French category term -> English, learned from measures already joined.
+
+    The lists on Part 3 supply the vocabulary but cannot supply the pairing:
+    each is alphabetical in its own language. The pairing is taken instead from
+    the measures joined on references and cost values - independent evidence,
+    since nothing about a category was used to join them.
+
+    A French term maps only where every measure carrying it carries exactly one
+    English term too, and that English term is always the same. A term that
+    pairs two ways in the evidence is left out rather than resolved by
+    frequency.
+    """
+    votes = defaultdict(Counter)
+    for field, vocab in lists.items():
+        for en_m, fr_m in joined:
+            en_terms = _terms_in(en_m["fields"].get(field), vocab["en"])
+            fr_terms = _terms_in(fr_m["fields"].get(field), vocab["fr"])
+            if len(en_terms) == 1 and len(fr_terms) == 1:
+                votes[(field, next(iter(fr_terms)))][next(iter(en_terms))] += 1
+    mapping, ambiguous = {}, []
+    for key, counter in votes.items():
+        if len(counter) == 1:
+            mapping[key] = next(iter(counter))
+        else:
+            ambiguous.append((key[0], key[1], "; ".join(sorted(counter))))
+    return mapping, ambiguous
+
+
+def _category_signature(measure, lang, lists, mapping):
+    """The language-independent categorical signature of one measure."""
+    parts = [_ccofog(measure["fields"].get("ccofog_2014_code"))]
+    for field, vocab in sorted(lists.items()):
+        terms = _terms_in(measure["fields"].get(field), vocab[lang])
+        if lang == "fr":
+            english = {mapping.get((field, t)) for t in terms}
+            terms = frozenset(t for t in english if t)
+        parts.append(frozenset(terms))
+    return tuple(parts)
+
+
+def _terms_in(value, vocabulary):
+    """Which vocabulary terms appear in a published field value.
+
+    A measure may carry several - the cells run them together, as in
+    "Business - farming and fishing Business - small businesses" - so this
+    returns a set. Longer terms are matched first so that "Business - other"
+    cannot be claimed by a shorter prefix.
+    """
+    text = _fold(value)
+    found = set()
+    for term in sorted(vocabulary, key=len, reverse=True):
+        folded = _fold(term)
+        if folded and folded in text:
+            found.add(term)
+    return frozenset(found)
+
+
+def _fold(value):
+    """Compare categories without being defeated by dash or space variants."""
+    text = (value or "")
+    for ch in "\u2013\u2014\u2012":
+        text = text.replace(ch, "-")
+    return " ".join(text.replace("\u00a0", " ").split()).lower()
+
+
+def _ccofog(value):
+    """The numeric CCOFOG codes, which are identical in both editions."""
+    return frozenset(re.findall(r"\b\d{2,5}(?:\.\d+)*\b", value or ""))
+
+
 def _cost_signature(costs):
     """Numeric cost values, which are identical in both editions."""
     return tuple(sorted(
@@ -215,30 +332,61 @@ def build_measures(conn, write_catalogue):
         fr_by_sig[(_reference_signature(measure["refs"]),
                    _cost_signature(measure["costs"]))].append(measure)
 
-    pairs, gaps, used = [], [], set()
+    pairs, used = [], set()
+    en_left, fr_left = [], []
     for measure in parsed["en"]:
         sig = (_reference_signature(measure["refs"]),
                _cost_signature(measure["costs"]))
         candidates = [m for m in fr_by_sig.get(sig, []) if id(m) not in used]
         if len(candidates) == 1 and any(sig):
             used.add(id(candidates[0]))
-            pairs.append((measure, candidates[0]))
+            pairs.append((measure, candidates[0], "content"))
         else:
-            pairs.append((measure, None))
-            gaps.append((measure["slug"], "en", measure["name"][:90],
-                         "no unique French match on reference set and cost values"
-                         if not candidates else
-                         "%d French measures share this signature" % len(candidates)))
+            en_left.append(measure)
     for measure in parsed["fr"]:
         if id(measure) not in used:
-            pairs.append((None, measure))
+            fr_left.append(measure)
+
+    # Second pass over what is left, using Finance's own categorical fields.
+    # The lists on Part 3 give the vocabulary; the French-to-English pairing is
+    # learned from the measures already joined above, because each published
+    # list is alphabetical in its own language and so cannot pair by position.
+    lists = category_lists()
+    mapping, ambiguous_terms = derive_category_map(
+        [(en_m, fr_m) for en_m, fr_m, _how in pairs], lists)
+
+    fr_by_cat = defaultdict(list)
+    for measure in fr_left:
+        fr_by_cat[_category_signature(measure, "fr", lists, mapping)].append(measure)
+
+    gaps, categorical = [], 0
+    still_en = []
+    for measure in en_left:
+        sig = _category_signature(measure, "en", lists, mapping)
+        candidates = [m for m in fr_by_cat.get(sig, []) if id(m) not in used]
+        if len(candidates) == 1 and any(sig):
+            used.add(id(candidates[0]))
+            pairs.append((measure, candidates[0], "content_categorical"))
+            categorical += 1
+        else:
+            still_en.append(measure)
+            pairs.append((measure, None, None))
+            gaps.append((measure["slug"], "en", measure["name"][:90],
+                         "no unique French match on references, costs or "
+                         "categorical fields" if not candidates else
+                         "%d French measures share this categorical signature"
+                         % len(candidates)))
+    for measure in fr_left:
+        if id(measure) not in used:
+            pairs.append((None, measure, None))
             gaps.append((measure["slug"], "fr", measure["name"][:90],
-                         "no unique English match on reference set and cost values"))
+                         "no unique English match on references, costs or "
+                         "categorical fields"))
 
     label_rows, cost_token_rows = Counter(), Counter()
     unresolved, no_refs, beneficiary_rows = [], [], []
 
-    for en_m, fr_m in pairs:
+    for en_m, fr_m, join_method in pairs:
         columns, values = [], []
         for slot_i, slot in enumerate(FIELD_SLOTS):
             for lang, m in (("en", en_m), ("fr", fr_m)):
@@ -246,7 +394,7 @@ def build_measures(conn, write_catalogue):
                 values.append(m["fields"].get(slot) if m else None)
         base = ["report_year", "slug_en", "slug_fr", "name_en", "name_fr",
                 "part_en", "part_fr", "source_url_en", "source_url_fr",
-                "retrieved_date", "bilingual_gap"]
+                "retrieved_date", "bilingual_gap", "join_method"]
         base_values = [
             REPORT_YEAR,
             en_m["slug"] if en_m else None, fr_m["slug"] if fr_m else None,
@@ -254,7 +402,7 @@ def build_measures(conn, write_catalogue):
             en_m["part"] if en_m else None, fr_m["part"] if fr_m else None,
             en_m["source_url"] if en_m else None,
             fr_m["source_url"] if fr_m else None,
-            RETRIEVED_DATE, 0 if (en_m and fr_m) else 1,
+            RETRIEVED_DATE, 0 if (en_m and fr_m) else 1, join_method,
         ]
         cur = conn.execute(
             "INSERT INTO measures (%s) VALUES (%s)"
@@ -354,6 +502,19 @@ def build_measures(conn, write_catalogue):
         "unresolved_references.csv", sorted(unresolved),
         ["measure", "lang", "instrument", "citation_path", "status", "reason",
          "raw_text"])
+    counts["category_lists"] = write_catalogue(
+        "finance_category_lists.csv",
+        sorted((field, lang, term)
+               for field, langs in lists.items()
+               for lang, terms in langs.items() for term in terms),
+        ["field", "lang", "term_as_published"])
+    counts["category_map"] = write_catalogue(
+        "finance_category_map.csv",
+        sorted((field, fr, en) for (field, fr), en in mapping.items()),
+        ["field", "term_fr", "term_en"])
+    counts["category_map_ambiguous"] = write_catalogue(
+        "finance_category_map_ambiguous.csv", sorted(ambiguous_terms),
+        ["field", "term_fr", "english_terms_seen"])
     counts["measure_join_gaps"] = write_catalogue(
         "measure_join_gaps.csv", sorted(gaps),
         ["slug", "lang", "name", "reason"])
@@ -365,6 +526,7 @@ def build_measures(conn, write_catalogue):
         ["measure", "lang", "year", "count", "raw_value"])
     counts["reference_precision_sample"] = write_reference_sample(
         conn, SNAPSHOT.parent.parent.parent / "tests" / "spot_checks" / "references.md")
+    counts["joined_categorical"] = categorical
     return counts
 
 

@@ -131,9 +131,14 @@ def test_definition_paragraph_resolves_to_the_definition_key(conn):
 
 
 def test_bilingual_pairs_agree_on_references_and_costs(conn):
-    """Acceptance test 7: a joined pair must match on what it was joined by."""
+    """Acceptance test 7: a joined pair must match on what it was joined by.
+
+    Scoped to join_method='content'. The categorical pairs were joined
+    precisely because references and cost values gave nothing to match on, so
+    requiring them to match there would assert something never claimed.
+    """
     for measure_id, in conn.execute(
-            "SELECT id FROM measures WHERE bilingual_gap=0"):
+            "SELECT id FROM measures WHERE join_method='content'"):
         sets = {}
         for lang in ("en", "fr"):
             sets[lang] = {r[0] for r in conn.execute(
@@ -196,3 +201,51 @@ def test_costs_match_finance_open_data(conn, built):
     mismatches = [(k, parsed[k], published[k]) for k in sorted(common)
                   if abs(parsed[k] - published[k]) > 1e-9]
     assert mismatches == [], mismatches[:5]
+
+
+def test_join_methods_are_known_values(conn):
+    seen = {r[0] for r in conn.execute("SELECT DISTINCT join_method FROM measures")}
+    assert seen <= {"content", "content_categorical", None}, seen
+
+
+def test_only_joined_measures_have_a_join_method(conn):
+    bad = conn.execute(
+        "SELECT COUNT(*) FROM measures "
+        "WHERE (join_method IS NULL) != (bilingual_gap = 1)").fetchone()[0]
+    assert bad == 0
+
+
+def test_categorical_pairs_agree_on_ccofog_codes(conn):
+    """CCOFOG codes are numeric and identical in both editions.
+
+    Checked here on the categorical pairs specifically, because those were
+    joined without using references or cost values - if the categorical
+    signature were matching the wrong measures, the codes would diverge.
+    """
+    import re
+
+    def codes(value):
+        return set(re.findall(r"\b\d{2,5}(?:\.\d+)*\b", value or ""))
+
+    rows = conn.execute(
+        "SELECT name_en, ccofog_2014_code_en, ccofog_2014_code_fr FROM measures "
+        "WHERE join_method='content_categorical'").fetchall()
+    assert rows, "expected some categorical pairs"
+    for name, en, fr in rows:
+        assert codes(en) == codes(fr), name
+
+
+def test_category_map_is_unambiguous(conn, built):
+    """A French term maps to at most one English term.
+
+    Terms that pair two ways in the evidence are excluded from the map and
+    listed separately, never resolved by picking the commoner one.
+    """
+    import pathlib
+    root = pathlib.Path(__file__).resolve().parent.parent
+    seen = {}
+    for row in csv.DictReader(
+            open(root / "data" / "finance_category_map.csv", encoding="utf-8")):
+        key = (row["field"], row["term_fr"])
+        assert key not in seen, key
+        seen[key] = row["term_en"]

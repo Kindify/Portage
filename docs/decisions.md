@@ -953,3 +953,72 @@ beneficiary count does none of that. The narrow rule and the fixture
 signal.
 
 ---
+
+## 2026-09-19 - A second join pass on Finance's categorical fields
+
+**Decided (Matt).** Measures that do not pair on references and cost values get
+a second pass over CCOFOG codes, type of tax, objective category and subject.
+Pairs found there carry `join_method = 'content_categorical'`, distinct from
+`'content'`. **16 of the 36 pair uniquely**; 20 stay single in
+`data/measure_join_gaps.csv`.
+
+**CCOFOG needs no mapping at all.** The codes are numeric and identical in both
+editions - checked, and all 193 first-pass pairs agree with zero exceptions. It
+is the strongest component of the signature and the only one that crosses
+languages untouched.
+
+**The Part 3 lists supply the vocabulary; they cannot supply the pairing.**
+Finance publishes fixed lists for Subject and the objective categories, 20 and
+22 terms, in both languages. They are **alphabetical in their own language**:
+"Arts and culture" sits opposite "Arrangements fiscaux intergouvernementaux".
+Pairing them by position would be wrong in almost every row.
+
+So the lookup is **learned from the measures already joined on references and
+costs** - independent evidence, since nothing categorical was used to join them
+- and each mapped term is checked against the published vocabulary. A French
+term maps only where every measure carrying it carries exactly one English term,
+always the same one. Terms that pair two ways are excluded and listed in
+`data/finance_category_map_ambiguous.csv` rather than resolved by frequency.
+36 terms map; none is ambiguous.
+
+**Validated by something the signature never saw: the names.** All 16
+categorical pairs are obviously right read as names - "Employee benefit plans"
+with "Régimes de prestations aux employés", "Partial inclusion of U.S. Social
+Security benefits" with "Inclusion partielle des prestations de la sécurité
+sociale". No part of the join looked at a name, so the agreement is real
+evidence rather than a restatement.
+
+**One existing test had to be narrowed, correctly.** `test_bilingual_pairs_agree
+_on_references_and_costs` now applies to `join_method='content'` only. The
+categorical pairs were joined precisely because references and costs gave
+nothing to match on; requiring them to match there would assert something the
+build never claimed.
+
+---
+
+## 2026-09-19 - Position is never a join key
+
+**Recorded as a standing rule**, in README's Methods section, because it has now
+been rediscovered six times:
+
+| Where | What position would have paired |
+|---|---|
+| Definitions in 248(1) | "absorbed capacity" with "tax shelter" |
+| Pages of the report | 49 English measures against 99 French on Part 4 |
+| Measures within a page | alphabetical in each language |
+| Subject list, Part 3 | "Arts and culture" with "Arrangements fiscaux intergouvernementaux" |
+| Objective category list | the same |
+| Open data CSV rows | 39.8% aligned |
+
+Each edition is ordered alphabetically in its own language, so position encodes
+the spelling of a word rather than the identity of a thing. Nothing in this
+dataset is paired by position: definitions by defined term, provisions by
+citation path, measures by content and then by categorical fields. Where a
+published list must be read across languages, the list gives the vocabulary and
+the pairing comes from records already matched on independent evidence.
+
+The generalisation worth carrying forward: in any bilingual Government of Canada
+publication, assume each language is sorted in its own alphabet until shown
+otherwise.
+
+---

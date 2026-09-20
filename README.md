@@ -202,7 +202,35 @@ generation has since been changed to exclude rows whose first sentence is under
 25 characters or begins with a repealed-provision marker, so a future checker is
 not handed rows that cannot be searched for.
 
-Alongside these, six catalogue files are written by every build and diffed
+**5. Position is never a join key.** Every time this project has needed to match
+something across English and French, the tempting shortcut has been position -
+the first definition, the first measure, row 1 of the CSV - and every time it
+has been wrong. Each edition is ordered **alphabetically in its own language**,
+so position encodes the spelling of a word, not the identity of a thing.
+
+It has now appeared six times:
+
+| Where | What position would have paired |
+|---|---|
+| Definitions in 248(1) | "absorbed capacity" with "tax shelter" |
+| Pages of the report | Part 4 holds 49 measures in English, 99 in French |
+| Measures within a page | alphabetical in each language |
+| Subject list on Part 3 | "Arts and culture" with "Arrangements fiscaux intergouvernementaux" |
+| Objective category list | same |
+| Open data CSV rows | 39.8% aligned; row 1 is a wage subsidy against a Quebec abatement |
+
+So nothing in this dataset is paired by position. Definitions are keyed by their
+defined term; provisions by their citation path; measures by the content of
+their references and cost figures, and then by Finance's own categorical fields.
+Where a published list has to be read across languages, the list supplies the
+**vocabulary** and the pairing is learned from records already matched on
+independent evidence - never from the order the terms happen to be printed in.
+
+The rule generalises beyond this project: in any bilingual Government of Canada
+publication, assume each language is sorted in its own alphabet until shown
+otherwise.
+
+Alongside these, fourteen catalogue files are written by every build and diffed
 line-by-line against committed fixtures. Anomalies are catalogued, never counted:
 a total stays the same while a case moves silently from one provision to another,
 so the tests compare the list, not its length.
@@ -255,6 +283,19 @@ but it never resolves one: whether the Act's definition governs a word in the
 Regulations is a legal question, usually settled by prose the markup does not
 carry. 691 references have other-instrument candidates. The full rule, with the
 before-and-after numbers, is in `docs/reference-rule.md`.
+
+**Measures are joined in two passes, and 20 are not joined at all.** 193 of 229
+measures pair on the content of their legal references and cost figures. A
+second pass over the remainder uses Finance's own categorical fields - CCOFOG
+codes, type of tax, objective category and subject - and pairs a further **16**,
+marked `join_method = 'content_categorical'`. The remaining **20 measures in
+each language stay single**, listed in `data/measure_join_gaps.csv`. They are
+mostly measures with no resolvable reference, no numeric cost and a categorical
+signature shared with others, which leaves nothing language-independent to join
+on. CCOFOG codes are numeric and identical across editions; the French terms for
+subject and objective category are mapped to English through
+`data/finance_category_map.csv`, learned from the measures joined in the first
+pass and vocabulary-checked against the fixed lists Finance publishes on Part 3.
 
 **Reference resolution, reported two ways.** Of the 790 references extracted
 from the report's *Legal reference* field, **613 resolve to a provision - 77.6%**.

@@ -32,6 +32,9 @@ CATALOGUES = [
     "measure_join_gaps.csv",
     "measures_without_references.csv",
     "beneficiary_counts_extracted.csv",
+    "finance_category_lists.csv",
+    "finance_category_map.csv",
+    "finance_category_map_ambiguous.csv",
 ]
 
 

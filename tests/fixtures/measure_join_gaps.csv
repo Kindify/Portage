@@ -1,73 +1,41 @@
 slug,lang,name,reason
-accelerated-capital-cost-allowance-manufacturing,en,Accelerated capital cost allowance for manufacturing or processing buildings,no unique French match on reference set and cost values
-accelerated-capital-cost-allowances-low,en,Accelerated capital cost allowances for low-carbon liquefied natural gas facilities,12 French measures share this signature
-accelerated-investment-incentive,en,Accelerated Investment Incentive,no unique French match on reference set and cost values
-corporate-mineral-exploration-development-tax,en,Corporate Mineral Exploration and Development Tax Credit,no unique French match on reference set and cost values
-credit-dimpot-linvestissement-chaine-dapprovisionnement,fr,Crédit d'impôt à l'investissement dans la chaîne d'approvisionnement de véhicules électriq,no unique English match on reference set and cost values
-credit-dimpot-pour-lexploration-mineraux,fr,Crédit d'impôt pour l'exploration de minéraux critiques pour les détenteurs d'actions accr,no unique English match on reference set and cost values
-credit-dimpot-pour-lexploration-miniere,fr,Crédit d'impôt pour l'exploration minière pour les détenteurs d'actions accréditives,no unique English match on reference set and cost values
-credit-dimpot-societes-pour-exploration,fr,Crédit d'impôt des sociétés pour exploration et développement miniers,no unique English match on reference set and cost values
-critical-mineral-exploration-tax-credit,en,Critical Mineral Exploration Tax Credit for Flow-Through Share Investors,no unique French match on reference set and cost values
-deduction-allowable-business-investment-losses,en,Deduction of allowable business investment losses,no unique French match on reference set and cost values
-deduction-frais-dinteret-frais-financiers,fr,Déduction des frais d'intérêt et des frais financiers engagés pour gagner un revenu de pla,no unique English match on reference set and cost values
-deduction-interest-carrying-charges-incurred,en,Deduction of interest and carrying charges incurred to earn investment income,no unique French match on reference set and cost values
-deduction-pour-amortissement-accelere-pour-1,fr,Déduction pour amortissement accéléré pour les bâtiments servant à la fabrication ou à la ,no unique English match on reference set and cost values
-deduction-pour-option-dachat-dactions,fr,Déduction pour option d'achat d'actions accordées aux employés,no unique English match on reference set and cost values
-deductions-pour-amortissement-accelere-pour,fr,Déductions pour amortissement accéléré pour les installations de gaz naturel liquéfié à fa,no unique English match on reference set and cost values
-deferral-through-rollover-capital-gains,en,Deferral through rollover of capital gains and capital cost allowance recapture in respect,2 French measures share this signature
-deferral-through-rollover-capital-gains-1,en,Deferral through rollover of capital gains and capital cost allowance recapture in respect,2 French measures share this signature
-detaxation-produits-agricoles-peche-dachats,fr,Détaxation de produits agricoles et de la pêche et d'achats connexes,no unique English match on reference set and cost values
-employee-benefit-plans,en,Employee benefit plans,no unique French match on reference set and cost values
-employee-stock-option-deduction,en,Employee stock option deduction,no unique French match on reference set and cost values
-ev-supply-chain-investment-tax,en,EV Supply Chain Investment Tax Credit,12 French measures share this signature
-exemption-gst-domestic-financial-services,en,Exemption from GST for domestic financial services,12 French measures share this signature
-exemption-gst-personal-care-services,en,Exemption from GST for personal care services,12 French measures share this signature
-exemption-gst-sales-used-residential,en,Exemption from GST for sales of used residential housing and other personal-use real prope,12 French measures share this signature
-exemption-gst-short-term-accommodation,en,Exemption from GST for short-term accommodation,12 French measures share this signature
-exemption-income-canadian-resident-companies,en,Exemption for income of Canadian resident companies from international shipping,no unique French match on reference set and cost values
-exoneration-lintention-certains-organismes-publics,fr,Exonération à l'intention de certains organismes publics,no unique English match on reference set and cost values
-exoneration-pour-revenu-tire-transport,fr,Exonération pour le revenu tiré du transport maritime international par des sociétés canad,no unique English match on reference set and cost values
-exoneration-tps-pour-lhebergement-courte,fr,Exonération de la TPS pour l'hébergement de courte durée,no unique English match on reference set and cost values
-exoneration-tps-pour-reventes-dimmeubles,fr,Exonération de la TPS pour les reventes d'immeubles résidentiels et d'autres immeubles uti,no unique English match on reference set and cost values
-exoneration-tps-pour-services-financiers,fr,Exonération de la TPS pour les services financiers canadiens,no unique English match on reference set and cost values
-exoneration-tps-pour-services-soins-1,fr,Exonération de la TPS pour les services de soins personnels,no unique English match on reference set and cost values
-expensing-advertising-costs,en,Expensing of advertising costs,2 French measures share this signature
-expensing-employee-training-costs,en,Expensing of employee training costs,2 French measures share this signature
-immediate-expensing-small-businesses,en,Immediate expensing for small businesses,no unique French match on reference set and cost values
-incitatif-linvestissement-accelere,fr,Incitatif à l'investissement accéléré,no unique English match on reference set and cost values
-inclusion-partielle-prestations-securite-sociale,fr,Inclusion partielle des prestations de la sécurité sociale des États-Unis,no unique English match on reference set and cost values
-income-tax-exemption-certain-public,en,Income tax exemption for certain public bodies,no unique French match on reference set and cost values
-mineral-exploration-tax-credit-flow,en,Mineral Exploration Tax Credit for Flow-Through Share Investors,no unique French match on reference set and cost values
-non-imposition-certaines-prestations-anciens,fr,Non-imposition de certaines prestations aux anciens combattants,no unique English match on reference set and cost values
-non-imposition-certains-avantages-demploi,fr,Non-imposition de certains avantages d'emploi non monétaires,no unique English match on reference set and cost values
-non-imposition-gains-capital-dons,fr,Non-imposition des gains en capital sur les dons de biens culturels,no unique English match on reference set and cost values
-non-imposition-gains-capital-dons-1,fr,Non-imposition des gains en capital sur les dons de terres écosensibles,no unique English match on reference set and cost values
-non-imposition-gains-capital-dons-2,fr,Non-imposition des gains en capital sur les dons de titres cotés en bourse,no unique English match on reference set and cost values
-non-imposition-indemnites-greve,fr,Non-imposition des indemnités de grève,no unique English match on reference set and cost values
-non-imposition-revenu-placement-tire,fr,Non-imposition du revenu de placement tiré des sommes reçues à titre de dommages-intérêts ,no unique English match on reference set and cost values
-non-taxation-capital-gains-donations,en,Non-taxation of capital gains on donations of cultural property,no unique French match on reference set and cost values
-non-taxation-capital-gains-donations-1,en,Non-taxation of capital gains on donations of ecologically sensitive land,no unique French match on reference set and cost values
-non-taxation-capital-gains-donations-2,en,Non-taxation of capital gains on donations of publicly listed securities,no unique French match on reference set and cost values
-non-taxation-certain-importations,en,Non-taxation of certain importations,12 French measures share this signature
-non-taxation-certain-non-monetary,en,Non-taxation of certain non-monetary employment benefits,12 French measures share this signature
-non-taxation-certain-veterans-benefits,en,Non-taxation of certain veterans' benefits,no unique French match on reference set and cost values
-non-taxation-investment-income-certain,en,Non-taxation of investment income on certain amounts received as damages in respect of per,no unique French match on reference set and cost values
-non-taxation-limportation-certains-produits,fr,Non-taxation à l'importation de certains produits,no unique English match on reference set and cost values
-non-taxation-strike-pay,en,Non-taxation of strike pay,12 French measures share this signature
-partial-inclusion-us-social-security,en,Partial inclusion of U.S. Social Security benefits,no unique French match on reference set and cost values
-passation-charge-immediate-pour-petites,fr,Passation en charge immédiate pour les petites entreprises,no unique English match on reference set and cost values
-passation-charges-couts-formation-employes,fr,Passation en charges des coûts de formation des employés,no unique English match on reference set and cost values
-passation-charges-frais-publicite,fr,Passation en charges des frais de publicité,no unique English match on reference set and cost values
-pertes-deductibles-au-titre-dun,fr,Pertes déductibles au titre d'un placement d'entreprise,no unique English match on reference set and cost values
-rebate-poppies-wreaths,en,Rebate for poppies and wreaths,12 French measures share this signature
-rebate-specially-equipped-motor-vehicles,en,Rebate for specially equipped motor vehicles,12 French measures share this signature
-regimes-prestations-employes,fr,Régimes de prestations aux employés,no unique English match on reference set and cost values
-remboursement-pour-coquelicots-couronnes,fr,Remboursement pour coquelicots et couronnes,no unique English match on reference set and cost values
-remboursement-pour-vehicules-moteur-specialement,fr,Remboursement pour véhicules à moteur spécialement équipés,no unique English match on reference set and cost values
-report-roulement-gains-capital-recuperation,fr,Report par roulement des gains en capital et de la récupération de la déduction pour amort,no unique English match on reference set and cost values
-report-roulement-gains-capital-recuperation-1,fr,Report par roulement des gains en capital et de la récupération de la déduction pour amort,no unique English match on reference set and cost values
-statut-fiscal-certaines-societes-detat,fr,Statut fiscal de certaines sociétés d'État fédérales,no unique English match on reference set and cost values
-tax-status-certain-federal-crown,en,Tax status of certain federal Crown corporations,no unique French match on reference set and cost values
-tax-treatment-alimony-maintenance-payments,en,Tax treatment of alimony and maintenance payments,no unique French match on reference set and cost values
-traitement-fiscal-pensions-alimentaires-allocations,fr,Traitement fiscal des pensions alimentaires et allocations d'entretien,no unique English match on reference set and cost values
-zero-rating-agricultural-fish-products,en,Zero-rating of agricultural and fish products and purchases,12 French measures share this signature
+accelerated-capital-cost-allowance-manufacturing,en,Accelerated capital cost allowance for manufacturing or processing buildings,"no unique French match on references, costs or categorical fields"
+accelerated-investment-incentive,en,Accelerated Investment Incentive,"no unique French match on references, costs or categorical fields"
+corporate-mineral-exploration-development-tax,en,Corporate Mineral Exploration and Development Tax Credit,2 French measures share this categorical signature
+credit-dimpot-linvestissement-chaine-dapprovisionnement,fr,Crédit d'impôt à l'investissement dans la chaîne d'approvisionnement de véhicules électriq,"no unique English match on references, costs or categorical fields"
+credit-dimpot-pour-lexploration-mineraux,fr,Crédit d'impôt pour l'exploration de minéraux critiques pour les détenteurs d'actions accr,"no unique English match on references, costs or categorical fields"
+credit-dimpot-pour-lexploration-miniere,fr,Crédit d'impôt pour l'exploration minière pour les détenteurs d'actions accréditives,"no unique English match on references, costs or categorical fields"
+credit-dimpot-societes-pour-exploration,fr,Crédit d'impôt des sociétés pour exploration et développement miniers,"no unique English match on references, costs or categorical fields"
+critical-mineral-exploration-tax-credit,en,Critical Mineral Exploration Tax Credit for Flow-Through Share Investors,2 French measures share this categorical signature
+deduction-pour-amortissement-accelere-pour-1,fr,Déduction pour amortissement accéléré pour les bâtiments servant à la fabrication ou à la ,"no unique English match on references, costs or categorical fields"
+deduction-pour-option-dachat-dactions,fr,Déduction pour option d'achat d'actions accordées aux employés,"no unique English match on references, costs or categorical fields"
+deferral-through-rollover-capital-gains,en,Deferral through rollover of capital gains and capital cost allowance recapture in respect,"no unique French match on references, costs or categorical fields"
+deferral-through-rollover-capital-gains-1,en,Deferral through rollover of capital gains and capital cost allowance recapture in respect,"no unique French match on references, costs or categorical fields"
+employee-stock-option-deduction,en,Employee stock option deduction,"no unique French match on references, costs or categorical fields"
+ev-supply-chain-investment-tax,en,EV Supply Chain Investment Tax Credit,"no unique French match on references, costs or categorical fields"
+exemption-gst-domestic-financial-services,en,Exemption from GST for domestic financial services,"no unique French match on references, costs or categorical fields"
+exemption-income-canadian-resident-companies,en,Exemption for income of Canadian resident companies from international shipping,"no unique French match on references, costs or categorical fields"
+exoneration-pour-revenu-tire-transport,fr,Exonération pour le revenu tiré du transport maritime international par des sociétés canad,"no unique English match on references, costs or categorical fields"
+exoneration-tps-pour-services-financiers,fr,Exonération de la TPS pour les services financiers canadiens,"no unique English match on references, costs or categorical fields"
+expensing-advertising-costs,en,Expensing of advertising costs,"no unique French match on references, costs or categorical fields"
+expensing-employee-training-costs,en,Expensing of employee training costs,"no unique French match on references, costs or categorical fields"
+immediate-expensing-small-businesses,en,Immediate expensing for small businesses,"no unique French match on references, costs or categorical fields"
+incitatif-linvestissement-accelere,fr,Incitatif à l'investissement accéléré,"no unique English match on references, costs or categorical fields"
+mineral-exploration-tax-credit-flow,en,Mineral Exploration Tax Credit for Flow-Through Share Investors,2 French measures share this categorical signature
+non-imposition-gains-capital-dons,fr,Non-imposition des gains en capital sur les dons de biens culturels,"no unique English match on references, costs or categorical fields"
+non-imposition-gains-capital-dons-1,fr,Non-imposition des gains en capital sur les dons de terres écosensibles,"no unique English match on references, costs or categorical fields"
+non-imposition-gains-capital-dons-2,fr,Non-imposition des gains en capital sur les dons de titres cotés en bourse,"no unique English match on references, costs or categorical fields"
+non-imposition-indemnites-greve,fr,Non-imposition des indemnités de grève,"no unique English match on references, costs or categorical fields"
+non-taxation-capital-gains-donations,en,Non-taxation of capital gains on donations of cultural property,"no unique French match on references, costs or categorical fields"
+non-taxation-capital-gains-donations-1,en,Non-taxation of capital gains on donations of ecologically sensitive land,"no unique French match on references, costs or categorical fields"
+non-taxation-capital-gains-donations-2,en,Non-taxation of capital gains on donations of publicly listed securities,"no unique French match on references, costs or categorical fields"
+non-taxation-strike-pay,en,Non-taxation of strike pay,"no unique French match on references, costs or categorical fields"
+passation-charge-immediate-pour-petites,fr,Passation en charge immédiate pour les petites entreprises,"no unique English match on references, costs or categorical fields"
+passation-charges-couts-formation-employes,fr,Passation en charges des coûts de formation des employés,"no unique English match on references, costs or categorical fields"
+passation-charges-frais-publicite,fr,Passation en charges des frais de publicité,"no unique English match on references, costs or categorical fields"
+rebate-poppies-wreaths,en,Rebate for poppies and wreaths,"no unique French match on references, costs or categorical fields"
+remboursement-pour-coquelicots-couronnes,fr,Remboursement pour coquelicots et couronnes,"no unique English match on references, costs or categorical fields"
+report-roulement-gains-capital-recuperation,fr,Report par roulement des gains en capital et de la récupération de la déduction pour amort,"no unique English match on references, costs or categorical fields"
+report-roulement-gains-capital-recuperation-1,fr,Report par roulement des gains en capital et de la récupération de la déduction pour amort,"no unique English match on references, costs or categorical fields"
+statut-fiscal-certaines-societes-detat,fr,Statut fiscal de certaines sociétés d'État fédérales,"no unique English match on references, costs or categorical fields"
+tax-status-certain-federal-crown,en,Tax status of certain federal Crown corporations,"no unique French match on references, costs or categorical fields"
