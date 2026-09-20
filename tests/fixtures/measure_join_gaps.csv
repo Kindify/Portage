@@ -1,5 +1,6 @@
 slug,lang,name,reason
 accelerated-capital-cost-allowance-manufacturing,en,Accelerated capital cost allowance for manufacturing or processing buildings,"no unique French match on references, costs or categorical fields"
+accelerated-capital-cost-allowance-manufacturing-1,en,Accelerated capital cost allowance for manufacturing or processing machinery and equipment,"no unique French match on references, costs or categorical fields"
 accelerated-investment-incentive,en,Accelerated Investment Incentive,"no unique French match on references, costs or categorical fields"
 corporate-mineral-exploration-development-tax,en,Corporate Mineral Exploration and Development Tax Credit,2 French measures share this categorical signature
 credit-dimpot-linvestissement-chaine-dapprovisionnement,fr,Crédit d'impôt à l'investissement dans la chaîne d'approvisionnement de véhicules électriq,"no unique English match on references, costs or categorical fields"
@@ -7,15 +8,12 @@ credit-dimpot-pour-lexploration-mineraux,fr,Crédit d'impôt pour l'exploration 
 credit-dimpot-pour-lexploration-miniere,fr,Crédit d'impôt pour l'exploration minière pour les détenteurs d'actions accréditives,"no unique English match on references, costs or categorical fields"
 credit-dimpot-societes-pour-exploration,fr,Crédit d'impôt des sociétés pour exploration et développement miniers,"no unique English match on references, costs or categorical fields"
 critical-mineral-exploration-tax-credit,en,Critical Mineral Exploration Tax Credit for Flow-Through Share Investors,2 French measures share this categorical signature
+deduction-pour-amortissement-accelere-couts-1,fr,Déduction pour amortissement accéléré des coûts des machines et du matériel de fabrication,"no unique English match on references, costs or categorical fields"
 deduction-pour-amortissement-accelere-pour-1,fr,Déduction pour amortissement accéléré pour les bâtiments servant à la fabrication ou à la ,"no unique English match on references, costs or categorical fields"
-deduction-pour-option-dachat-dactions,fr,Déduction pour option d'achat d'actions accordées aux employés,"no unique English match on references, costs or categorical fields"
 deferral-through-rollover-capital-gains,en,Deferral through rollover of capital gains and capital cost allowance recapture in respect,"no unique French match on references, costs or categorical fields"
 deferral-through-rollover-capital-gains-1,en,Deferral through rollover of capital gains and capital cost allowance recapture in respect,"no unique French match on references, costs or categorical fields"
-employee-stock-option-deduction,en,Employee stock option deduction,"no unique French match on references, costs or categorical fields"
 ev-supply-chain-investment-tax,en,EV Supply Chain Investment Tax Credit,"no unique French match on references, costs or categorical fields"
 exemption-gst-domestic-financial-services,en,Exemption from GST for domestic financial services,"no unique French match on references, costs or categorical fields"
-exemption-income-canadian-resident-companies,en,Exemption for income of Canadian resident companies from international shipping,"no unique French match on references, costs or categorical fields"
-exoneration-pour-revenu-tire-transport,fr,Exonération pour le revenu tiré du transport maritime international par des sociétés canad,"no unique English match on references, costs or categorical fields"
 exoneration-tps-pour-services-financiers,fr,Exonération de la TPS pour les services financiers canadiens,"no unique English match on references, costs or categorical fields"
 expensing-advertising-costs,en,Expensing of advertising costs,"no unique French match on references, costs or categorical fields"
 expensing-employee-training-costs,en,Expensing of employee training costs,"no unique French match on references, costs or categorical fields"
@@ -37,5 +35,3 @@ rebate-poppies-wreaths,en,Rebate for poppies and wreaths,"no unique French match
 remboursement-pour-coquelicots-couronnes,fr,Remboursement pour coquelicots et couronnes,"no unique English match on references, costs or categorical fields"
 report-roulement-gains-capital-recuperation,fr,Report par roulement des gains en capital et de la récupération de la déduction pour amort,"no unique English match on references, costs or categorical fields"
 report-roulement-gains-capital-recuperation-1,fr,Report par roulement des gains en capital et de la récupération de la déduction pour amort,"no unique English match on references, costs or categorical fields"
-statut-fiscal-certaines-societes-detat,fr,Statut fiscal de certaines sociétés d'État fédérales,"no unique English match on references, costs or categorical fields"
-tax-status-certain-federal-crown,en,Tax status of certain federal Crown corporations,"no unique French match on references, costs or categorical fields"

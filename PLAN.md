@@ -169,7 +169,7 @@ Grammar written first in `docs/reference-rule.md` Part 2, then implemented.
 
 | table | rows |
 |---|---|
-| `measures` | 249 (209 paired + 20 English-only + 20 French-only) |
+| `measures` | 247 (211 paired + 18 English-only + 18 French-only) |
 | `measure_references` | 790 |
 | `measure_costs` | 6,440 |
 | `measure_history` | 681 |
@@ -179,14 +179,14 @@ Grammar written first in `docs/reference-rule.md` Part 2, then implemented.
 
 | status | all references | ITA/ITR only |
 |---|---|---|
-| `resolved` | 613 (77.6%) | **613 (91.1%)** |
-| `schedule_or_class` | 68 | 20 |
+| `resolved` | 611 (77.1%) | **611 (90.5%)** |
+| `schedule_or_class` | 79 | 31 |
 | `instrument_not_held` | 53 | - |
-| `not_in_consolidation` | 33 | 33 |
+| `not_in_consolidation` | 26 | 26 |
 | `no_provision` | 12 | 2 |
 | `no_instrument` | 6 | - |
 | `term_not_joined` | 5 | 5 |
-| **total** | **790** | **673** |
+| **total** | **792** | **675** |
 
 A 100% rate would be evidence of a bug: the Excise Tax Act references and the
 Schedule references cannot resolve by construction.
@@ -198,10 +198,10 @@ in the open data CSV and all 559 match.
 sections 55, 85, 87 and 88 with no cost estimate in any year; the measure citing
 paragraph 20(1)(ss) resolves to `20(1)(ss)`.
 
-**Measures join in two passes.** 193 pair on references and cost values
+**Measures join in two passes.** 201 pair on references and cost values
 (`join_method='content'`); a second pass on Finance's categorical fields -
-CCOFOG codes, tax, objective category, subject - pairs a further 16
-(`'content_categorical'`). **209 of 229 joined; 20 stay single per language.**
+CCOFOG codes, tax, objective category, subject - pairs a further 10
+(`'content_categorical'`). **211 of 229 joined; 18 stay single per language.**
 The Part 3 category lists supply the vocabulary, but are alphabetical in their
 own language, so the French-to-English lookup is learned from the first-pass
 pairs and vocabulary-checked. All 16 categorical pairs are correct read as
@@ -209,10 +209,24 @@ names, which the signature never saw.
 
 **Fourteen catalogues**, each diffed against a committed fixture.
 
-**Waiting on Matt:** `tests/spot_checks/references.md` - 30 resolved references
-to check by hand. Resolution is mechanical, so what it checks is whether the
-grammar reads Finance's citation the way a person would, which no automated test
-here can tell us because they all read the same grammar.
+**Precision sample round 1: 28 of 30 pass.** The two failures were a real bug -
+French paragraph labels written without an opening bracket, read as section
+numbers - and it had produced 6 false resolutions corpus-wide, not only the 2 in
+the sample. Fixed by rebuilding the normaliser on bracket matching rather than
+keyword matching, with three tests added, one of which caught a second variant
+the first fix had missed. Full account in
+`tests/spot_checks/references-RESULTS.md`.
+
+Resolution after the fix: 611 resolved of 792, with 79 `schedule_or_class`,
+53 `instrument_not_held`, 26 `not_in_consolidation`, 12 `no_provision`,
+6 `no_instrument`, 5 `term_not_joined`. Measures joined: 201 `content` plus
+10 `content_categorical` = 211 of 229.
+
+**Waiting on Matt:** `tests/spot_checks/references-2.md` - a fresh seeded sample
+of 30 drawn from the post-fix build. The first sample is never regenerated;
+regenerating it would orphan the results it is evidence for.
+
+---
 
 ## Open items
 

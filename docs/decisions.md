@@ -1022,3 +1022,71 @@ publication, assume each language is sorted in its own alphabet until shown
 otherwise.
 
 ---
+
+## 2026-09-20 - The precision sample found a bug the tests could not
+
+**Round 1 of the reference precision sample: 28 of 30 pass, 2 fail.** Both
+failures were the same fault, and it had produced false resolutions well beyond
+the two rows Matt happened to check.
+
+**The bug.** French writes a paragraph label without its opening bracket -
+`alinéas 149(1)(c) et d) à d.6)` where English writes `paragraphs 149(1)(c) and
+(d) to (d.6)`. The normaliser keyed on the word "alinéa" and on a preceding
+`)`, so it rewrote a label that followed a bracket but missed one following
+`et` or `à`. The section pattern then matched the digits inside `d.6` and
+resolved to **ITA section 6**.
+
+**Corpus-wide effect of the fix**, measured by re-running resolution over all
+792 references: 6 false resolutions removed, 22 correct paths recovered, and 8
+more measures joined across languages because the two editions had been
+producing different reference sets.
+
+**Two further faults surfaced while fixing it**, neither in the sample:
+`alinéa 38a.2)`, where French puts the section number inside the bare label;
+and `section 2 and paragraph 3(a) of Schedules V and VI`, where a provision
+named before its Schedule qualifier resolved as ITR section 2.
+
+**The fix is structural, not another special case.** The normaliser now works by
+bracket matching: a `)` with no unclosed `(` to its left cannot be closing
+anything, so the token before it is a bare label. That covers the variants
+nobody had thought of - which is the point, because the first fix keyed on
+"alinéa" and `38a.2)` sailed straight past it.
+
+**What was added to stop it recurring.** Both failing strings as regression
+fixtures; a corpus-level check that no path resolves from French but never from
+English; and, the useful one, **the normaliser's contract asserted over every
+French reference in the corpus - after normalisation, no unmatched `)` may
+remain**. That last test is what caught `38a.2)` after the first fix was already
+in place, and it is general where a list of known-bad strings would not have
+been.
+
+**The lesson is about the shape of the check, not this bug.** Every automated
+test in Phase 1 reads the same grammar, so a grammar that is wrong consistently
+passes all of them. Thirty citations read by a person found what 98 tests could
+not. The second sample is already generated from the post-fix build, with its
+own seed, and the first is never regenerated - regenerating it would orphan the
+results it is evidence for.
+
+---
+
+## 2026-09-20 - Ranges are endpoints only
+
+**Decided.** `sections 110.6 to 110.7` produces two references, not everything
+between them. `paragraphs (d) to (d.6)` gives `(d)` and `(d.6)`.
+
+**Why.** Expanding a range means deciding what lies inside it, and the Act's
+numbering is not a sequence you can walk - whether `(d.3)` exists, and whether
+Finance meant to include something repealed since, is a reading of the citation
+rather than a fact in it. Enumerating from the `sections` table would also make
+the reference set depend on which consolidation happened to be loaded, so the
+same report would produce different references against a different snapshot.
+
+**The cost is stated in README:** a measure citing a range is not linked to the
+provisions between its endpoints. `raw_text` keeps the range as published.
+
+**A documentation error is corrected here.** The grammar doc previously claimed
+ranges were expanded to "every section in the range that exists". They never
+were. The doc described an intention; the code did endpoints. The doc was wrong,
+not the code.
+
+---

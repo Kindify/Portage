@@ -524,16 +524,21 @@ def build_measures(conn, write_catalogue):
     counts["beneficiary_counts_extracted"] = write_catalogue(
         "beneficiary_counts_extracted.csv", sorted(beneficiary_rows),
         ["measure", "lang", "year", "count", "raw_value"])
+    spot = SNAPSHOT.parent.parent.parent / "tests" / "spot_checks"
     counts["reference_precision_sample"] = write_reference_sample(
-        conn, SNAPSHOT.parent.parent.parent / "tests" / "spot_checks" / "references.md")
+        conn, spot / "references.md", 1)
+    counts["reference_precision_sample_2"] = write_reference_sample(
+        conn, spot / "references-2.md", 2)
     counts["joined_categorical"] = categorical
     return counts
 
 
-REFERENCE_SAMPLE_SEED = 20260919
+#: One seed per round. A round is never re-seeded: the first sample is the
+#: evidence for the first check, and regenerating it would orphan the results.
+REFERENCE_SAMPLE_SEEDS = {1: 20260919, 2: 20260920}
 
 
-def write_reference_sample(conn, out_path):
+def write_reference_sample(conn, out_path, round_number):
     """Acceptance test 8: 30 (raw_text, citation_path) pairs to check by hand.
 
     Seeded, so the set is stable between builds, and never overwritten once
@@ -553,10 +558,11 @@ def write_reference_sample(conn, out_path):
            ORDER BY m.name_en, r.lang, r.order_index""").fetchall()
     if not rows:
         return 0
-    sample = random.Random(REFERENCE_SAMPLE_SEED).sample(rows, min(30, len(rows)))
+    sample = random.Random(
+        REFERENCE_SAMPLE_SEEDS[round_number]).sample(rows, min(30, len(rows)))
 
     lines = [
-        "# Precision sample - measure references", "",
+        "# Precision sample %d - measure references" % round_number, "",
         "Thirty references that resolved, drawn from the build, for checking by",
         "hand. For each: does the cited provision in `raw_text` really correspond",
         "to `citation_path`, and does the text quoted from the Act match it?", "",
@@ -564,7 +570,8 @@ def write_reference_sample(conn, out_path):
         "reading Finance's citation the way a person would - the one thing no",
         "automated test in this project can tell us, because every one of them",
         "reads the same grammar.", "",
-        "Seeded (`REFERENCE_SAMPLE_SEED` in `portage/measures_build.py`) and",
+        "Seeded (`REFERENCE_SAMPLE_SEEDS[%d]` in `portage/measures_build.py`) and"
+        % round_number,
         "**never overwritten by the build**.", "",
         "| # | Measure | Lang | Citation | As published | Provision text | Result | Notes |",
         "|---|---|---|---|---|---|---|---|",

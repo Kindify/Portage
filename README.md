@@ -284,11 +284,11 @@ Regulations is a legal question, usually settled by prose the markup does not
 carry. 691 references have other-instrument candidates. The full rule, with the
 before-and-after numbers, is in `docs/reference-rule.md`.
 
-**Measures are joined in two passes, and 20 are not joined at all.** 193 of 229
+**Measures are joined in two passes, and 18 are not joined at all.** 201 of 229
 measures pair on the content of their legal references and cost figures. A
 second pass over the remainder uses Finance's own categorical fields - CCOFOG
-codes, type of tax, objective category and subject - and pairs a further **16**,
-marked `join_method = 'content_categorical'`. The remaining **20 measures in
+codes, type of tax, objective category and subject - and pairs a further **10**,
+marked `join_method = 'content_categorical'`. The remaining **18 measures in
 each language stay single**, listed in `data/measure_join_gaps.csv`. They are
 mostly measures with no resolvable reference, no numeric cost and a categorical
 signature shared with others, which leaves nothing language-independent to join
@@ -298,15 +298,24 @@ subject and objective category are mapped to English through
 pass and vocabulary-checked against the fixed lists Finance publishes on Part 3.
 
 **Reference resolution, reported two ways.** Of the 790 references extracted
-from the report's *Legal reference* field, **613 resolve to a provision - 77.6%**.
+from the report's *Legal reference* field, **611 resolve to a provision - 77.1%**.
 That figure is bounded below 100% by construction: 53 references name an
-instrument this dataset does not hold, chiefly the Excise Tax Act, and 68 name a
+instrument this dataset does not hold, chiefly the Excise Tax Act, and 79 name a
 Schedule, Class or Part, which Phase 0 does not model - neither can ever resolve,
 however good the grammar is. Measured over the references that *could* resolve,
-those citing the Income Tax Act or its Regulations, **613 of 673 resolve -
-91.1%**. The remainder are 33 `not_in_consolidation`, 20 `schedule_or_class`,
+those citing the Income Tax Act or its Regulations, **611 of 675 resolve -
+90.5%**. The remainder are 31 `schedule_or_class`, 26 `not_in_consolidation`,
 5 `term_not_joined` and 2 `no_provision`. Every unresolved reference keeps its
 raw text and a status in `data/unresolved_references.csv`.
+
+**A cited range is linked to its endpoints only.** `sections 110.6 to 110.7`
+produces two references, not everything between them, and `paragraphs (d) to
+(d.6)` gives `(d)` and `(d.6)`. Expanding a range would mean deciding what lies
+inside it, which is a reading of the citation rather than a fact in it, and it
+would make the reference set depend on which consolidation was loaded. So a
+measure citing a range is **not** linked to the provisions between its
+endpoints. `raw_text` keeps the range as published if you want to expand it
+yourself.
 
 **Beneficiary counts are read from prose, and mostly are not.** The field is a
 sentence, so a year and a count can only be extracted by pattern, and only where

@@ -249,3 +249,89 @@ def test_category_map_is_unambiguous(conn, built):
         key = (row["field"], row["term_fr"])
         assert key not in seen, key
         seen[key] = row["term_en"]
+
+
+def test_french_dotted_labels_are_not_read_as_section_numbers():
+    """Regression: the two failures from the first precision sample.
+
+    "d) à d.6)" resolved to ITA section 6 and "c.1) [-c.4)]" to ITA section 4,
+    because a French paragraph label written without its opening bracket was
+    matched by the section pattern. Both were found by hand, not by any test
+    here, which is the whole argument for the precision sample.
+    """
+    from portage.measure_refs import extract
+
+    rows = extract("Loi de l'impôt sur le revenu, alinéas 149(1)(c) et d) à d.6)",
+                   "fr", {})
+    paths = [r["citation_path"] for r in rows]
+    assert paths == ["149(1)(c)", "149(1)(d)", "149(1)(d.6)"], paths
+    assert "6" not in paths
+
+    rows = extract(
+        "Loi de l'impôt sur le revenu, alinéas 81(1)(c.1) [-c.4)], paragraphe 81(6)",
+        "fr", {})
+    paths = [r["citation_path"] for r in rows]
+    assert paths == ["81(1)(c.1)", "81(1)(c.4)", "81(6)"], paths
+    assert "4" not in paths
+
+
+def test_french_normalisation_leaves_no_unmatched_bracket(conn):
+    """The normaliser's contract, checked over every French reference.
+
+    A ")" with no unclosed "(" to its left is a bare label that has not been
+    rewritten - and an unrewritten label is what the section pattern then
+    misreads as a number. This is the general form of the two failures found by
+    hand, and unlike a list of known-bad strings it catches the next variant
+    too: "38a.2)" was still broken after the first fix and this found it.
+    """
+    from portage.measure_refs import normalise_french_labels
+
+    offenders = []
+    for (raw,) in conn.execute(
+            "SELECT DISTINCT legal_reference_fr FROM measures "
+            "WHERE legal_reference_fr IS NOT NULL"):
+        normalised = normalise_french_labels(raw)
+        depth = 0
+        for ch in normalised:
+            if ch == "(":
+                depth += 1
+            elif ch == ")":
+                if depth == 0:
+                    offenders.append(raw[:100])
+                    break
+                depth -= 1
+    assert offenders == [], offenders[:5]
+
+
+def test_english_and_french_agree_on_resolved_paths(conn):
+    """A measure's two editions must cite the same provisions.
+
+    The French mis-parse produced different path sets, which is why those
+    measures fell out of the content join and were never covered by the
+    pair-agreement test - they had become singles. Comparing the corpus as a
+    whole closes that gap.
+    """
+    en = {r[0] for r in conn.execute(
+        "SELECT citation_path FROM measure_references "
+        "WHERE lang='en' AND status='resolved'")}
+    fr = {r[0] for r in conn.execute(
+        "SELECT citation_path FROM measure_references "
+        "WHERE lang='fr' AND status='resolved'")}
+    only_fr = sorted(fr - en)
+    assert only_fr == [], (
+        "paths resolved from French but never from English - the usual cause "
+        "is a French label read as a section number: %s" % only_fr[:8])
+
+
+def test_definition_of_term_in_a_bare_section_resolves():
+    """"definition of X in section 248" -> 248"X".
+
+    No reference in the 2026 edition uses this form; the rule exists so that an
+    edition that does is not silently misread.
+    """
+    from portage.measure_refs import extract
+
+    rows = extract(
+        'Income Tax Act, definition of "taxable Canadian property" in section 248')
+    paths = [r["citation_path"] for r in rows]
+    assert '248"taxable Canadian property"' in paths, paths

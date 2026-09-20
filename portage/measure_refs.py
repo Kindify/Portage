@@ -92,7 +92,11 @@ TRAILING_LINK = re.compile(r"(?:to|of|de|du|\xe0)\s+(?:the\s+|la\s+|le\s+|l')?$"
 #: Spans that name a Schedule, Class or Part. A provision number inside one of
 #: these is part of that phrase, not a citation this dataset can resolve.
 SCHEDULE_SPAN = re.compile(
-    r"\bClass(?:es)?\b[^;]*?\bSchedule\b\s*[IVXL]+"   # "Classes 41, 41.1 and 41.2 of Schedule II"
+    # A clause qualified by "of Schedule(s) X" belongs to that Schedule, even
+    # where the provision is named first: "section 2 and paragraph 3(a) of
+    # Schedules V and VI" cites the Schedules, not ITR section 2.
+    r"[^,;]*?\b(?:of|de|des|du|d')\s*(?:l'|la\s+|les\s+)?(?:Schedules?|annexes?)\b[^,;]*"
+    r"|\bClass(?:es)?\b[^;]*?\bSchedule\b\s*[IVXL]+"   # "Classes 41, 41.1 and 41.2 of Schedule II"
     r"|\bClass(?:es)?\b\s*[\d.,\s and]*"
     r"|\bSchedule\b\s*[IVXL]*"
     r"|\bPart\b\s*[IVXL]+(?:\.\d+)?"
@@ -196,15 +200,55 @@ def provisions_in(segment):
 #: 118(1)d)" where English writes "paragraph 118(1)(d)". Phase 0's citation
 #: paths use the English form, so French reference text is normalised to it
 #: before extraction. Same convention, same fix, as docs/citation-path-rule.md.
-_FR_AFTER_BRACKET = re.compile(r"(?<=\))\s*([a-z][0-9a-z.]*)\)")
-_FR_AFTER_WORD = re.compile(
-    r"\b(alin[\xe9e]as?|sous-alin[\xe9e]as?)(\s+)([0-9a-z][0-9a-z.]*)\)", re.I)
+#: A bare French label token: the text immediately before an unmatched ")".
+_FR_BARE_LABEL = re.compile(r"([0-9A-Za-z][0-9A-Za-z.]*)$")
+
+#: A bare token that carries its section number with it: French writes
+#: "alinéa 38a.2)" where English writes "paragraph 38(a.2)".
+_FR_SECTION_AND_LABEL = re.compile(r"^(\d+(?:\.\d+)*)([A-Za-z][0-9A-Za-z.]*)$")
 
 
 def normalise_french_labels(text):
-    """Rewrite French paragraph labels into the bracketed English form."""
-    text = _FR_AFTER_WORD.sub(lambda m: "%s%s(%s)" % (m.group(1), m.group(2), m.group(3)), text)
-    return _FR_AFTER_BRACKET.sub(lambda m: "(%s)" % m.group(1), text)
+    """Rewrite French paragraph labels into the bracketed English form.
+
+    French writes "alinéas 149(1)(c) et d) à d.6)" where English writes
+    "paragraphs 149(1)(c) and (d) to (d.6)". Phase 0's citation paths use the
+    English form, so the French text is rewritten before extraction.
+
+    The rewrite is driven by **bracket matching**, not by the word in front of
+    the label. An earlier version keyed on "alinéa" and on a preceding ")", and
+    so missed labels that follow "et" or "à": "d.6)" was then read by the
+    section pattern as the number 6, resolving to ITA section 6. Two of the
+    thirty references in the first precision sample failed that way, and the
+    hand check is what caught it.
+
+    A ")" with no unclosed "(" to its left cannot be closing anything, so
+    whatever token sits in front of it is a bare label.
+    """
+    out, depth = [], 0
+    for ch in text:
+        if ch == "(":
+            depth += 1
+            out.append(ch)
+        elif ch == ")":
+            if depth > 0:
+                depth -= 1
+                out.append(ch)
+            else:
+                # Unmatched closer: wrap the token before it.
+                prefix = "".join(out)
+                m = _FR_BARE_LABEL.search(prefix)
+                if m:
+                    token = m.group(1)
+                    split = _FR_SECTION_AND_LABEL.match(token)
+                    wrapped = ("%s(%s)" % (split.group(1), split.group(2))
+                               if split else "(%s)" % token)
+                    out = list(prefix[:m.start()]) + list(wrapped)
+                else:
+                    out.append(ch)
+        else:
+            out.append(ch)
+    return "".join(out)
 
 
 def extract(field_text, lang="en", term_map=None):
@@ -276,10 +320,16 @@ def extract(field_text, lang="en", term_map=None):
         # A paragraph inside a defined term: 127(9) "investment tax credit"
         # (a.3). See docs/reference-rule.md, "Paragraphs of a definition".
         if definition and code in RESOLVABLE:
-            subsection = next(
+            # Prefer a subsection - "definition of X in subsection 127(9)" -
+            # but a definition can also hang off a bare section, as in
+            # "definition of X in section 248". Both are real keys in Phase 0.
+            host = next(
                 (path for path, _pos, sched in found if "(" in path and not sched),
                 None)
-            if subsection:
+            if host is None:
+                host = next(
+                    (path for path, _pos, sched in found if not sched), None)
+            if host:
                 order += 1
                 raw_term = " ".join(
                     (definition.group("term") or definition.group("term_fr") or ""
@@ -293,7 +343,7 @@ def extract(field_text, lang="en", term_map=None):
                 path = None
                 if term:
                     path = '%s"%s"%s' % (
-                        subsection, term, para.group(1) if para else "")
+                        host, term, para.group(1) if para else "")
                 rows.append({
                     "instrument": code, "instrument_name": name,
                     "citation_path": path, "raw_text": segment,

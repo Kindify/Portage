@@ -297,7 +297,8 @@ subsections 39(1.1) and (2) -> 39(1.1), 39(2)      [the section carries across a
 paragraph 20(1)(ss)         -> 20(1)(ss)
 paragraphs 1100(1)(a.3) and (yb)
                             -> 1100(1)(a.3), 1100(1)(yb)
-sections 110.6 to 110.7     -> every section in the range that exists
+sections 110.6 to 110.7     -> 110.6, 110.7        [endpoints only]
+paragraphs (d) to (d.6)     -> (d), (d.6)          [endpoints only]
 ```
 
 A list **inherits the previous item's prefix at matching depth**, not merely
@@ -320,8 +321,33 @@ two trailing letters, one or two letters with optional dotted suffix, roman
 numerals, or up to four capitals. An earlier, looser version accepted any
 bracketed word and read `section 258 (rebate)` as the provision `258(rebate)`.
 
-A range enumerates only the paths that **exist** in `sections`. It never invents
-one, and a range whose endpoints do not exist stays unresolved.
+### Ranges are endpoints only - they are not expanded
+
+`sections 110.6 to 110.7` produces **two** references, 110.6 and 110.7. It does
+not produce everything lying between them, and `paragraphs (d) to (d.6)` gives
+`(d)` and `(d.6)`, not `(d.1)` through `(d.5)`.
+
+**Why endpoints.** Expanding a range means deciding what lies inside it, and the
+Act's numbering is not a sequence you can walk: between `(d)` and `(d.6)` sit
+`(d.1)`, `(d.2)` and so on, but whether a particular one exists, and whether
+Finance meant to include a provision repealed since, is a reading of the
+reference rather than a fact in it. Enumerating from the `sections` table would
+also make the reference set depend on which consolidation happened to be loaded,
+so the same report would yield different references against a different
+snapshot.
+
+The cost is real and is stated in README: a measure citing a range is linked to
+its two endpoints, and the provisions between them are not linked to it.
+`raw_text` always keeps the range as published, so a consumer who wants the span
+can expand it themselves, against a consolidation of their choosing.
+
+### Definitions attached to a bare section
+
+`definition of "X" in section 248` resolves to `248"X"`, the same form as the
+subsection case below. A subsection host is preferred where one is present.
+
+**No reference in the 2026 edition uses this form** - the rule exists so that an
+edition that does is not silently misread. It changes 0 of 792 references today.
 
 ### Paragraphs of a definition
 
