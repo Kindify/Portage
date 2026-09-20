@@ -314,15 +314,21 @@ citation path at the first `(`, `"` or `~` - the quote matters, because
    English marks the headings with `<strong>`, French with `<h5>` - rather than
    reading the French groups off the English order.
 
-**Two places the build now departs from CLAUDE.md as written**, both flagged in
-`docs/decisions.md` and both consequences of amendments Matt already adopted:
+**Three places CLAUDE.md was corrected to match what was built** (`8fbd2fc`),
+each for a reason recorded in `docs/decisions.md`. The brief and the build now
+agree; this list is here so the change is not invisible:
 
-- CLAUDE.md's acceptance test 3 asks for `cost_status = 'not_costed'` on the
+- Acceptance test 3 asked for `cost_status = 'not_costed'` on the
   reorganization deferral. It is **`no_cost_table`** - Finance published no cost
   table for it at all, which is what the fifth value exists to say. The other
-  two assertions in that test pass as written.
+  two assertions in that test passed as written.
 - `cost_per_beneficiary` is **dollars**, not millions of dollars, per
   beneficiary.
+- `beneficiaries_raw` is **two columns**, `_en` and `_fr`. One column would drop
+  the published French sentence wherever an English one exists.
+
+The cost basis column is also named as built - `cost_figure_basis`, five values
+- rather than `cost_total_or_component`, which was never written.
 
 ### Step 3 - temporal scope - **NEXT**
 
