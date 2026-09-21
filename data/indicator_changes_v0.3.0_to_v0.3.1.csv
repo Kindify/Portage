@@ -1,0 +1,230 @@
+measure_id,measure_name,column,old_value,new_value,fix
+1,10% Temporary Wage Subsidy for Employers,amending_acts_count,12,20,B
+2,$200 capital gains exemption on foreign exchange transactions,amending_acts_count,10,13,B
+3,Accelerated capital cost allowance for clean energy generation equipme,amending_acts_count,93,108,B
+4,Accelerated capital cost allowance for liquefied natural gas facilitie,amending_acts_count,45,53,B
+5,Accelerated capital cost allowance for mining and oil sands assets,amending_acts_count,45,53,B
+8,Accelerated capital cost allowance for vessels,amending_acts_count,45,53,B
+9,Accelerated capital cost allowance for zero-emission automotive equipm,amending_acts_count,45,53,B
+10,Accelerated deductibility of Canadian Renewable and Conservation Expen,amending_acts_count,15,17,B
+11,Accelerated deductibility of some Canadian Exploration Expenses,amending_acts_count,9,11,B
+12,Additional deduction for gifts of medicine,amending_acts_count,13,15,B
+15,Age Credit,amending_acts_count,17,20,B
+16,Apprentice vehicle mechanics' tools deduction,amending_acts_count,10,14,B
+17,Apprenticeship Job Creation Tax Credit,beneficiaries_latest,500,,A
+17,Apprenticeship Job Creation Tax Credit,beneficiaries_latest_year,2023,,A
+17,Apprenticeship Job Creation Tax Credit,cost_per_beneficiary,220000.0,,A
+17,Apprenticeship Job Creation Tax Credit,amending_acts_count,24,30,B
+18,Atlantic Investment Tax Credit,beneficiaries_latest,3300,,A
+18,Atlantic Investment Tax Credit,beneficiaries_latest_year,2023,,A
+18,Atlantic Investment Tax Credit,cost_per_beneficiary,62121.21212121212,,A
+18,Atlantic Investment Tax Credit,amending_acts_count,24,30,B
+19,Canada Caregiver Credit,amending_acts_count,17,20,B
+20,Canada Child Benefit,amending_acts_count,10,13,B
+21,Canada Emergency Rent Subsidy and Lockdown Support,amending_acts_count,13,34,B
+22,Canada Emergency Wage Subsidy,amending_acts_count,13,34,B
+23,Canada Employment Credit,amending_acts_count,17,20,B
+25,Canada Recovery Hiring Program,amending_acts_count,13,34,B
+27,Canada Workers Benefit,amending_acts_count,3,7,B
+28,Canadian Film or Video Production Tax Credit,amending_acts_count,4,5,B
+29,Canadian Journalism Labour Tax Credit,beneficiaries_latest,200,,A
+29,Canadian Journalism Labour Tax Credit,beneficiaries_latest_year,2023,,A
+29,Canadian Journalism Labour Tax Credit,cost_per_beneficiary,325000.0,,A
+29,Canadian Journalism Labour Tax Credit,amending_acts_count,0,2,B
+31,Capital loss carry-overs,beneficiaries_latest,543000,,A
+31,Capital loss carry-overs,beneficiaries_latest_year,2023,,A
+31,Capital loss carry-overs,amending_acts_count,14,19,B
+32,"Carbon Capture, Utilization, and Storage Investment Tax Credit",amending_acts_count,0,2,B
+34,Charitable Donation Tax Credit,beneficiaries_latest,4100,,A
+34,Charitable Donation Tax Credit,beneficiaries_latest_year,2023,,A
+34,Charitable Donation Tax Credit,cost_per_beneficiary,991463.4146341464,,A
+34,Charitable Donation Tax Credit,amending_acts_count,38,50,B
+35,Child Care Expense Deduction,amending_acts_count,11,13,B
+37,Clean Hydrogen Investment Tax Credit,amending_acts_count,0,2,B
+38,Clean Technology Investment Tax Credit,amending_acts_count,0,2,B
+39,Clean Technology Manufacturing Investment Tax Credit,amending_acts_count,0,2,B
+40,Credit for subscriptions to Canadian digital news media,amending_acts_count,2,4,B
+41,Credit for the Basic Personal Amount,amending_acts_count,17,20,B
+42,Deductibility of certain costs incurred by musicians,amending_acts_count,10,14,B
+43,Deductibility of charitable donations,amending_acts_count,13,15,B
+44,Deductibility of contributions to a qualifying environmental trust,amending_acts_count,16,19,B
+45,Deductibility of costs of capital assets and eligibility for investmen,amending_acts_count,33,47,B
+46,Deductibility of countervailing and anti-dumping duties when paid,amending_acts_count,16,19,B
+47,Deductibility of earthquake reserves,amending_acts_count,26,31,B
+48,Deductibility of expenses by employed artists,amending_acts_count,10,14,B
+49,Deduction for certain contributions by individuals who have taken vows,amending_acts_count,11,13,B
+50,Deduction for clergy residence,amending_acts_count,10,14,B
+52,Deduction for tradespeople’s tool expenses,amending_acts_count,10,14,B
+53,Deduction for tuition assistance for adult basic education,amending_acts_count,11,13,B
+54,Deduction of allowable business investment losses,beneficiaries_latest,6400,,A
+54,Deduction of allowable business investment losses,beneficiaries_latest_year,2023,,A
+54,Deduction of allowable business investment losses,cost_per_beneficiary,7031.25,,A
+54,Deduction of allowable business investment losses,amending_acts_count,18,21,B
+55,Deduction of interest and carrying charges incurred to earn investment,amending_acts_count,16,19,B
+56,Deduction of other employment expenses,amending_acts_count,10,14,B
+57,Deduction of union and professional dues,amending_acts_count,10,14,B
+58,Deferral for asset transfers to a corporation and corporate reorganiza,amending_acts_count,50,70,B
+64,Deferral through five-year capital gain reserve,beneficiaries_latest,9300,,A
+64,Deferral through five-year capital gain reserve,beneficiaries_latest_year,2023,,A
+64,Deferral through five-year capital gain reserve,amending_acts_count,15,18,B
+65,Deferral through ten-year capital gain reserve,amending_acts_count,15,18,B
+67,Deferred Profit-Sharing Plans,amending_acts_count,7,8,B
+68,Disability supports deduction,amending_acts_count,8,9,B
+69,Disability Tax Credit,amending_acts_count,15,16,B
+72,Education Tax Credit,provisions_not_in_consolidation,1,0,D
+72,Education Tax Credit,provisions_repealed_stub,0,1,D
+72,Education Tax Credit,sections_touched,0,1,D
+72,Education Tax Credit,shared_with_measures,0,1,D
+72,Education Tax Credit,amending_acts_count,,14,B
+72,Education Tax Credit,amending_acts_method,,pattern,B
+73,Eligible Dependant Credit,amending_acts_count,17,20,B
+74,Employee Ownership Capital Gains Exemption,amending_acts_count,0,3,B
+75,Employee stock option deduction,amending_acts_count,18,22,B
+77,Exemption for income of Canadian resident companies from international,amending_acts_count,34,46,B
+78,Exemption for international shipping and aviation by non-residents,amending_acts_count,15,22,B
+90,"Exemption of scholarship, fellowship and bursary income",amending_acts_count,18,25,B
+91,Exemptions from non-resident withholding tax,amending_acts_count,16,20,B
+93,Expensing of current expenditures on scientific research and experimen,amending_acts_count,12,13,B
+94,Expensing of incorporation expenses,amending_acts_count,16,19,B
+97,First-Time Home Buyers’ Tax Credit,amending_acts_count,0,1,B
+98,Flow-through share deductions,beneficiaries_latest,34500,,A
+98,Flow-through share deductions,beneficiaries_latest_year,2023,,A
+98,Flow-through share deductions,cost_per_beneficiary,8260.869565217392,,A
+98,Flow-through share deductions,amending_acts_count,11,16,B
+100,Foreign tax credit for individuals,beneficiaries_latest,15900,,A
+100,Foreign tax credit for individuals,beneficiaries_latest_year,2023,,A
+100,Foreign tax credit for individuals,cost_per_beneficiary,159119.4968553459,,A
+100,Foreign tax credit for individuals,amending_acts_count,12,14,B
+101,Goods and Services Tax/Harmonized Sales Tax Credit,amending_acts_count,14,19,B
+102,Hardest-Hit Business Recovery Program,amending_acts_count,13,34,B
+103,Holdback on progress payments to contractors,amending_acts_count,15,21,B
+104,Home Accessibility Tax Credit,amending_acts_count,1,3,B
+105,Income tax exemption for certain public bodies,amending_acts_count,14,17,B
+107,Investment Tax Credit for Child Care Spaces,amending_acts_count,24,30,B
+108,Labour Mobility Deduction for Tradespeople,amending_acts_count,10,14,B
+109,Labour-Sponsored Venture Capital Corporations Credit,amending_acts_count,21,22,B
+110,Lifetime Capital Gains Exemption,amending_acts_count,12,14,B
+111,Local Lockdown Program,amending_acts_count,13,34,B
+112,Logging Tax Credit,beneficiaries_latest,390,,A
+112,Logging Tax Credit,beneficiaries_latest_year,2023,,A
+112,Logging Tax Credit,amending_acts_count,24,30,B
+113,Medical Expense Tax Credit,amending_acts_count,24,29,B
+114,Moving expense deduction,amending_acts_count,27,37,B
+115,Multigenerational Home Renovation Tax Credit,amending_acts_count,0,1,B
+116,Non-capital loss carry-overs,beneficiaries_latest,50000,,A
+116,Non-capital loss carry-overs,beneficiaries_latest_year,2023,,A
+116,Non-capital loss carry-overs,amending_acts_count,14,19,B
+118,Non-taxation of allowances for diplomats and other government employee,amending_acts_count,15,19,B
+119,Non-taxation of benefits from private health and dental plans,amending_acts_count,35,48,B
+120,Non-taxation of capital dividends,amending_acts_count,19,22,B
+121,Non-taxation of capital gains on principal residences,amending_acts_count,26,31,B
+122,Non-taxation of certain veterans' benefits,amending_acts_count,15,22,B
+123,Non-taxation of Guaranteed Income Supplement and Allowance benefits,amending_acts_count,11,13,B
+124,Non-taxation of income earned by military and police deployed to inter,amending_acts_count,11,13,B
+125,Non-taxation of investment income on certain amounts received as damag,amending_acts_count,15,22,B
+126,Non-taxation of life insurance companies' foreign income,amending_acts_count,18,21,B
+127,Non-taxation of lottery and gambling winnings,amending_acts_count,22,25,B
+128,Non-taxation of non-profit organizations,amending_acts_count,14,17,B
+129,Non-taxation of payments to Canadian Armed Forces members and veterans,amending_acts_count,15,22,B
+130,Non-taxation of personal property of status Indians and Indian bands s,amending_acts_count,15,22,B
+131,Non-taxation of provincial assistance for venture investments in small,amending_acts_count,46,54,B
+132,Non-taxation of RCMP pensions and other compensation in respect of inj,amending_acts_count,15,22,B
+133,Non-taxation of registered charities,amending_acts_count,14,17,B
+134,Non-taxation of social assistance benefits,amending_acts_count,11,13,B
+135,"Non-taxation of up to $10,000 of death benefits",amending_acts_count,40,57,B
+136,Non-taxation of workers' compensation benefits,amending_acts_count,11,13,B
+137,Northern Residents Deductions,amending_acts_count,6,10,B
+140,Patronage dividends paid as shares by agricultural cooperatives,amending_acts_count,2,4,B
+141,Pension Income Credit,amending_acts_count,17,20,B
+142,Pension income splitting,amending_acts_count,2,4,B
+144,Political Contribution Tax Credit,amending_acts_count,24,30,B
+145,Pooled Registered Pension Plans,amending_acts_count,2,5,B
+146,Preferential tax rate for small businesses,amending_acts_count,13,16,B
+148,Rate reduction for zero-emission technology manufacturers,amending_acts_count,2,4,B
+158,Reclassification of expenses under flow-through shares,amending_acts_count,11,16,B
+159,"Refundable capital gains tax for investment corporations, mutual fund ",beneficiaries_latest,2100,,A
+159,"Refundable capital gains tax for investment corporations, mutual fund ",beneficiaries_latest_year,2023,,A
+159,"Refundable capital gains tax for investment corporations, mutual fund ",cost_per_beneficiary,3064285.714285714,,A
+159,"Refundable capital gains tax for investment corporations, mutual fund ",amending_acts_count,11,13,B
+161,Refundable taxes on investment income of private corporations,beneficiaries_latest,391000,,A
+161,Refundable taxes on investment income of private corporations,beneficiaries_latest_year,2023,,A
+161,Refundable taxes on investment income of private corporations,cost_per_beneficiary,-14373.401534526854,,A
+161,Refundable taxes on investment income of private corporations,amending_acts_count,28,33,B
+163,Registered Disability Savings Plans,amending_acts_count,12,18,B
+164,Registered Education Savings Plans,amending_acts_count,16,18,B
+165,Registered Pension Plans,amending_acts_count,9,13,B
+166,Registered Retirement Savings Plans,amending_acts_count,17,24,B
+167,Rollovers of investments in small businesses,amending_acts_count,3,4,B
+168,Saskatchewan Pension Plan,amending_acts_count,19,26,B
+169,Scientific Research and Experimental Development Investment Tax Credit,beneficiaries_latest,3300,,A
+169,Scientific Research and Experimental Development Investment Tax Credit,beneficiaries_latest_year,2023,,A
+169,Scientific Research and Experimental Development Investment Tax Credit,cost_per_beneficiary,1321212.121212121,,A
+169,Scientific Research and Experimental Development Investment Tax Credit,amending_acts_count,24,30,B
+170,Search and Rescue Volunteers Tax Credit,amending_acts_count,0,1,B
+171,Small Businesses Air Quality Improvement Tax Credit,beneficiaries_latest,310,,A
+171,Small Businesses Air Quality Improvement Tax Credit,beneficiaries_latest_year,2023,,A
+171,Small Businesses Air Quality Improvement Tax Credit,cost_per_beneficiary,16129.032258064517,,A
+174,Spouse or Common-Law Partner Credit,amending_acts_count,17,20,B
+177,Tax on Repurchases of Equity,amending_acts_count,0,2,B
+178,Tax status of certain federal Crown corporations,amending_acts_count,29,32,B
+179,Tax treatment of active business income of foreign affiliates of Canad,amending_acts_count,66,81,B
+180,Tax treatment of alimony and maintenance payments,beneficiaries_latest,79000,,A
+180,Tax treatment of alimony and maintenance payments,beneficiaries_latest_year,2023,,A
+180,Tax treatment of alimony and maintenance payments,cost_per_beneficiary,1329.113924050633,,A
+180,Tax treatment of alimony and maintenance payments,amending_acts_count,38,51,B
+181,Tax treatment of Canada Pension Plan and Quebec Pension Plan contribut,amending_acts_count,22,29,B
+182,Tax treatment of Employment Insurance and Quebec Parental Insurance Pl,amending_acts_count,22,29,B
+183,Tax treatment of farm savings accounts (AgriInvest and Agri-Québec),amending_acts_count,37,53,B
+185,Taxation of capital gains upon realization,amending_acts_count,15,18,B
+186,Tax-free amount for emergency services volunteers,amending_acts_count,15,22,B
+187,Tax-Free First Home Savings Account,amending_acts_count,7,14,B
+188,Tax-Free Savings Account,amending_acts_count,11,19,B
+189,Teacher and Early Childhood Educator School Supply Tax Credit,amending_acts_count,0,2,B
+190,Textbook Tax Credit,provisions_not_in_consolidation,1,0,D
+190,Textbook Tax Credit,provisions_repealed_stub,0,1,D
+190,Textbook Tax Credit,sections_touched,0,1,D
+190,Textbook Tax Credit,shared_with_measures,0,1,D
+190,Textbook Tax Credit,amending_acts_count,,14,B
+190,Textbook Tax Credit,amending_acts_method,,pattern,B
+192,Tourism and Hospitality Recovery Program,amending_acts_count,13,34,B
+195,Tuition Tax Credit,amending_acts_count,7,8,B
+196,Volunteer Firefighters Tax Credit,amending_acts_count,1,2,B
+204,Accelerated capital cost allowance for manufacturing or processing mac,amending_acts_count,93,108,B
+205,Accelerated Investment Incentive,amending_acts_count,105,125,B
+206,Corporate Mineral Exploration and Development Tax Credit,amending_acts_count,24,30,B
+207,Critical Mineral Exploration Tax Credit for Flow-Through Share Investo,beneficiaries_latest,250,,A
+207,Critical Mineral Exploration Tax Credit for Flow-Through Share Investo,beneficiaries_latest_year,2023,,A
+207,Critical Mineral Exploration Tax Credit for Flow-Through Share Investo,cost_per_beneficiary,880000.0,,A
+207,Critical Mineral Exploration Tax Credit for Flow-Through Share Investo,shared_with_measures,0,1,C
+207,Critical Mineral Exploration Tax Credit for Flow-Through Share Investo,amending_acts_count,24,30,B
+208,Deferral through rollover of capital gains and capital cost allowance ,amending_acts_count,16,26,B
+209,Deferral through rollover of capital gains and capital cost allowance ,amending_acts_count,16,26,B
+211,Employee benefit plans,amending_acts_count,39,53,B
+216,Expensing of advertising costs,amending_acts_count,18,27,B
+217,Expensing of employee training costs,amending_acts_count,18,27,B
+218,Immediate expensing for small businesses,amending_acts_count,112,132,B
+219,Mineral Exploration Tax Credit for Flow-Through Share Investors,beneficiaries_latest,200,,A
+219,Mineral Exploration Tax Credit for Flow-Through Share Investors,beneficiaries_latest_year,2023,,A
+219,Mineral Exploration Tax Credit for Flow-Through Share Investors,cost_per_beneficiary,175000.0,,A
+219,Mineral Exploration Tax Credit for Flow-Through Share Investors,provisions_resolved,0,1,C
+219,Mineral Exploration Tax Credit for Flow-Through Share Investors,provisions_not_in_consolidation,1,0,C
+219,Mineral Exploration Tax Credit for Flow-Through Share Investors,sections_touched,0,1,C
+219,Mineral Exploration Tax Credit for Flow-Through Share Investors,shared_with_measures,0,1,C
+219,Mineral Exploration Tax Credit for Flow-Through Share Investors,amending_acts_count,,30,B
+219,Mineral Exploration Tax Credit for Flow-Through Share Investors,amending_acts_method,,pattern,B
+220,Non-taxation of capital gains on donations of cultural property,beneficiaries_latest,230,,A
+220,Non-taxation of capital gains on donations of cultural property,beneficiaries_latest_year,2023,,A
+220,Non-taxation of capital gains on donations of cultural property,amending_acts_count,39,46,B
+221,Non-taxation of capital gains on donations of ecologically sensitive l,amending_acts_count,40,44,B
+222,Non-taxation of capital gains on donations of publicly listed securiti,beneficiaries_latest,2070,,A
+222,Non-taxation of capital gains on donations of publicly listed securiti,beneficiaries_latest_year,2023,,A
+226,Partial inclusion of U.S. Social Security benefits,amending_acts_count,11,13,B
+234,Déduction pour amortissement accéléré des coûts des machines et du mat,amending_acts_count,45,53,B
+237,Incitatif à l'investissement accéléré,amending_acts_count,105,125,B
+238,Non-imposition des gains en capital sur les dons de biens culturels,amending_acts_count,39,46,B
+239,Non-imposition des gains en capital sur les dons de terres écosensible,amending_acts_count,40,44,B
+242,Passation en charge immédiate pour les petites entreprises,amending_acts_count,112,132,B
+243,Passation en charges des coûts de formation des employés,amending_acts_count,18,27,B
+244,Passation en charges des frais de publicité,amending_acts_count,18,27,B
+246,Report par roulement des gains en capital et de la récupération de la ,amending_acts_count,16,26,B
+247,Report par roulement des gains en capital et de la récupération de la ,amending_acts_count,16,26,B

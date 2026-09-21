@@ -143,9 +143,31 @@ def _marginal_note(el):
 
 
 def _historical_note(el):
+    """The amending-statute note, with its entries kept apart.
+
+    Justice Laws splits a HistoricalNote into HistoricalNoteSubItem elements,
+    and the later amending entries - roughly post-2017 - each get their own.
+    The sub-items carry no tail text, so concatenating the element's itertext
+    runs them together: section 39 read "...2017, c. 33, s. 92019, c. 29,
+    s. 42024, c. 17, s. 7...", where the published page reads
+    "...2017, c. 33, s. 9; 2019, c. 29, s. 4; 2024, c. 17, s. 7...".
+
+    Entries are joined with "; ", which is the separator the source uses
+    inside a sub-item and the one the page shows between them. The "[NOTE:
+    ...]" prefix is its own sub-item and is joined with a space, as published.
+    """
     for child in el:
-        if isinstance(child.tag, str) and child.tag == "HistoricalNote":
-            return " ".join(_text_of(child).split())
+        if not (isinstance(child.tag, str) and child.tag == "HistoricalNote"):
+            continue
+        subs = [" ".join(_text_of(sub).split()) for sub in child
+                if isinstance(sub.tag, str) and sub.tag == "HistoricalNoteSubItem"]
+        subs = [sub for sub in subs if sub]
+        if not subs:
+            return " ".join(_text_of(child).split()) or None
+        note = subs[0]
+        for sub in subs[1:]:
+            note += (" " if note.endswith("]") else "; ") + sub
+        return note
     return None
 
 

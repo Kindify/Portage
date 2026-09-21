@@ -103,7 +103,7 @@ WITH base AS (
         (SELECT COUNT(*) FROM measure_references r
           JOIN sections rs ON rs.id = r.section_id
           WHERE r.measure_id = m.id AND r.lang = b.reference_lang
-            AND r.status = 'resolved'
+            AND r.status IN ('resolved', 'resolved_combined_stub')
             AND rs.is_repealed_stub = 1)                           AS provisions_repealed_stub,
         (SELECT COUNT(DISTINCT p.act || ' ' || p.top_section)
            FROM measure_resolved_provisions p

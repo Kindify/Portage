@@ -77,19 +77,19 @@ resolve differently in the two editions, and they are catalogued in
 
 | view | rows in this build | what it returns |
 |---|---|---|
-| `measure_resolved_provisions` | 332 | Every resolved provision a measure cites, one row per reference, with the top-level section it sits in. |
-| `measure_provision_overlap` | 230 | One row per pair of measures that cite the same resolved provision, with the provision. |
+| `measure_resolved_provisions` | 335 | Every resolved provision a measure cites, one row per reference, with the top-level section it sits in. |
+| `measure_provision_overlap` | 234 | One row per pair of measures that cite the same resolved provision, with the provision. |
 | `indicators` | 247 | One row per measure - 247, matching `measures` exactly, not one row per language. |
 | `v_not_costed` | 10 | Measures where Finance published a cost table and no year in it carries a number. |
 | `v_withheld` | 9 | Measures with at least one cost cell published as "X", which Finance's own legend defines as withheld for confidentiality. |
-| `v_no_beneficiary_count` | 172 | Measures with no parsed beneficiary count, with the published sentence in both languages. |
+| `v_no_beneficiary_count` | 192 | Measures with no parsed beneficiary count, with the published sentence in both languages. |
 | `v_end_bound_by_year` | 636 | One row per extracted end bound on a provision a measure cites, with the year as a column. |
 | `v_last_change_by_year` | 247 | One row per measure with the latest year Finance lists in its implementation and recent history field, as a column for the reader to filter on. |
 | `v_objective_internal` | 70 | Measures every one of whose objective categories Finance's Part 3 lists under "Objectives that are internal to the tax system". |
 | `v_overlapping_programs` | 208 | Measures where Finance's "other relevant government programs" field names something. |
-| `v_shared_provisions` | 34 | Resolved provisions cited by more than one measure, with the measures. |
-| `v_not_in_consolidation` | 13 | Measures citing a provision the consolidation does not contain, with the reference as published. |
-| `v_provision_footprint` | 332 | For every resolved provision: the measure citing it, and the number of other measures that cite the same provision or another provision of the same section. |
+| `v_shared_provisions` | 36 | Resolved provisions cited by more than one `measures` row, with the rows. |
+| `v_not_in_consolidation` | 10 | Measures citing a provision the consolidation does not contain, with the reference as published. |
+| `v_provision_footprint` | 335 | For every resolved provision: the measure citing it, and the number of other measures that cite the same provision or another provision of the same section. |
 
 ---
 
@@ -152,12 +152,12 @@ The formula is the SQL below; this is the meaning and the null rule beside it.
 | `provisions_cited` | Count of reference rows Finance lists for the measure, in the edition named by `measure_figure_basis.reference_lang`. | never; 0 where none |
 | `provisions_resolved` | Of those, the count with `status = 'resolved'`. | never; 0 |
 | `provisions_not_in_consolidation` | Of those, the count with `status = 'not_in_consolidation'` - the gap between the report's as-of date of 31 December 2025 and the consolidation's of 18 June 2026. | never; 0 |
-| `provisions_repealed_stub` | Of the measure's resolved references, the count pointing at a provision whose whole text is a repeal tombstone - "[Repealed, 2001, c. 17, s. 3(1)]". The citation path still resolves, but the provision is gone. Distinct from `provisions_not_in_consolidation`, which is a path the consolidation never had: this is a path it has, pointing at nothing. | never; 0 |
+| `provisions_repealed_stub` | Of the measure's resolved references, the count pointing at a provision whose whole text is a repeal tombstone - "[Repealed, 2001, c. 17, s. 3(1)]". The citation path still resolves, but the provision is gone. Includes references with status `resolved_combined_stub`, where Justice Laws repealed several subsections in one node labelled "(2) and (2.1)": the cited path has no row of its own, and the node that repealed it says what happened to it. Distinct from `provisions_not_in_consolidation`, which is a path the consolidation never had: this is a path it has, pointing at nothing. | never; 0 |
 | `sections_touched` | Distinct top-level sections among the resolved paths. The section is the leading run of the citation path before the first `(`, `"` or `~`, so `110(1)(d)` is section 110 and `54"principal residence"` is section 54. | never; 0 |
 | `shared_with_measures` | Count of other measures citing at least one of the same resolved citation paths. A pure join over `measure_provision_overlap`. | never; 0 |
 | `amending_acts_count` | Summed over the distinct top-level sections the measure cites: the number of statute entries in that section's Phase 0 `history_note` after the first. Entries are semicolon separated after the `[NOTE: ...]` prefix; the first entry is the enactment that put the section there, so the rest are amendments. **Double counts by design**: a section cited by several measures contributes to each, because this is a property of the measure's legal footprint and not a partition of the Act. | no section the measure cites carries a history note |
 | `amending_acts_method` | `pattern` wherever a count was produced. | `amending_acts_count` is null |
-| `earliest_end_date` | Earliest `end` bound extracted from the text of the provisions the measure cites. Whether that date has passed is **not** computed: there is no `is_expired` and no comparison against the build date, because "expired" depends on when you ask and on facts outside this dataset. | no cited provision has an extracted end bound - every row, until Phase 2 step 3 fills `provision_temporal_scope` |
+| `earliest_end_date` | Earliest `end` bound extracted from the text of the provisions the measure cites. Whether that date has passed is **not** computed: there is no `is_expired` and no comparison against the build date, because "expired" depends on when you ask and on facts outside this dataset. **The Act keeps its historical layers, and this column shows them.** The investment tax credit measures report 1978-11-17, because 127(9)"specified percentage" still carries the pre-1978 rate tiers as text. The value is correct under the rule - that phrase is a real end bound in a provision Finance cites - and it is not the date the measure ends. A reader wanting current bounds should filter on the year they care about rather than read the earliest. | no cited provision has an extracted end bound - every row, until Phase 2 step 3 fills `provision_temporal_scope` |
 | `latest_end_date` | The latest such bound. | as `earliest_end_date` |
 | `has_step_down` | 1 where any cited provision has a `step_down` bound, else 0. | no cited provision has any extracted temporal scope |
 
@@ -172,9 +172,17 @@ for reading a section number out of a citation path is written once. Only the
 edition named in `measure_figure_basis.reference_lang` is read, so a measure
 present in both languages is not counted twice.
 
+Includes `resolved_combined_stub` references. Those cite a subsection that
+Justice Laws repealed inside a node covering several - "118.6(2) and (2.1)" -
+and **`citation_path` here is that node's path, not the one Finance wrote**.
+The measure's footprint does include it: Finance cites it and it locates a
+real row in the Act. What it cannot do is stand for the cited path, which is
+why the status is separate and why the reference table keeps Finance's
+wording.
+
 **Columns:** `measure_id`, `lang`, `order_index`, `act`, `section_id`, `citation_path`, `top_section`
 
-**Rows in this build:** 332
+**Rows in this build:** 335
 
 ```sql
 CREATE VIEW measure_resolved_provisions AS
@@ -192,7 +200,7 @@ FROM measure_references r
 JOIN measure_figure_basis b
      ON b.measure_id = r.measure_id AND b.reference_lang = r.lang
 JOIN sections s ON s.id = r.section_id
-WHERE r.status = 'resolved';
+WHERE r.status IN ('resolved', 'resolved_combined_stub');
 ```
 
 ---
@@ -206,7 +214,7 @@ so that a query filtered to one measure sees all of its partners.
 
 **Columns:** `measure_id`, `other_measure_id`, `act`, `citation_path`
 
-**Rows in this build:** 230
+**Rows in this build:** 234
 
 ```sql
 CREATE VIEW measure_provision_overlap AS
@@ -332,7 +340,7 @@ WITH base AS (
         (SELECT COUNT(*) FROM measure_references r
           JOIN sections rs ON rs.id = r.section_id
           WHERE r.measure_id = m.id AND r.lang = b.reference_lang
-            AND r.status = 'resolved'
+            AND r.status IN ('resolved', 'resolved_combined_stub')
             AND rs.is_repealed_stub = 1)                           AS provisions_repealed_stub,
         (SELECT COUNT(DISTINCT p.act || ' ' || p.top_section)
            FROM measure_resolved_provisions p
@@ -523,7 +531,7 @@ read, and all 75 are in the English edition.
 
 **Columns:** `measure_id`, `name_en`, `name_fr`, `join_method`, `beneficiaries_raw_en`, `beneficiaries_raw_fr`
 
-**Rows in this build:** 172
+**Rows in this build:** 192
 
 ```sql
 CREATE VIEW v_no_beneficiary_count AS
@@ -638,22 +646,43 @@ WHERE has_overlapping_program = 1;
 
 ## `v_shared_provisions`
 
-Resolved provisions cited by more than one measure, with the measures. A
-provision appearing here is one Finance's report reaches from several
-directions; the view counts the measures and lists them, and draws no
-conclusion from the count.
+Resolved provisions cited by more than one `measures` row, with the rows.
 
-**Columns:** `act`, `citation_path`, `measures_citing`, `measure_ids`
+**The count is of rows, not of measures, and the two differ.** `measures`
+holds 211 joined pairs and 36 unjoined singles, and an English single and its
+French counterpart are two rows describing one measure. A path cited by both
+therefore reports 2 where the honest answer is 1 - the Accelerated Investment
+Incentive, rows 205 and 237, is the clearest case.
 
-**Rows in this build:** 34
+`unjoined_singles_citing` says how much of the count could be that, so the
+inflation is visible in the view rather than needing to be known about.
+
+**It is not collapsed, and the attempt is why.** Collapsing on the resolved
+provision set merges "Expensing of advertising costs" with "Expensing of
+employee training costs", which cite the same provision and are different
+measures. Adding cost values - Phase 1's full join signature - separates
+those two but then fails to pair the donation measures, whose editions parsed
+88 and 48 cost rows from the same tables. Restricting to unique
+one-English-one-French groups collapses nothing at all. There is no mechanical
+key that pairs the singles that should pair without merging the ones that
+should not, which is exactly why Phase 1 left them as singles. Encoding a
+guess here would put a judgment in a view whose whole claim is that it makes
+none.
+
+**Columns:** `act`, `citation_path`, `measure_rows_citing`, `unjoined_singles_citing`, `measure_ids`
+
+**Rows in this build:** 36
 
 ```sql
 CREATE VIEW v_shared_provisions AS
 SELECT p.act,
        p.citation_path,
-       COUNT(DISTINCT p.measure_id) AS measures_citing,
-       GROUP_CONCAT(DISTINCT p.measure_id) AS measure_ids
+       COUNT(DISTINCT p.measure_id)                    AS measure_rows_citing,
+       SUM(CASE WHEN m.join_method IS NULL THEN 1 ELSE 0 END)
+                                                       AS unjoined_singles_citing,
+       GROUP_CONCAT(DISTINCT p.measure_id)             AS measure_ids
 FROM measure_resolved_provisions p
+JOIN measures m ON m.id = p.measure_id
 GROUP BY p.act, p.citation_path
 HAVING COUNT(DISTINCT p.measure_id) > 1;
 ```
@@ -669,7 +698,7 @@ not an error by Finance or by Justice Canada.
 
 **Columns:** `measure_id`, `name_en`, `name_fr`, `raw_text`, `instrument`, `citation_path`, `lang`, `reason`
 
-**Rows in this build:** 13
+**Rows in this build:** 10
 
 ```sql
 CREATE VIEW v_not_in_consolidation AS
@@ -699,7 +728,7 @@ one - a reader asking about a single provision filters
 
 **Columns:** `act`, `citation_path`, `top_section`, `measure_id`, `name_en`, `name_fr`, `other_measures_citing_provision`, `other_measures_in_section`
 
-**Rows in this build:** 332
+**Rows in this build:** 335
 
 ```sql
 CREATE VIEW v_provision_footprint AS

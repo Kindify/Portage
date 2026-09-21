@@ -19,8 +19,8 @@ Congé temporaire ciblé de la TPS/TVH,fr,ETA,,schedule_or_class,instrument name
 Crédit d'impôt des sociétés pour exploration et développement miniers,fr,ITA,,term_not_joined,term_not_joined,"paragraphe 127(9), alinéa (a.3) de la définition « crédit d'impôt à l'investissement »"
 Crédit d'impôt pour l'exploration de minéraux critiques pour les détenteurs d'ac,fr,ITA,,term_not_joined,term_not_joined,"paragraphe 127(9), alinéa (a.2) de la définition « crédit d'impôt à l'investissement » et définitions de « minéral critique », « dépense min"
 Crédit d'impôt pour l'exploration minière pour les détenteurs d'actions accrédit,fr,ITA,,term_not_joined,term_not_joined,"paragraphe 127(9), alinéa (a.2) de la définition « crédit d'impôt à l'investissement » et définition de « dépense minière déterminée »"
-Crédit d'impôt pour manuels,fr,ITA,118.6(2.1),not_in_consolidation,,paragraphe 118.6(2.1)
-Crédit d'impôt pour études,fr,ITA,118.6(2),not_in_consolidation,,paragraphe 118.6(2)
+Crédit d'impôt pour manuels,fr,ITA,118.6(2.1),resolved_combined_stub,,paragraphe 118.6(2.1)
+Crédit d'impôt pour études,fr,ITA,118.6(2),resolved_combined_stub,,paragraphe 118.6(2)
 Déduction partielle et crédits partiels de taxe sur les intrants pour les frais ,fr,ETA,,instrument_not_held,Loi sur la taxe d'accise is not held by this dataset,article 236
 Déduction pour amortissement accéléré des coûts des biens de production d'énergi,fr,ITR,,schedule_or_class,"Schedule, Class or Part - this dataset holds only the enacted Body of each instrument","paragraphes 1100(2) et 1104(4), catégorie 43.1 de l'annexe II"
 Déduction pour amortissement accéléré des coûts des machines et du matériel de f,fr,ITR,,schedule_or_class,"Schedule, Class or Part - this dataset holds only the enacted Body of each instrument","alinéa 1100(1)(ta), paragraphes 1100(2), 1104(4) et catégories 29 et 53 de l'annexe II"
@@ -40,7 +40,7 @@ Détaxation des masques et des écrans faciaux,fr,ETA,,schedule_or_class,instrum
 Détaxation des médicaments sur ordonnance,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Partie I de l'annexe VI de la Loi sur la taxe d'accise
 Détaxation des produits alimentaires de base,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Partie III de l'annexe VI de la Loi sur la taxe d'accise
 Détaxation des produits d'hygiène féminine,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Article 1 de la partie II.1 de l'annexe VI de la Loi sur la taxe d'accise
-Education Tax Credit,en,ITA,118.6(2),not_in_consolidation,,subsection 118.6(2)
+Education Tax Credit,en,ITA,118.6(2),resolved_combined_stub,,subsection 118.6(2)
 Enhanced rebate for new residential rental property,en,ETA,,instrument_not_held,Excise Tax Act is not held by this dataset,section 256.2
 Exemption aux voyageurs,fr,ETA,,schedule_or_class,instrument named but no provision recognised,Article 1 de l'annexe VII de la Loi sur la taxe d'accise
 Exemption from GST and rebate for legal aid services,en,ETA,,instrument_not_held,Excise Tax Act is not held by this dataset,section 258 (rebate)
@@ -90,7 +90,6 @@ Incitatif à l'investissement accéléré,fr,ITR,,schedule_or_class,"Schedule, C
 Incitatif à l'investissement accéléré,fr,ITR,,schedule_or_class,"Schedule, Class or Part - this dataset holds only the enacted Body of each instrument","sous‑alinéas 1100(1)(b)(i) et (c)(i), sous‑alinéa 1100(1)(v)(iv), paragraphe 1100(2), paragraphe 1104(4), alinéas 1(a) et 2(a) de l'annexe I"
 Incitatif à l'investissement accéléré,fr,ITR,,schedule_or_class,"Schedule, Class or Part - this dataset holds only the enacted Body of each instrument","sous‑alinéas 1100(1)(b)(i) et (c)(i), sous‑alinéa 1100(1)(v)(iv), paragraphe 1100(2), paragraphe 1104(4), alinéas 1(a) et 2(a) de l'annexe I"
 Inclusion partielle des prestations de la sécurité sociale des États-Unis,fr,ITA,5(a),not_in_consolidation,,"alinéa 110(1)(h) Convention fiscale Canada–États-Unis, article XVIII, alinéa 5(a)"
-Mineral Exploration Tax Credit for Flow-Through Share Investors,en,ITA,"127(9)""flow-through mining expenditure""(a.2)",not_in_consolidation,,"subsection 127(9), paragraph (a.2) of definition of ""investment tax credit"" and definition of ""flow-through mining expenditure"""
 Non-imposition de certains avantages d'emploi non monétaires,fr,,,no_instrument,no instrument named - a provision number alone is not a citation,Concession administrative
 Non-imposition des gains en capital sur les dons de titres cotés en bourse,fr,ITA,38(a.4),not_in_consolidation,,alinéas 38(a.1) et (a.4) et articles 38.3 et 38.4
 Non-imposition des gains en capital sur les dons de titres cotés en bourse,fr,ITA,38.3,not_in_consolidation,,alinéas 38(a.1) et (a.4) et articles 38.3 et 38.4
@@ -160,7 +159,7 @@ Tax treatment of Canada Pension Plan and Quebec Pension Plan contributions and b
 Tax treatment of Canada Pension Plan and Quebec Pension Plan contributions and b,en,ITA,60(1)(e.1),not_in_consolidation,,"section 118.7 and paragraphs 56(1)(a), 60(1)(e) and (e.1)"
 Tax treatment of active business income of foreign affiliates of Canadian corpor,en,OTHER,,no_provision,instrument named but no provision recognised,"Income Tax Act, sections 91 and 113 and subsections 20(1), 93.1(1), 94.2(2) and 95(1) Income Tax Regulations, sections 5900-5902, 5905 and 5"
 Tax treatment of investment income from life insurance policies,en,ITA,12.2(9),not_in_consolidation,,subsections 12.2(9) and 211.1(1) and (2)
-Textbook Tax Credit,en,ITA,118.6(2.1),not_in_consolidation,,subsection 118.6(2.1)
+Textbook Tax Credit,en,ITA,118.6(2.1),resolved_combined_stub,,subsection 118.6(2.1)
 Traitement fiscal des cotisations et des prestations liées au Régime de pensions,fr,ITA,60(1)(e),not_in_consolidation,,"article 118.7 et alinéas 56(1)(a), 60(1)(e) et 60(1)(e.1)"
 Traitement fiscal des cotisations et des prestations liées au Régime de pensions,fr,ITA,60(1)(e.1),not_in_consolidation,,"article 118.7 et alinéas 56(1)(a), 60(1)(e) et 60(1)(e.1)"
 Traitement fiscal du revenu de placement provenant de polices d'assurance-vie,fr,ITA,12.2(9),not_in_consolidation,,"paragraphes 12.2(9), 211.1(1) et 211.1(2)"

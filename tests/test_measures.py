@@ -43,6 +43,30 @@ def test_reference_statuses_are_known_values(conn):
     assert seen <= set(REF_STATUS), seen - set(REF_STATUS)
 
 
+def test_combined_stub_references_point_at_the_node_that_repealed_them(conn):
+    """`resolved_combined_stub` resolves to a node whose label covers the path.
+
+    Justice Laws repeals several subsections in one node labelled "(2) and
+    (2.1)", so Finance's "subsection 118.6(2)" matched nothing and was
+    reported as absent from the consolidation. It is not absent, it is
+    repealed. These references point at the repealing node, which is why they
+    do not carry the plain `resolved` status: the path asked for and the path
+    found are deliberately different, and every other resolved reference has
+    them identical.
+    """
+    rows = [tuple(r) for r in conn.execute(
+        """SELECT r.citation_path, s.citation_path, s.label_raw,
+                  s.is_repealed_stub
+             FROM measure_references r JOIN sections s ON s.id = r.section_id
+            WHERE r.status = 'resolved_combined_stub'""")]
+    assert rows, "no combined-stub references - check the coverage rule"
+    for asked, found, label, stub in rows:
+        assert stub == 1, "%s resolved to a node that is not a stub" % asked
+        suffix = asked[len(found.split("(")[0]):]
+        assert suffix in (label or ""), (
+            "%s is not covered by the label %r of %s" % (asked, label, found))
+
+
 def test_resolved_references_point_at_a_real_section(conn):
     bad = conn.execute(
         "SELECT COUNT(*) FROM measure_references "
@@ -376,3 +400,87 @@ def test_a_definition_attaches_to_the_provision_nearest_it():
     for text, expected in cases:
         paths = [r["citation_path"] for r in extract(text)]
         assert expected in paths, (text[:60], paths)
+
+
+# -- Findings review against v0.3.0 -----------------------------------------
+
+def test_a_parsed_beneficiary_count_has_only_one_population(conn):
+    """A sentence counting two populations must not yield one of them.
+
+    Finance writes "About 5 million individuals and 4,100 trusts claimed this
+    credit in 2023". Storing 4,100 makes the measure look 1,200 times smaller
+    than it is, and `cost_per_beneficiary` then reported roughly $991,000 per
+    beneficiary for the Charitable Donation Tax Credit.
+
+    The old rule required exactly one `<number> ... in <year>` pair, which is
+    satisfied by a two-population sentence with one year. It also took the
+    first number in one sentence and the last in another, because the number
+    pattern needs three characters and silently skipped "5 million" and "44".
+    This is the test that would have caught it: a parsed count must come from
+    a sentence with exactly one population in it.
+    """
+    from portage.measures_build import _population_count
+
+    bad = []
+    for mid, raw in conn.execute(
+            "SELECT measure_id, raw_value FROM measure_beneficiary_counts "
+            "WHERE method='pattern'"):
+        populations = _population_count(raw)
+        if len(populations) > 1:
+            bad.append((mid, populations, " ".join(raw.split())[:70]))
+    assert not bad, "parsed counts from multi-population sentences: %s" % bad[:5]
+
+
+def test_multi_population_sentences_are_refused_and_catalogued(conn):
+    """The refusal must be visible, not silent."""
+    import csv
+    import pathlib
+
+    n = conn.execute(
+        "SELECT COUNT(*) FROM measure_beneficiary_counts "
+        "WHERE method='multiple_populations'").fetchone()[0]
+    assert n > 0, "no multi-population sentences found at all - check the rule"
+    catalogued = list(csv.DictReader(open(
+        pathlib.Path(__file__).resolve().parent.parent
+        / "data" / "beneficiary_multiple_populations.csv", encoding="utf-8")))
+    assert len(catalogued) == n
+    assert conn.execute(
+        "SELECT COUNT(*) FROM measure_beneficiary_counts "
+        "WHERE method='multiple_populations' AND count IS NOT NULL"
+    ).fetchone()[0] == 0, "a refused sentence still carries a count"
+
+
+def test_history_notes_keep_their_separators(conn):
+    """No history note may run one entry into the next.
+
+    Justice Laws splits the later amending entries into their own
+    HistoricalNoteSubItem elements with no tail text, so concatenating the
+    element's itertext produced "2017, c. 33, s. 92019, c. 29, s. 4" where the
+    published page reads "2017, c. 33, s. 9; 2019, c. 29, s. 4". It affected
+    283 notes and made `amending_acts_count` undercount every one of them.
+
+    A section number immediately followed by a four-digit year is the
+    signature, and it should never occur.
+    """
+    import re
+
+    bad = [(act, path) for act, path, note in conn.execute(
+        "SELECT act, citation_path, history_note FROM sections "
+        "WHERE history_note IS NOT NULL")
+        if re.search(r"s{1,2}\.\s*\d+(1[89]\d\d|20\d\d)", note)]
+    assert not bad, "history notes with a run-together entry: %s" % bad[:5]
+
+
+def test_section_39_matches_the_published_note(conn):
+    """The tail of ITA 39's note, checked against laws-lois.justice.gc.ca.
+
+    A fixture rather than a shape test: this is the note the defect was found
+    in, and the published page is the only thing outside this code that can
+    say what it should read.
+    """
+    note = conn.execute(
+        "SELECT history_note FROM sections WHERE act='ITA' AND citation_path='39'"
+    ).fetchone()[0]
+    assert note.endswith(
+        "2017, c. 33, s. 9; 2019, c. 29, s. 4; 2024, c. 17, s. 7; "
+        "2026, c. 3, s. 6")

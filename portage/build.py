@@ -906,7 +906,7 @@ def build(db_path=DB_PATH):
             indicator_counts["provision_temporal_scope"]),
         "rows_temporal_scope_dropped": str(
             indicator_counts["temporal_scope_dropped"]),
-        "phase": "0 and 1 complete; 2 in progress",
+        "phase": "0, 1 and 2 complete",
         "schema_version": "1",
         "session": "4 - Act and Regulations, both languages",
         "official": "no - unofficial reproduction, not an official version",

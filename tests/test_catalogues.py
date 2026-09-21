@@ -47,6 +47,8 @@ CATALOGUES = [
     "measure_cost_basis.csv",
     "measure_reference_edition_diffs.csv",
     "repealed_stubs.csv",
+    "beneficiary_multiple_populations.csv",
+    "measure_join_nearest.csv",
 ]
 
 

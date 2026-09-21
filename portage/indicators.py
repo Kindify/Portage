@@ -323,7 +323,15 @@ top-level section it sits in. This is the join the legal-footprint indicators
 and four of the canned views are built on, kept in one place so that the rule
 for reading a section number out of a citation path is written once. Only the
 edition named in `measure_figure_basis.reference_lang` is read, so a measure
-present in both languages is not counted twice.""",
+present in both languages is not counted twice.
+
+Includes `resolved_combined_stub` references. Those cite a subsection that
+Justice Laws repealed inside a node covering several - "118.6(2) and (2.1)" -
+and **`citation_path` here is that node's path, not the one Finance wrote**.
+The measure's footprint does include it: Finance cites it and it locates a
+real row in the Act. What it cannot do is stand for the cited path, which is
+why the status is separate and why the reference table keeps Finance's
+wording.""",
 """
 CREATE VIEW measure_resolved_provisions AS
 SELECT  r.measure_id,
@@ -337,7 +345,7 @@ FROM measure_references r
 JOIN measure_figure_basis b
      ON b.measure_id = r.measure_id AND b.reference_lang = r.lang
 JOIN sections s ON s.id = r.section_id
-WHERE r.status = 'resolved'
+WHERE r.status IN ('resolved', 'resolved_combined_stub')
 """ % (_TOP_SECTION % {"p": "s.citation_path"}),
 ),
 (
@@ -463,7 +471,7 @@ WITH base AS (
         (SELECT COUNT(*) FROM measure_references r
           JOIN sections rs ON rs.id = r.section_id
           WHERE r.measure_id = m.id AND r.lang = b.reference_lang
-            AND r.status = 'resolved'
+            AND r.status IN ('resolved', 'resolved_combined_stub')
             AND rs.is_repealed_stub = 1)                           AS provisions_repealed_stub,
         (SELECT COUNT(DISTINCT p.act || ' ' || p.top_section)
            FROM measure_resolved_provisions p
@@ -722,17 +730,38 @@ WHERE has_overlapping_program = 1
 ),
 (
 "v_shared_provisions",
-"""Resolved provisions cited by more than one measure, with the measures. A
-provision appearing here is one Finance's report reaches from several
-directions; the view counts the measures and lists them, and draws no
-conclusion from the count.""",
+"""Resolved provisions cited by more than one `measures` row, with the rows.
+
+**The count is of rows, not of measures, and the two differ.** `measures`
+holds 211 joined pairs and 36 unjoined singles, and an English single and its
+French counterpart are two rows describing one measure. A path cited by both
+therefore reports 2 where the honest answer is 1 - the Accelerated Investment
+Incentive, rows 205 and 237, is the clearest case.
+
+`unjoined_singles_citing` says how much of the count could be that, so the
+inflation is visible in the view rather than needing to be known about.
+
+**It is not collapsed, and the attempt is why.** Collapsing on the resolved
+provision set merges "Expensing of advertising costs" with "Expensing of
+employee training costs", which cite the same provision and are different
+measures. Adding cost values - Phase 1's full join signature - separates
+those two but then fails to pair the donation measures, whose editions parsed
+88 and 48 cost rows from the same tables. Restricting to unique
+one-English-one-French groups collapses nothing at all. There is no mechanical
+key that pairs the singles that should pair without merging the ones that
+should not, which is exactly why Phase 1 left them as singles. Encoding a
+guess here would put a judgment in a view whose whole claim is that it makes
+none.""",
 """
 CREATE VIEW v_shared_provisions AS
 SELECT p.act,
        p.citation_path,
-       COUNT(DISTINCT p.measure_id) AS measures_citing,
-       GROUP_CONCAT(DISTINCT p.measure_id) AS measure_ids
+       COUNT(DISTINCT p.measure_id)                    AS measure_rows_citing,
+       SUM(CASE WHEN m.join_method IS NULL THEN 1 ELSE 0 END)
+                                                       AS unjoined_singles_citing,
+       GROUP_CONCAT(DISTINCT p.measure_id)             AS measure_ids
 FROM measure_resolved_provisions p
+JOIN measures m ON m.id = p.measure_id
 GROUP BY p.act, p.citation_path
 HAVING COUNT(DISTINCT p.measure_id) > 1
 """,
@@ -1217,6 +1246,10 @@ COLUMN_NOTES = {
     "Of the measure's resolved references, the count pointing at a provision "
     "whose whole text is a repeal tombstone - \"[Repealed, 2001, c. 17, "
     "s. 3(1)]\". The citation path still resolves, but the provision is gone. "
+    "Includes references with status `resolved_combined_stub`, where Justice "
+    "Laws repealed several subsections in one node labelled \"(2) and "
+    "(2.1)\": the cited path has no row of its own, and the node that "
+    "repealed it says what happened to it. "
     "Distinct from `provisions_not_in_consolidation`, which is a path the "
     "consolidation never had: this is a path it has, pointing at nothing.",
     "never; 0"),
@@ -1245,7 +1278,14 @@ COLUMN_NOTES = {
     "Earliest `end` bound extracted from the text of the provisions the "
     "measure cites. Whether that date has passed is **not** computed: there "
     "is no `is_expired` and no comparison against the build date, because "
-    "\"expired\" depends on when you ask and on facts outside this dataset.",
+    "\"expired\" depends on when you ask and on facts outside this dataset. "
+    "**The Act keeps its historical layers, and this column shows them.** The "
+    "investment tax credit measures report 1978-11-17, because "
+    "127(9)\"specified percentage\" still carries the pre-1978 rate tiers as "
+    "text. The value is correct under the rule - that phrase is a real end "
+    "bound in a provision Finance cites - and it is not the date the measure "
+    "ends. A reader wanting current bounds should filter on the year they "
+    "care about rather than read the earliest.",
     "no cited provision has an extracted end bound - every row, until Phase 2 "
     "step 3 fills `provision_temporal_scope`"),
 "latest_end_date": ("The latest such bound.", "as `earliest_end_date`"),

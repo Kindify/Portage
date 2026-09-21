@@ -76,12 +76,42 @@ VARIABLE = re.compile(
 #: 127(9)"investment tax credit"(a.3), so the target exists.
 DEFINITION_REF = re.compile(
     r"definition of\s+[\"\u201c]?(?P<term>[^\"\u201d,;]+?)[\"\u201d]?"
-    r"(?=\s*(?:,|;|$|\sin\b))"
+    # "and" and "et" terminate a definition name too. Without them a segment
+    # naming two definitions - "paragraph (a.2) of definition of 'investment
+    # tax credit' and definition of 'flow-through mining expenditure'" -
+    # matched only the second, and the paragraph was bound to the wrong host.
+    r"(?=\s*(?:,|;|$|\sin\b|\sand\b|\set\b))"
     r"|d[\u00e9e]finition\s+(?:de\s+|du\s+|d')?[\"\u00ab\u201c]\s*(?P<term_fr>[^\"\u00bb\u201d]+?)\s*[\"\u00bb\u201d]", re.I)
 
 #: The paragraph label that belongs to a definition reference.
 DEF_PARAGRAPH = re.compile(
     r"(?:paragraph|alin[\u00e9e]as?)\s*(\([0-9a-zA-Z][0-9a-zA-Z.]*\))", re.I)
+
+
+def _definition_for_paragraph(segment):
+    """Which definition a paragraph label belongs to.
+
+    A segment may name more than one: "subsection 127(9), paragraph (a.2) of
+    definition of 'investment tax credit' and definition of 'flow-through
+    mining expenditure'". The paragraph belongs to the definition it is
+    attached to - the one that follows it - not to whichever the pattern
+    reaches first.
+
+    Getting this wrong produced 127(9)"flow-through mining expenditure"(a.2),
+    a path that does not exist, which was then reported as a provision absent
+    from the consolidation rather than as a reference we misread. Same class
+    as the definition-host bug the first precision sample found: a definition
+    reference resolving to a real-looking path that is not the cited one.
+    """
+    matches = list(DEFINITION_REF.finditer(segment))
+    if not matches:
+        return None
+    para = DEF_PARAGRAPH.search(segment)
+    if para:
+        after = [m for m in matches if m.start() >= para.end()]
+        if after:
+            return min(after, key=lambda m: m.start())
+    return matches[0]
 
 
 #: An instrument named after its provisions - "Part V of Schedule V **to the**
@@ -286,7 +316,7 @@ def extract(field_text, lang="en", term_map=None):
 
         variable = VARIABLE.search(segment)
         found = provisions_in(segment)
-        definition = DEFINITION_REF.search(segment)
+        definition = _definition_for_paragraph(segment)
 
         if not found:
             order += 1

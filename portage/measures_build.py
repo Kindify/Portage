@@ -18,6 +18,11 @@ RETRIEVED_DATE = "2026-09-19"
 #: How a reference ended up. 'resolved' is the only success.
 REF_STATUS = (
     "resolved",
+    # Repealed inside a node covering several subsections, labelled "(2) and
+    # (2.1)". The cited path has no row of its own, so this is not "resolved":
+    # that status has meant an exact path match since Phase 1, and a reader
+    # joining section_id relies on it.
+    "resolved_combined_stub",
     "not_in_consolidation",   # a real provision, repealed or not yet in our snapshot
     "instrument_not_held",
     "schedule_or_class",
@@ -128,16 +133,88 @@ def _history_items(lang, part, slug):
 _COUNT = re.compile(r"\b(?:About|Approximately|Environ|Quelque)?\s*"
                     r"([\d][\d,   ]{2,})\s+[^.]*?\bin (\d{4})\b", re.I)
 
+#: Any number in the sentence, however it is written: "4,100", "23 090",
+#: "44", "5 million". Used to count populations, not to read one.
+_NUMBER = re.compile(r"\b\d[\d,.   ]*\d\b|\b\d\b")
+#: A bare four-digit number in this range is a year, not a population.
+_YEARISH = re.compile(r"^(1[89]\d\d|20\d\d)$")
+
+
+#: Numbers that are not counts of anything. Each is a shape seen in the
+#: field, and each is excluded because it was wrongly counted as a population
+#: first: "Classes 43.1 and 43.2", "a 10-year capital gain reserve",
+#: "in 2024-25", "as of August 25, 2025".
+_NOT_A_COUNT_BEFORE = re.compile(
+    r"(?:class|classes|part|schedule|section|subsection|paragraph|"
+    r"january|february|march|april|may|june|july|august|september|"
+    r"october|november|december)\s+$", re.I)
+_NOT_A_COUNT_AFTER = re.compile(r"^\s*-\s*(?:year|month|day|week)", re.I)
+#: The continuation of a class list - the "43.2" of "Classes 43.1 and 43.2".
+_CLASS_LIST = re.compile(
+    r"class(?:es)?\s+(?:[\d.]+\s*(?:,|and|or)\s*)+$", re.I)
+_FISCAL_TAIL = re.compile(r"^-\d{2}\b")
+
+
+def _population_count(text):
+    """How many distinct populations the sentence counts.
+
+    Finance often counts two at once - "About 5 million individuals and 4,100
+    trusts", "About 44 investment and mutual fund corporations and 2,100
+    mutual fund trusts" - and a single number cannot stand for both.
+
+    This counts numbers rather than reading one, so that a sentence with more
+    than one population is refused instead of silently yielding whichever
+    number a pattern happened to reach first.
+
+    Numbers that are plainly not counts are excluded by shape - a class
+    number, a date, a fiscal year, an "N-year" period. Anything else that is
+    ambiguous stays counted, and therefore refused: an over-refusal is a null
+    a reader can see in the catalogue, and an under-refusal is a wrong number
+    that looks right.
+    """
+    text = text or ""
+    numbers = []
+    for match in _NUMBER.finditer(text):
+        token = match.group(0).strip().rstrip(".,")
+        bare = re.sub(r"[,.   ]", "", token)
+        if not bare.isdigit():
+            continue
+        before, after = text[:match.start()], text[match.end():]
+        if _YEARISH.match(bare) and not re.search(r"[,.   ]", token):
+            continue                      # "in 2023"
+        if _YEARISH.match(bare) and _FISCAL_TAIL.match(after):
+            continue                      # "2024-25"
+        if re.search(r"(1[89]\d\d|20\d\d)-$", before) and len(bare) == 2:
+            continue                      # the "25" of "2024-25"
+        if _NOT_A_COUNT_BEFORE.search(before) or _CLASS_LIST.search(before):
+            continue                      # "Class 43.1", "and 43.2", "August 25, 2025"
+        if _NOT_A_COUNT_AFTER.match(after):
+            continue                      # "10-year"
+        numbers.append(token)
+    return numbers
+
 
 def _beneficiary_rows(text):
     """(year, count, raw) from the Number of beneficiaries prose.
 
-    Populated only where exactly one "<number> ... in <year>" pair is present.
-    Anything else keeps its raw text with NULL count and year - the field is
-    prose, and a half-read sentence is worse than an honest blank.
+    Populated only where the sentence counts exactly one population and gives
+    exactly one "<number> ... in <year>" pair. Anything else keeps its raw
+    text with NULL count and year - the field is prose, and a half-read
+    sentence is worse than an honest blank.
+
+    The multi-population case is refused explicitly, with its own method, and
+    catalogued. It used to be read: "About 5 million individuals and 4,100
+    trusts claimed this credit in 2023" stored 4,100, and because the number
+    pattern needs three characters it skipped "5 million" without saying so.
+    The same accident took the first number in one sentence and the last in
+    another. That is the failure this project requires to be visible, and it
+    was not: the row looked like every other parsed count.
     """
     if not text:
         return []
+    populations = _population_count(text)
+    if len(populations) > 1:
+        return [(None, None, text, "multiple_populations")]
     hits = _COUNT.findall(text)
     if len(hits) != 1:
         return [(None, None, text, "none")]
@@ -283,13 +360,51 @@ def _term_map(conn):
     return out
 
 
-def _classify(row, known_paths, instrument):
+#: "(2) and (2.1)" - one repealed node standing for several subsections.
+_COMBINED_LABEL = re.compile(r"\(([^()]+)\)(?:\s*(?:,|and|et)\s*\(([^()]+)\))+", re.I)
+
+
+def combined_stub_coverage(conn):
+    """{(act, path Finance cites): (stub path, stub id)}.
+
+    Justice Laws repeals several subsections in one node and labels it
+    "(2) and (2.1)". The node is real and the two subsections are not, so
+    Finance's "subsection 118.6(2)" matched nothing and was reported as a
+    provision absent from the consolidation. It is not absent - it is
+    repealed, and the repealing node says so.
+
+    The labels are read, never split. Splitting the node would invent two rows
+    the XML does not have, which is the structural inference this project
+    bans; reading its label to see what it covers is the same kind of thing as
+    reading a citation path.
+    """
+    coverage = {}
+    for sid, act, path, label in conn.execute(
+            "SELECT id, act, citation_path, label_raw FROM sections "
+            "WHERE is_repealed_stub=1 AND label_raw IS NOT NULL"):
+        parts = re.findall(r"\(([^()]+)\)", label or "")
+        if len(parts) < 2 or not _COMBINED_LABEL.search(label or ""):
+            continue
+        base = path.split("(")[0]
+        for part in parts:
+            coverage[(act, "%s(%s)" % (base, part))] = (path, sid)
+    return coverage
+
+
+def _classify(row, known_paths, instrument, coverage=None):
     """Turn an extractor row into a status."""
     if row.get("reason") == "term_not_joined":
         return "term_not_joined"
     if row["citation_path"]:
         if (instrument, row["citation_path"]) in known_paths:
             return "resolved"
+        if coverage and (instrument, row["citation_path"]) in coverage:
+            # Repealed inside a combined node, not missing from the file.
+            # Its own status, not "resolved": the path Finance cited does not
+            # exist as a row, so a reader joining section_id would find a
+            # different citation_path than they asked for. "resolved" has
+            # meant an exact path match since Phase 1 and keeps meaning it.
+            return "resolved_combined_stub"
         return "not_in_consolidation"
     reason = row["reason"] or ""
     if "Schedule, Class or Part" in reason:
@@ -307,6 +422,52 @@ def _classify(row, known_paths, instrument):
     return "no_provision"
 
 
+def _join_diagnosis(conn):
+    """For each unjoined single, its nearest opposite-language single.
+
+    The join-gaps catalogue says a measure found no unique match. It does not
+    say how close it came, and the difference matters: the Accelerated
+    Investment Incentive failed on a single reference, not on being a
+    different measure. Finance publishes "paragraph 66.4(2)I" in English and
+    "alinéa 66.4(2)(I)" in French - the same typo in both editions, missing
+    its opening bracket in one and not the other - so the two reference sets
+    differ by one path and the content join, which requires them to be equal,
+    refused.
+
+    Reporting the nearest candidate with the paths on each side turns "no
+    unique match" into something a reader can act on, and does it by
+    comparison rather than by judgment: nothing here decides that two measures
+    are the same.
+    """
+    singles = {}
+    for mid, lang, name in conn.execute(
+            """SELECT id, CASE WHEN name_en IS NOT NULL THEN 'en' ELSE 'fr' END,
+                      COALESCE(name_en, name_fr)
+                 FROM measures WHERE join_method IS NULL"""):
+        paths = {r[0] for r in conn.execute(
+            """SELECT DISTINCT instrument || ' ' || citation_path
+                 FROM measure_references
+                WHERE measure_id=? AND citation_path IS NOT NULL""", (mid,))}
+        singles[mid] = (lang, name, paths)
+
+    rows = []
+    for mid, (lang, name, paths) in sorted(singles.items()):
+        best, best_overlap = None, -1
+        for other, (olang, _oname, opaths) in singles.items():
+            if olang == lang:
+                continue
+            overlap = len(paths & opaths)
+            if overlap > best_overlap:
+                best, best_overlap = other, overlap
+        if best is None:
+            continue
+        opaths = singles[best][2]
+        rows.append((mid, lang, (name or "")[:80], best, best_overlap,
+                     "; ".join(sorted(paths - opaths)) or "",
+                     "; ".join(sorted(opaths - paths)) or ""))
+    return rows
+
+
 def build_measures(conn, write_catalogue):
     """Populate the five tables and write the Phase 1 catalogues."""
     conn.executescript(SCHEMA)
@@ -317,6 +478,7 @@ def build_measures(conn, write_catalogue):
     section_id = {(a, p): i for a, p, i in
                   conn.execute("SELECT act, citation_path, id FROM sections")}
     term_map = _term_map(conn)
+    coverage = combined_stub_coverage(conn)
 
     # Extract references and costs for every measure, in both languages.
     for lang in ("en", "fr"):
@@ -418,7 +580,7 @@ def build_measures(conn, write_catalogue):
 
             has_resolved = False
             for row in m["refs"]:
-                status = _classify(row, known_paths, row["instrument"])
+                status = _classify(row, known_paths, row["instrument"], coverage)
                 has_resolved = has_resolved or status == "resolved"
                 conn.execute(
                     """INSERT INTO measure_references
@@ -429,7 +591,9 @@ def build_measures(conn, write_catalogue):
                     (measure_id, lang, row["order_index"], row["raw_text"],
                      row["instrument"], row["instrument_name"],
                      row["citation_path"] if status == "resolved" else row["citation_path"],
-                     section_id.get((row["instrument"], row["citation_path"])),
+                     (section_id.get((row["instrument"], row["citation_path"]))
+                      or (coverage.get((row["instrument"], row["citation_path"]))
+                          or (None, None))[1]),
                      status, row["reason"] or None,
                      row.get("defined_term"), row.get("variable")))
                 if status != "resolved":
@@ -518,12 +682,25 @@ def build_measures(conn, write_catalogue):
     counts["category_map_ambiguous"] = write_catalogue(
         "finance_category_map_ambiguous.csv", sorted(ambiguous_terms),
         ["field", "term_fr", "english_terms_seen"])
+    counts["measure_join_nearest"] = write_catalogue(
+        "measure_join_nearest.csv", _join_diagnosis(conn),
+        ["measure_id", "lang", "name", "nearest_measure_id", "shared_paths",
+         "only_here", "only_there"])
     counts["measure_join_gaps"] = write_catalogue(
         "measure_join_gaps.csv", sorted(gaps),
         ["slug", "lang", "name", "reason"])
     counts["measures_without_references"] = write_catalogue(
         "measures_without_references.csv", sorted(no_refs),
         ["measure", "lang", "legal_reference"])
+    multi_rows = [
+        (r[0], r[1], " ".join((r[2] or "").split()))
+        for r in conn.execute(
+            "SELECT measure_id, lang, raw_value FROM measure_beneficiary_counts "
+            "WHERE method='multiple_populations' ORDER BY measure_id, lang")]
+    counts["beneficiary_multiple_populations"] = write_catalogue(
+        "beneficiary_multiple_populations.csv", multi_rows,
+        ["measure_id", "lang", "raw_value"])
+
     counts["beneficiary_counts_extracted"] = write_catalogue(
         "beneficiary_counts_extracted.csv", sorted(beneficiary_rows),
         ["measure", "lang", "year", "count", "raw_value"])

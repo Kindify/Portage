@@ -514,3 +514,37 @@ def test_each_measure_reads_from_exactly_one_edition(conn):
             WHERE i.provisions_cited >= both.n""")]
     assert not doubled, (
         "measures whose reference count spans both editions: %s" % doubled[:5])
+
+
+def test_the_v031_change_record_matches_this_build(conn):
+    """Every new_value in the change record must be what the build produces.
+
+    The record compares this build against the released v0.3.0 database, which
+    is a build artifact and not in the repository - so a fixture diff would
+    only compare the file with itself. This checks the half that can be
+    checked: the "after" column has to be the current value, or the record is
+    describing a build that no longer exists.
+    """
+    import csv
+
+    path = ROOT / "data" / "indicator_changes_v0.3.0_to_v0.3.1.csv"
+    rows = list(csv.DictReader(open(path, encoding="utf-8")))
+    assert rows, "the change record is empty"
+
+    bad = []
+    for row in rows:
+        actual = conn.execute(
+            'SELECT "%s" FROM indicators WHERE measure_id=?' % row["column"],
+            (int(row["measure_id"]),)).fetchone()[0]
+        expected = row["new_value"]
+        if actual is None:
+            ok = expected == ""
+        elif isinstance(actual, float):
+            ok = abs(actual - float(expected)) < 1e-6
+        else:
+            ok = str(actual) == expected
+        if not ok:
+            bad.append((row["measure_id"], row["column"], expected, actual))
+    assert not bad, "change record disagrees with this build: %s" % bad[:5]
+
+    assert {r["fix"] for r in rows} <= {"A", "B", "C", "D", "E", "C/D"}

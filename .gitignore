@@ -31,6 +31,11 @@ data/finance/*
 # Hand-recorded, never written by the build: notes from the precision and
 # recall checks on provisions the extraction deliberately left alone.
 !data/extraction_notes.csv
+# The record of what the v0.3.1 fixes moved. Not build-generated: it compares
+# the current build against the released v0.3.0 database, which is a build
+# artifact and is not in the repository, so nobody can regenerate this from a
+# clean clone. The file is the evidence.
+!data/indicator_changes_v0.3.0_to_v0.3.1.csv
 *.parquet
 *.xml
 *.zip
