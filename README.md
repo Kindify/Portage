@@ -23,7 +23,7 @@ extraction is not. `python -m portage.build` produces `portage.sqlite`:
 | tax expenditure measures | 229 per language, 774 references, 6,440 cost cells |
 | indicator views | 13, over 247 measures |
 | tests | 136, all passing |
-| hand checks | 40 provision spot checks, 60 reference checks, all recorded |
+| hand checks | 40 provision spot checks, 60 reference checks, 50 temporal checks, all recorded |
 
 What is not built yet: the temporal-scope extraction (`v_end_bound_by_year`
 returns nothing until it is), and one hand-recomputation fixture. See
@@ -221,6 +221,35 @@ The samples that were checked are preserved as `verified_2026-09_*.md`. Sample
 generation has since been changed to exclude rows whose first sentence is under
 25 characters or begins with a repealed-provision marker, so a future checker is
 not handed rows that cannot be searched for.
+
+**What a hand sample can and cannot tell you.** It finds systematic gaps. It
+does not produce an error rate, and nothing in this project reports one.
+
+Thirty rows out of roughly a thousand is a 3% read. That is ample to discover
+that a whole category is being handled wrongly - a sample of thirty will almost
+certainly contain a category that affects one row in ten - and far too small to
+put a number on the rest. Every hand check run on this project has found
+something, and in each case the finding was a *kind* of error rather than a
+count of errors:
+
+- the reference sample found French paragraph labels being read as section
+  numbers, which had produced six false resolutions corpus-wide, not the two
+  the sample showed;
+- the temporal precision sample found conditions that are not boundaries being
+  labelled as boundaries - four rows in thirty, and the fix was a fourth
+  category in the extraction taxonomy, not four corrections;
+- the temporal recall sample found that 11 of its 20 rows were repealed-
+  provision tombstones that could never have produced anything, which is a
+  statement about what was being asked rather than about what came back.
+
+So the samples are reported as what was found and what was changed, never as
+"97% correct". A reader who wants a rate would have to check a great many more
+rows than anyone here has checked, and the honest position is that the rate is
+unknown. What is known is which failure modes have been looked for and closed.
+
+A corollary the recall sample made concrete: a sample drawn from a pool that
+contains a large unextractable category tests fewer rows than it appears to.
+Eleven tombstones meant twenty rows effectively tested nine provisions.
 
 **5. Position is never a join key.** Every time this project has needed to match
 something across English and French, the tempting shortcut has been position -

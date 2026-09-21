@@ -46,8 +46,16 @@ EFFORT = "high"
 MAX_TOKENS = 16000
 SAMPLE_SIZE = 30
 RECALL_SAMPLE_SIZE = 20
-SAMPLE_SEED = 20260920
-RECALL_SAMPLE_SEED = 20260921
+
+#: One seed per round, and a round is never re-seeded. The Phase 1 reference
+#: samples established this: the first sample is the evidence for the first
+#: check, and regenerating it would orphan the results that cite it. A new
+#: round gets a new seed and its own file.
+SAMPLE_SEEDS = {1: 20260920, 2: 20260922}
+RECALL_SEEDS = {1: 20260921, 2: 20260923}
+SAMPLE_FILES = {1: "temporal-scope.md", 2: "temporal-scope-round2.md"}
+RECALL_FILES = {1: "temporal-scope-recall.md",
+                2: "temporal-scope-recall-round2.md"}
 
 #: Published rates, $ per million tokens, for the estimate only. The Batch API
 #: is half of these. Update with the model.
@@ -640,7 +648,8 @@ def parse_message(message):
 
 
 def write_outputs(provs, messages, failures, scope, batch_id, run_date,
-                  merge=False, max_tokens=MAX_TOKENS, resumed=False):
+                  merge=False, max_tokens=MAX_TOKENS, resumed=False,
+                  sample_round=1):
     """The committed data, the catalogues, the run record, the samples.
 
     `merge` keeps rows for provisions this run did not cover, so that an
@@ -765,12 +774,12 @@ def write_outputs(provs, messages, failures, scope, batch_id, run_date,
     }
     (DATA / "temporal_scope_run.json").write_text(
         json.dumps(run, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    _write_sample(rows)
-    _write_recall_sample(provs, rows)
+    _write_sample(rows, sample_round)
+    _write_recall_sample(provs, rows, sample_round)
     return run
 
 
-def _write_recall_sample(provs, rows):
+def _write_recall_sample(provs, rows, round_number=1):
     """Twenty provisions that contain a year and produced nothing.
 
     The precision sample asks "is what came back right". This asks the
@@ -783,23 +792,24 @@ def _write_recall_sample(provs, rows):
     """
     import random
 
-    out = SPOT_CHECKS / "temporal-scope-recall.md"
+    out = SPOT_CHECKS / RECALL_FILES[round_number]
     if _sample_is_frozen(out):
         return
+    seed = RECALL_SEEDS[round_number]
     produced = {r[0] for r in rows}
     empty = sorted((p for p in provs if p["id"] not in produced),
                    key=lambda p: (p["act"], p["citation_path"]))
     if not empty:
         return
-    sample = random.Random(RECALL_SAMPLE_SEED).sample(
+    sample = random.Random(seed).sample(
         empty, min(RECALL_SAMPLE_SIZE, len(empty)))
     sample.sort(key=lambda p: (p["act"], p["citation_path"]))
 
     lines = [
-        "# Temporal scope - recall sample, round 1",
+        "# Temporal scope - recall sample, round %d" % round_number,
         "",
         "Twenty provisions that **contain a four-digit year and produced no",
-        "bound**, drawn with seed %d." % RECALL_SAMPLE_SEED,
+        "bound**, drawn with seed %d." % seed,
         "",
         "The precision sample checks that what came back is right. This checks",
         "the other direction, which no automated test in this project can: that",
@@ -812,7 +822,8 @@ def _write_recall_sample(provs, rows):
         "class or a document is **not** a bound, and an empty answer is correct",
         "for it.",
         "",
-        "Record results in `temporal-scope-recall-RESULTS.md`. Do not",
+        "Record results in `%s`. Do not"
+        % RECALL_FILES[round_number].replace(".md", "-RESULTS.md"),
         "regenerate this file.",
         "",
     ]
@@ -885,7 +896,7 @@ def _write_csv(path, rows, header):
         w.writerows(rows)
 
 
-def _write_sample(rows):
+def _write_sample(rows, round_number=1):
     """Thirty rows for Matt, seeded, and never overwritten once results exist.
 
     Same protocol as the Phase 1 reference samples: once results have been
@@ -894,20 +905,29 @@ def _write_sample(rows):
     """
     import random
 
-    out = SPOT_CHECKS / "temporal-scope.md"
+    out = SPOT_CHECKS / SAMPLE_FILES[round_number]
     if _sample_is_frozen(out):
         return
-    sample = sorted(random.Random(SAMPLE_SEED).sample(rows, min(SAMPLE_SIZE, len(rows))))
+    seed = SAMPLE_SEEDS[round_number]
+    # Round 2 reads only rows the revised prompt wrote. A sample mixing the
+    # two versions would not tell us whether the revision worked.
+    pool = rows if round_number == 1 else [
+        r for r in rows if len(r) > 11 and r[11] == prompt_sha256()]
+    if not pool:
+        print("  no rows for sample round %d - not written" % round_number)
+        return
+    sample = sorted(random.Random(seed).sample(pool, min(SAMPLE_SIZE, len(pool))))
     lines = [
-        "# Temporal scope - precision sample, round 1",
+        "# Temporal scope - precision sample, round %d" % round_number,
         "",
-        "Thirty extracted bounds, drawn with seed %d. For each: read the" % SAMPLE_SEED,
+        "Thirty extracted bounds, drawn with seed %d. For each: read the" % seed,
         "provision at laws-lois.justice.gc.ca and confirm that the phrase appears",
         "as shown and that the bound is what the phrase says. A phrase that is",
         "accurate but is not really a condition on the provision's operation is a",
         "failure, and is the kind this sample exists to find.",
         "",
-        "Record results in `temporal-scope-RESULTS.md`. Do not regenerate this file.",
+        "Record results in `%s`. Do not regenerate this file."
+        % SAMPLE_FILES[round_number].replace(".md", "-RESULTS.md"),
         "",
     ]
     # Indexed, not unpacked: a row gains a column now and then, and a sample
@@ -928,6 +948,29 @@ def _write_sample(rows):
 # --------------------------------------------------------------------------
 # CLI
 # --------------------------------------------------------------------------
+
+def write_samples_offline(conn, round_number):
+    """Regenerate the hand-check samples from the committed CSV. No API call.
+
+    The samples are drawn from what was extracted, not from what the API
+    would say now, so producing them needs nothing but the CSV and the
+    database. Kept in the script rather than in a notebook so the seed, the
+    pool and the wording travel with the extraction that produced them.
+    """
+    path = DATA / "provision_temporal_scope.csv"
+    rows = []
+    with open(path, encoding="utf-8") as fh:
+        for r in csv.DictReader(fh):
+            rows.append((int(r["section_id"]), int(r["cited_section_id"]),
+                         r["act"], r["citation_path"], r["phrase"],
+                         r["bound_kind"], r["bound_date"], r["bound_year"],
+                         r["bound_precision"], r["phrase_match"],
+                         r["batch_id"], r["prompt_sha256"]))
+    provs, _filtered = provisions(conn, "cited_and_subtree")
+    _write_sample(rows, round_number)
+    _write_recall_sample(provs, rows, round_number)
+    return len(rows)
+
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
@@ -957,12 +1000,23 @@ def main(argv=None):
                     help="output ceiling per call (default %d). A ceiling, "
                          "not a reservation - raising it costs nothing for "
                          "responses that do not need it." % MAX_TOKENS)
+    ap.add_argument("--samples", type=int, metavar="ROUND",
+                    choices=sorted(SAMPLE_FILES),
+                    help="regenerate the hand-check samples for a round from "
+                         "the committed CSV and exit. Calls nothing.")
     ap.add_argument("--show-prompt", action="store_true")
     args = ap.parse_args(argv)
 
     if not DB_PATH.exists():
         sys.exit("portage.sqlite not found - run python -m portage.build first")
     conn = sqlite3.connect(DB_PATH)
+
+    if args.samples:
+        n = write_samples_offline(conn, args.samples)
+        print("samples round %d written from %d rows. Nothing was called."
+              % (args.samples, n))
+        return 0
+
     provs, filtered = provisions(conn, args.scope,
                                  year_filter=not args.no_year_filter)
     write_filter_catalogue(args.scope, provs, filtered)
