@@ -151,6 +151,10 @@ CREATE TABLE provision_temporal_scope (
     -- and the phase-down rule. Both sets live in this table, and a row that
     -- could not say which prompt wrote it would be unreadable evidence.
     prompt_sha256   TEXT,
+    -- Whether the request that produced this row carried the provision's
+    -- parent and children as context: 'parent+children', 'parent',
+    -- 'children' or 'none'. Rows written before context existed are null.
+    context_used    TEXT,
     method          TEXT    NOT NULL      -- 'extracted_llm'
 );
 
@@ -965,15 +969,16 @@ def load_temporal_scope(conn, data_dir):
                 """INSERT INTO provision_temporal_scope
                    (section_id, cited_section_id, phrase, bound_kind,
                     bound_date, bound_year, bound_precision, phrase_match,
-                    batch_id, prompt_sha256, method)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,'extracted_llm')""",
+                    batch_id, prompt_sha256, context_used, method)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,'extracted_llm')""",
                 (sid, int(row["cited_section_id"]), row["phrase"],
                  row["bound_kind"], row["bound_date"] or None,
                  int(row["bound_year"]) if row["bound_year"] else None,
                  row.get("bound_precision") or None,
                  row.get("phrase_match") or None,
                  row.get("batch_id") or None,
-                 row.get("prompt_sha256") or None))
+                 row.get("prompt_sha256") or None,
+                 row.get("context_used") or None))
             kept += 1
 
     if run_path.exists():

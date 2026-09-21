@@ -14,7 +14,7 @@ and because Matt reads it before the key is supplied.
 | effort | `high`, adaptive thinking |
 | max_tokens | 16000 |
 | transport | Batch API, one request per provision, keyed by `custom_id` |
-| prompt sha256 | `5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a` |
+| prompt sha256 | `cac8c075da7afb4bade5f8a660c0932dc8998789912e81a958adf8778317496d` |
 
 The hash covers the system prompt, the user template, the response
 schema, the model and the effort together. Change any one of them and
@@ -111,7 +111,14 @@ still produced nothing, for a person to read. It sits beside the
 thirty-row precision sample, and the two ask opposite questions - is
 what came back right, and is what did not come back really absent.
 
-## The rerun filter
+## The rerun filter - superseded
+
+**This filter is history, kept for the record.** Three rounds of
+widening it fixed less each time, and the last round proved why: the
+filter selected exactly the right provisions and the answers did not
+change, because the reason they were wrong was missing context rather
+than missing selection. The next run is the whole scope under a prompt
+that carries context, and there will be no fourth filter.
 
 After round 1's hand checks the prompt gained the `at` kind and the
 phase-down rule, and a subset of the corpus was rerun under it rather
@@ -228,14 +235,23 @@ Return three kinds of bound:
 - "step_down": a rate, percentage or amount that changes at a date or year
   without the provision ceasing. "75% for 2024, 50% for 2025", "reduced to
   nil after 2033".
-- "at": a condition that holds ON, AS OF, or INCLUDING a named date, rather
-  than opening or closing a period. "a business carried on by the elector on
-  February 22, 1994" - what matters is what was true that day. "a taxation
-  year that included September 30, 2006" - the year is identified by
-  containing that date, not bounded by it.
+- "at": a condition that holds ON, AS OF, AT THE END OF, or INCLUDING a named
+  date, rather than opening or closing a period. "a business carried on by the
+  elector on February 22, 1994" - what matters is what was true that day.
+  "disposed of at the end of February 22, 1994" - a valuation moment, not a
+  boundary. "a taxation year that included September 30, 2006" - the year is
+  identified by containing that date, not bounded by it.
 
 Rules, in order of importance:
 
+0. THE CONTEXT BLOCKS ARE FOR MEANING ONLY. The request may show the parent
+   provision and the provision's own children. They are there so you can tell
+   what the provision is doing - a paragraph reading "if the year begins after
+   2022 and ends before 2027, an amount determined by the formula" is a
+   component of a rate schedule, and you can only know that by seeing the rate
+   in its child. **Never copy a phrase out of a context block.** Every phrase
+   you return must come from inside <provision> and nowhere else; a phrase
+   taken from context will be rejected.
 1. THE PHRASE MUST BE COPIED EXACTLY from the provision text. Character for
    character, including punctuation, capitalisation and spacing. Do not
    paraphrase, do not normalise, do not correct anything, do not join text
@@ -249,6 +265,12 @@ Rules, in order of importance:
    year that merely names a statute, a form, a program, a published document
    or a defined term - "the Budget Implementation Act, 2023", "the 2021
    Census", "Class 43.1". These are labels, not conditions.
+3a. A VERSION REFERENCE IS A LABEL, NOT A BOUND. "as it read on March 31,
+   1977", "as it read immediately before 1996", "as that section applied to
+   the 1994 taxation year", "within the meaning assigned by ... as it read
+   on ..." - these identify WHICH TEXT of another provision is meant. They do
+   not say when this provision operates. Return nothing for them, including
+   no "at".
 4. Most provisions contain no date bound at all. Returning an empty list is
    the normal and correct answer. Do not hunt for something to return.
 4a. "start" and "end" are for conditions that OPEN or CLOSE a period. A date
@@ -257,9 +279,12 @@ Rules, in order of importance:
    and is "start"; "has, on March 18, 2020, a business number" describes one
    day and is "at". When a date could be read either way, ask whether the
    provision runs FROM that date - if not, it is "at".
-4b. EVERY DATED COMPONENT OF A RATE PHASE-DOWN IS "step_down". Where a
-   provision sets a rate, percentage or amount that differs by period - 30%
-   for one span, 20% for the next, nil after - each dated component is
+4b. EVERY DATED COMPONENT OF A RATE PHASE-DOWN IS "step_down". A rate may be
+   written as a percentage ("30%"), a decimal coefficient ("0.35 x A"), a
+   money amount in dollars or cents ("66 cents per kilometre", "$5,000"), or
+   as "nil" - all of them are rates for this purpose. Where a provision sets
+   a rate that differs by period - 30% for one span, 20% for the next, nil
+   after - each dated component is
    "step_down", never "end" and never "start", including the last one and
    including the component whose rate is nil. The schedule as a whole may end
    the benefit, but a component of it is a step in that schedule and labelling
@@ -291,11 +316,12 @@ provision.
 ```text
 Instrument: {instrument}
 Citation path: {citation_path}
-
-Provision text:
+{parent}
+Provision text - THE ONLY TEXT YOU MAY QUOTE FROM:
 <provision>
 {text}
 </provision>
+{children}
 ```
 
 ## Response schema

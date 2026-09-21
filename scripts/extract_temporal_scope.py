@@ -83,14 +83,23 @@ Return three kinds of bound:
 - "step_down": a rate, percentage or amount that changes at a date or year
   without the provision ceasing. "75% for 2024, 50% for 2025", "reduced to
   nil after 2033".
-- "at": a condition that holds ON, AS OF, or INCLUDING a named date, rather
-  than opening or closing a period. "a business carried on by the elector on
-  February 22, 1994" - what matters is what was true that day. "a taxation
-  year that included September 30, 2006" - the year is identified by
-  containing that date, not bounded by it.
+- "at": a condition that holds ON, AS OF, AT THE END OF, or INCLUDING a named
+  date, rather than opening or closing a period. "a business carried on by the
+  elector on February 22, 1994" - what matters is what was true that day.
+  "disposed of at the end of February 22, 1994" - a valuation moment, not a
+  boundary. "a taxation year that included September 30, 2006" - the year is
+  identified by containing that date, not bounded by it.
 
 Rules, in order of importance:
 
+0. THE CONTEXT BLOCKS ARE FOR MEANING ONLY. The request may show the parent
+   provision and the provision's own children. They are there so you can tell
+   what the provision is doing - a paragraph reading "if the year begins after
+   2022 and ends before 2027, an amount determined by the formula" is a
+   component of a rate schedule, and you can only know that by seeing the rate
+   in its child. **Never copy a phrase out of a context block.** Every phrase
+   you return must come from inside <provision> and nowhere else; a phrase
+   taken from context will be rejected.
 1. THE PHRASE MUST BE COPIED EXACTLY from the provision text. Character for
    character, including punctuation, capitalisation and spacing. Do not
    paraphrase, do not normalise, do not correct anything, do not join text
@@ -104,6 +113,12 @@ Rules, in order of importance:
    year that merely names a statute, a form, a program, a published document
    or a defined term - "the Budget Implementation Act, 2023", "the 2021
    Census", "Class 43.1". These are labels, not conditions.
+3a. A VERSION REFERENCE IS A LABEL, NOT A BOUND. "as it read on March 31,
+   1977", "as it read immediately before 1996", "as that section applied to
+   the 1994 taxation year", "within the meaning assigned by ... as it read
+   on ..." - these identify WHICH TEXT of another provision is meant. They do
+   not say when this provision operates. Return nothing for them, including
+   no "at".
 4. Most provisions contain no date bound at all. Returning an empty list is
    the normal and correct answer. Do not hunt for something to return.
 4a. "start" and "end" are for conditions that OPEN or CLOSE a period. A date
@@ -112,9 +127,12 @@ Rules, in order of importance:
    and is "start"; "has, on March 18, 2020, a business number" describes one
    day and is "at". When a date could be read either way, ask whether the
    provision runs FROM that date - if not, it is "at".
-4b. EVERY DATED COMPONENT OF A RATE PHASE-DOWN IS "step_down". Where a
-   provision sets a rate, percentage or amount that differs by period - 30%
-   for one span, 20% for the next, nil after - each dated component is
+4b. EVERY DATED COMPONENT OF A RATE PHASE-DOWN IS "step_down". A rate may be
+   written as a percentage ("30%"), a decimal coefficient ("0.35 x A"), a
+   money amount in dollars or cents ("66 cents per kilometre", "$5,000"), or
+   as "nil" - all of them are rates for this purpose. Where a provision sets
+   a rate that differs by period - 30% for one span, 20% for the next, nil
+   after - each dated component is
    "step_down", never "end" and never "start", including the last one and
    including the component whose rate is nil. The schedule as a whole may end
    the benefit, but a component of it is a step in that schedule and labelling
@@ -140,11 +158,30 @@ Return only the JSON object the schema describes. No explanation.\
 USER_TEMPLATE = """\
 Instrument: {instrument}
 Citation path: {citation_path}
-
-Provision text:
+{parent}
+Provision text - THE ONLY TEXT YOU MAY QUOTE FROM:
 <provision>
 {text}
-</provision>\
+</provision>
+{children}\
+"""
+
+PARENT_TEMPLATE = """
+Context, for meaning only - the provision this one sits inside. Do not quote:
+<parent path="{path}">
+{text}
+</parent>
+"""
+
+CHILDREN_TEMPLATE = """
+Context, for meaning only - this provision's own subdivisions. Do not quote:
+<children>
+{blocks}</children>
+"""
+
+CHILD_BLOCK = """<child path="{path}">
+{text}
+</child>
 """
 
 RESPONSE_SCHEMA = {
@@ -403,6 +440,24 @@ def provisions(conn, scope, year_filter=True):
     sql = SCOPES.get(scope, SCOPES["cited_and_subtree"])
     rows = [dict(id=r[0], cited_id=r[1], act=r[2], citation_path=r[3], text=r[4])
             for r in conn.execute(sql)]
+    # Parent and children travel with every provision: the request shows them
+    # as context so a paragraph whose rate lives one level down can be read
+    # for what it is. See the context rule in the system prompt.
+    text_of = dict(conn.execute("SELECT id, COALESCE(text_en,'') FROM sections"))
+    path_of = dict(conn.execute("SELECT id, citation_path FROM sections"))
+    parent_of = dict(conn.execute("SELECT id, parent_id FROM sections"))
+    children_of = {}
+    for kid, par in conn.execute(
+            "SELECT id, parent_id FROM sections WHERE parent_id IS NOT NULL "
+            "ORDER BY order_index"):
+        children_of.setdefault(par, []).append(kid)
+    for r in rows:
+        par = parent_of.get(r["id"])
+        r["parent_path"] = path_of.get(par) if par else None
+        r["parent_text"] = (text_of.get(par) or "") if par else ""
+        r["children"] = [(path_of.get(k), text_of.get(k) or "")
+                         for k in children_of.get(r["id"], [])
+                         if (text_of.get(k) or "").strip()]
     extra = SCOPE_FILTERS.get(scope)
     if extra:
         # One criterion is structural, so the filter needs each provision's
@@ -442,6 +497,22 @@ def write_filter_catalogue(scope, kept, dropped):
     return rows
 
 
+def context_blocks(prov):
+    """(parent_block, children_block, context_used) for one provision."""
+    parent = ""
+    if prov.get("parent_text", "").strip():
+        parent = PARENT_TEMPLATE.format(path=prov["parent_path"],
+                                        text=prov["parent_text"])
+    children = ""
+    if prov.get("children"):
+        blocks = "".join(CHILD_BLOCK.format(path=cp, text=ct)
+                         for cp, ct in prov["children"])
+        children = CHILDREN_TEMPLATE.format(blocks=blocks)
+    used = ("parent+children" if parent and children else
+            "parent" if parent else "children" if children else "none")
+    return parent, children, used
+
+
 def build_request(prov, max_tokens=MAX_TOKENS):
     """One Batch API request. custom_id carries the provision id back."""
     return {
@@ -461,6 +532,8 @@ def build_request(prov, max_tokens=MAX_TOKENS):
                     instrument=("Income Tax Act" if prov["act"] == "ITA"
                                 else "Income Tax Regulations"),
                     citation_path=prov["citation_path"],
+                    parent=context_blocks(prov)[0],
+                    children=context_blocks(prov)[1],
                     text=prov["text"]),
             }],
         },
@@ -737,7 +810,8 @@ def write_outputs(provs, messages, failures, scope, batch_id, run_date,
                 rows.append((pid, prov["cited_id"], prov["act"],
                              prov["citation_path"], phrase,
                              bound["bound_kind"], date or "", year or "",
-                             precision, match, batch_id, prompt_sha256()))
+                             precision, match, batch_id, prompt_sha256(),
+                             context_blocks(prov)[2]))
             else:
                 rejects.append((prov["act"], prov["citation_path"],
                                 bound.get("phrase", ""),
@@ -774,7 +848,7 @@ def write_outputs(provs, messages, failures, scope, batch_id, run_date,
                ["section_id", "cited_section_id", "act", "citation_path",
                 "phrase", "bound_kind", "bound_date", "bound_year",
                 "bound_precision", "phrase_match", "batch_id",
-                "prompt_sha256"])
+                "prompt_sha256", "context_used"])
     _write_csv(DATA / "temporal_scope_rejects.csv", sorted(rejects),
                ["act", "citation_path", "phrase", "bound_kind", "bound_value",
                 "reason"])
@@ -929,7 +1003,7 @@ def _merge(path, new_rows, covered_ids, id_field):
         for row in reader:
             if int(row[0]) not in covered_ids:
                 kept.append((int(row[0]), int(row[1])) + tuple(row[2:]))
-                while len(kept[-1]) < 12:   # a CSV written before these columns
+                while len(kept[-1]) < 13:   # a CSV written before these columns
                     kept[-1] = kept[-1] + ("",)
     return kept + new_rows
 
@@ -1298,7 +1372,14 @@ def prompt_doc():
         "thirty-row precision sample, and the two ask opposite questions - is",
         "what came back right, and is what did not come back really absent.",
         "",
-        "## The rerun filter",
+        "## The rerun filter - superseded",
+        "",
+        "**This filter is history, kept for the record.** Three rounds of",
+        "widening it fixed less each time, and the last round proved why: the",
+        "filter selected exactly the right provisions and the answers did not",
+        "change, because the reason they were wrong was missing context rather",
+        "than missing selection. The next run is the whole scope under a prompt",
+        "that carries context, and there will be no fourth filter.",
         "",
         "After round 1's hand checks the prompt gained the `at` kind and the",
         "phase-down rule, and a subset of the corpus was rerun under it rather",
