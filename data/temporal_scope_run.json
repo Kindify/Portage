@@ -1,5 +1,5 @@
 {
-  "batch_id_this_run": "msgbatch_01994ACyYJVJfcoySYAdCGaw",
+  "batch_id_this_run": "msgbatch_01PAmDKwYrxqTy6FGwKztARN",
   "batches": [
     {
       "batch_id": "msgbatch_01994ACyYJVJfcoySYAdCGaw",
@@ -13,17 +13,17 @@
       "batch_id": "msgbatch_01MAMQYzwFgpXmFNT65qsCPu",
       "max_tokens": 4000,
       "provisions_submitted": 997,
-      "rows_from_this_batch": 628,
+      "rows_from_this_batch": 602,
       "source": "recorded_by_hand",
       "submitted_date": "2026-09-20"
     },
     {
-      "batch_id": "msgbatch_01N9Ck3Mz4J9uVqbD1T1tNDt",
+      "batch_id": "msgbatch_01PAmDKwYrxqTy6FGwKztARN",
       "max_tokens": 16000,
-      "provisions_submitted": 1,
-      "rows_from_this_batch": 44,
-      "source": "recorded_by_hand",
-      "submitted_date": "2026-09-20"
+      "provisions_submitted": 10,
+      "rows_from_this_batch": 73,
+      "source": "submitted",
+      "submitted_date": "2026-09-21"
     }
   ],
   "effort": "high",
@@ -33,13 +33,13 @@
     "105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e",
     "5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a"
   ],
-  "provisions_sent": 196,
-  "responses": 196,
+  "provisions_sent": 10,
+  "responses": 10,
   "responses_truncated_at_max_tokens": 0,
   "responses_unreadable": 0,
-  "rows_accepted": 993,
+  "rows_accepted": 996,
   "rows_rejected": 1,
   "run_date": "2026-09-21",
-  "scope": "rerun_taxonomy",
+  "scope": "cited_and_subtree",
   "truncated_citations": []
 }

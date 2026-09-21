@@ -318,6 +318,11 @@ _POINT_IN_TIME = re.compile(r"(?<!or )\bon\s+" + _MONTH + r"\s+\d{1,2},\s*(?:1[8
 _EXCEPTION_YEAR = re.compile(r"other than[^.]{0,80}?\b(?:1[89]|20)\d\d\b")
 #: A rate, which is what a phase-down is made of.
 _PERCENTAGE = re.compile(r"%|\bper\s?cent\b", re.I)
+#: A rate written as a coefficient rather than a percentage - "0.35 x A +
+#: 0.25 x B". The round-2 rerun missed ITA 125.6(2)(c)~f1, the provision the
+#: phase-down rule was written for, because the journalism credit states its
+#: rates this way and carries no percent sign at all.
+_DECIMAL_RATE = re.compile(r"(?<![\d.])0\.\d+")
 
 
 def rerun_taxonomy_filter(text):
@@ -329,15 +334,23 @@ def rerun_taxonomy_filter(text):
       before `at` existed. 84 provisions; three of the four wrong kinds in the
       precision sample were of this shape, and the recall sample found the
       same limit from the other side.
-    - a percentage beside a year, which is what a rate phase-down looks like.
-      113 provisions. One row in thirty labelled a phase-down component `end`,
-      which reads as an expiry date.
+    - a rate beside a year, which is what a phase-down looks like. A rate is
+      a percentage (113 provisions) **or a decimal coefficient** (10 more).
+      One row in thirty labelled a phase-down component `end`, which reads as
+      an expiry date.
 
-    One provision is in both groups, so the rerun is 196 of the 814 in scope.
+    The decimal half was added after the fact, and the omission is the point.
+    The first version of this filter looked only for a percent sign, so it
+    missed ITA 125.6(2)(c)~f1 - "0.35 x A + 0.25 x B - C" - which is the exact
+    provision the phase-down rule was written for. A filter built from the
+    shape of the error rather than from the shape of the text will do that.
+
+    206 of the 814 in scope, after overlaps.
     """
     return bool(_POINT_IN_TIME.search(text)
                 or _EXCEPTION_YEAR.search(text)
-                or _PERCENTAGE.search(text))
+                or _PERCENTAGE.search(text)
+                or _DECIMAL_RATE.search(text))
 
 
 #: Extra predicates applied after a scope's SQL. Filtering here rather than in

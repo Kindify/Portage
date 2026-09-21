@@ -1,4 +1,4 @@
 scope,act,in_scope,sent,filtered_no_year_token
-rerun_taxonomy,ITA,430,184,246
-rerun_taxonomy,ITR,140,12,128
-rerun_taxonomy,ALL,570,196,374
+cited_and_subtree,ITA,9430,650,8780
+cited_and_subtree,ITR,2221,164,2057
+cited_and_subtree,ALL,11651,814,10837

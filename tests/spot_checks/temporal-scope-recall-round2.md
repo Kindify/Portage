@@ -137,42 +137,42 @@ years present: 2022
 
 - [ ] correctly empty   - [ ] a bound was missed: ______
 
-## 16. ITA 81(1)(i)
+## 16. ITA 82(2)
 
-years present: 1970
+years present: 1952
 
-> a pension payment or compensation received under section 5, 31 or 45 of the Royal Canadian Mounted Police Pension Continuation Act, chapter R-10 of the Revised Statutes of Canada, 1970, or section 32 or 33 of the Royal Canadian Mounted Police Superannuation Act, in respect of an injury, disability or death;
-
-- [ ] correctly empty   - [ ] a bound was missed: ______
-
-## 17. ITR 1104(2)"television commercial message"
-
-years present: 1987
-
-> television commercial message means a commercial message as defined in the Television Broadcasting Regulations, 1987 made under the Broadcasting Act; (message publicitaire pour la télévision)
+> Where by reason of subsection 56(4) or 56(4.1) or sections 74.1 to 75 of this Act or section 74 of the Income Tax Act, chapter 148 of the Revised Statutes of Canada, 1952, there is included in computing a taxpayer’s income for a taxation year a dividend received by another person, for the purposes of this Act, the dividend shall be deemed to have been received by the taxpayer.
 
 - [ ] correctly empty   - [ ] a bound was missed: ______
 
-## 18. ITR 2400(4)(a)
-
-years present: 1977
-
-> of subsection 138(14) of the Act, the expressions “Canadian investment fund for a taxation year”, “specified Canadian assets” and “value for the taxation year” have the meanings prescribed for them by subsection 2404(1) as it read in its application to the 1977 taxation year; and
-
-- [ ] correctly empty   - [ ] a bound was missed: ______
-
-## 19. ITR 7305(1)(d)
-
-years present: 1999
-
-> the 1999 calendar year are
-
-- [ ] correctly empty   - [ ] a bound was missed: ______
-
-## 20. ITR 7305.02(1)(d)(i)
+## 17. ITR 1104~h6
 
 years present: 2006
 
-> in Manitoba, Census Divisions No. 18 and 19, Unorganized, as these divisions were developed by Statistics Canada for the 2006 Census, and the Rural Municipalities of Albert, Alonsa, Archie, Armstrong, Arthur, Bifrost, Brenda, Cameron, Coldwell, Cornwallis, Dauphin, Edward, Eriksdale, Fisher, Gimli, Glenella, Glenwood, Grahamdale, Kelsey, Lakeview, Lawrence, McCreary, Miniota, Morton, Mossey River, Oakland, Ochre River, Pipestone, Portage la Prairie, St. Laurent, Ste. Rose, Sifton, Siglunes, Wallace, Westbourne, Whitehead, Whitewater, Winchester, Woodlands and Woodworth, and
+> Classes 43.1 and 43.2 — Energy Conservation Property[NOTE: Application provisions are not included in the consolidated text; see relevant amending Acts and regulations.] SOR/2006-117, s. 4
+
+- [ ] correctly empty   - [ ] a bound was missed: ______
+
+## 18. ITR 5902(5)(a)
+
+years present: 1989
+
+> December 31, 1989; and
+
+- [ ] correctly empty   - [ ] a bound was missed: ______
+
+## 19. ITR 7305(1)(e)
+
+years present: 2000
+
+> the 2000 calendar year are
+
+- [ ] correctly empty   - [ ] a bound was missed: ______
+
+## 20. ITR 7800
+
+years present: 1986
+
+> For the purposes of the definition specified pension plan in subsection 248(1) of the Act, a prescribed arrangement is the Saskatchewan Pension Plan established under The Saskatchewan Pension Plan Act, chapter S-32.2 of the Statutes of Saskatchewan, 1986, as amended from time to time.
 
 - [ ] correctly empty   - [ ] a bound was missed: ______
