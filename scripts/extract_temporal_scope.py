@@ -59,6 +59,15 @@ RECALL_FILES = {1: "temporal-scope-recall.md",
                 2: "temporal-scope-recall-round2.md",
                 3: "temporal-scope-recall-round3.md"}
 
+#: Supplementary samples drawn from one bound_kind. A round's main sample is
+#: drawn from the whole corpus and therefore reflects its shape: after the
+#: context rebuild 'at' held 193 rows of 1,086, so thirty rows contained only
+#: a handful. A kind that grew threefold in one run is the least-examined
+#: thing in the dataset, and the general sample will not examine it.
+KIND_SAMPLE_SIZE = 10
+KIND_SAMPLE_SEEDS = {(3, "at"): 20260926}
+KIND_SAMPLE_FILES = {(3, "at"): "temporal-scope-round3-at.md"}
+
 #: Published rates, $ per million tokens, for the estimate only. The Batch API
 #: is half of these. Update with the model.
 RATE_INPUT, RATE_OUTPUT = 5.00, 25.00
@@ -914,6 +923,43 @@ def write_outputs(provs, messages, failures, scope, batch_id, run_date,
     return run
 
 
+def year_windows(text, radius=220, cap=2000):
+    """The neighbourhood of every year token, not the first N characters.
+
+    A recall sample asks whether a bound was missed, so the checker has to see
+    the years. Truncating at a fixed length answered a different question:
+    round 3 handed back two provisions whose year tokens were past the cut,
+    and neither could be checked at all.
+
+    Windows around each match are merged where they overlap and joined with a
+    marker, so the checker sees what surrounds every year and can tell that
+    text was elided rather than absent.
+    """
+    flat = " ".join((text or "").split())
+    spans = [(max(0, m.start() - radius), min(len(flat), m.end() + radius))
+             for m in _YEAR_IN.finditer(flat)]
+    if not spans:
+        return flat[:cap]
+
+    merged = []
+    for start, end in spans:
+        if merged and start <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], end)
+        else:
+            merged.append([start, end])
+
+    parts, total = [], 0
+    for i, (start, end) in enumerate(merged):
+        piece = ("... " if start > 0 else "") + flat[start:end] + (" ..." if end < len(flat) else "")
+        if total + len(piece) > cap and parts:
+            parts.append("**[%d further year mention(s) not shown - read the "
+                         "provision in full]**" % (len(merged) - i))
+            break
+        parts.append(piece)
+        total += len(piece)
+    return "\n>\n> ".join(parts)
+
+
 def _write_recall_sample(provs, rows, round_number=1):
     """Twenty provisions that contain a year and produced nothing.
 
@@ -964,10 +1010,14 @@ def _write_recall_sample(provs, rows, round_number=1):
     ]
     for i, prov in enumerate(sample, 1):
         years = sorted(set(_YEAR_IN.findall(prov["text"])))
-        text = " ".join(prov["text"].split())
+        flat = " ".join(prov["text"].split())
         lines += ["## %d. %s %s" % (i, prov["act"], prov["citation_path"]), "",
-                  "years present: %s" % ", ".join(years), "",
-                  "> %s" % (text if len(text) <= 1200 else text[:1200] + " [...]"),
+                  "years present: %s" % ", ".join(years),
+                  "full length: %d characters%s"
+                  % (len(flat), "" if len(flat) <= 2000 else
+                     " - shown as windows around each year"),
+                  "",
+                  "> %s" % year_windows(prov["text"]),
                   "",
                   "- [ ] correctly empty   - [ ] a bound was missed: ______", ""]
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -1022,6 +1072,68 @@ def _merge_simple(path, new_rows, covered_paths, path_col):
             if len(row) > path_col and row[path_col] not in covered_paths:
                 kept.append(tuple(row))
     return kept + new_rows
+
+
+def _write_kind_sample(rows, round_number, kind):
+    """A supplementary sample drawn from one bound_kind only."""
+    import random
+
+    key = (round_number, kind)
+    if key not in KIND_SAMPLE_FILES:
+        raise SystemExit("no kind sample defined for round %d, kind %r"
+                         % (round_number, kind))
+    out = SPOT_CHECKS / KIND_SAMPLE_FILES[key]
+    if _sample_is_frozen(out):
+        return
+    seed = KIND_SAMPLE_SEEDS[key]
+    pool = [r for r in rows if r[5] == kind
+            and len(r) > 11 and r[11] == prompt_sha256()]
+    if not pool:
+        print("  no %r rows on the current prompt - not written" % kind)
+        return
+    sample = sorted(random.Random(seed).sample(
+        pool, min(KIND_SAMPLE_SIZE, len(pool))))
+
+    lines = [
+        "# Temporal scope - round %d supplementary sample: `%s` only"
+        % (round_number, kind),
+        "",
+        "Ten bounds drawn with seed %d from the %d rows whose `bound_kind` is"
+        % (seed, len(pool)),
+        "`%s`. The round %d sample was drawn from the whole corpus and so"
+        % (kind, round_number),
+        "reflected its shape; this one deliberately does not.",
+        "",
+        "`%s` grew from 64 rows to 193 in the context rebuild, which makes it"
+        % kind,
+        "the least-examined category in the dataset and the one most likely to",
+        "carry a systematic error nobody has looked for yet.",
+        "",
+        "For each: read the provision at laws-lois.justice.gc.ca and confirm",
+        "that the phrase appears as shown, that the date is the one the phrase",
+        "states, and **that the condition really holds on or as of that date**",
+        "rather than opening or closing a period. A row that should have been",
+        "`start`, `end` or `step_down` is the failure this sample exists to",
+        "find.",
+        "",
+        "Record results in `%s`. Do not regenerate this file."
+        % KIND_SAMPLE_FILES[key].replace(".md", "-RESULTS.md"),
+        "",
+    ]
+    for i, row in enumerate(sample, 1):
+        act, path, phrase = row[2], row[3], row[4]
+        date, year, prec, ctx = row[6], row[7], row[8], row[12] if len(row) > 12 else ""
+        lines += ["## %d. %s %s" % (i, act, path), "",
+                  "> %s" % phrase, "",
+                  "- date: `%s`  year: `%s`  precision: `%s`"
+                  % (date or "-", year or "-", prec),
+                  "- context sent with the request: `%s`" % (ctx or "-"),
+                  "- [ ] phrase verbatim   - [ ] `%s` is the right kind, not "
+                  "start/end/step_down: ______" % kind, ""]
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text("\n".join(lines), encoding="utf-8")
+    print("  %s written (%d of %d %r rows)"
+          % (out.name, len(sample), len(pool), kind))
 
 
 def _write_csv(path, rows, header):
@@ -1091,7 +1203,7 @@ def _write_sample(rows, round_number=1):
 # CLI
 # --------------------------------------------------------------------------
 
-def write_samples_offline(conn, round_number):
+def write_samples_offline(conn, round_number, kind=None):
     """Regenerate the hand-check samples from the committed CSV. No API call.
 
     The samples are drawn from what was extracted, not from what the API
@@ -1107,10 +1219,14 @@ def write_samples_offline(conn, round_number):
                          r["act"], r["citation_path"], r["phrase"],
                          r["bound_kind"], r["bound_date"], r["bound_year"],
                          r["bound_precision"], r["phrase_match"],
-                         r["batch_id"], r["prompt_sha256"]))
+                         r["batch_id"], r["prompt_sha256"],
+                         r.get("context_used", "")))
     provs, _filtered = provisions(conn, "cited_and_subtree")
-    _write_sample(rows, round_number)
-    _write_recall_sample(provs, rows, round_number)
+    if kind:
+        _write_kind_sample(rows, round_number, kind)
+    else:
+        _write_sample(rows, round_number)
+        _write_recall_sample(provs, rows, round_number)
     return len(rows)
 
 
@@ -1146,6 +1262,9 @@ def main(argv=None):
                     choices=sorted(SAMPLE_FILES),
                     help="regenerate the hand-check samples for a round from "
                          "the committed CSV and exit. Calls nothing.")
+    ap.add_argument("--sample-kind", metavar="KIND",
+                    help="with --samples, write the supplementary sample for "
+                         "that bound_kind instead of the round's two samples")
     ap.add_argument("--show-prompt", action="store_true")
     args = ap.parse_args(argv)
 
@@ -1154,7 +1273,7 @@ def main(argv=None):
     conn = sqlite3.connect(DB_PATH)
 
     if args.samples:
-        n = write_samples_offline(conn, args.samples)
+        n = write_samples_offline(conn, args.samples, args.sample_kind)
         print("samples round %d written from %d rows. Nothing was called."
               % (args.samples, n))
         return 0
