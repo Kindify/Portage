@@ -1,0 +1,249 @@
+# Temporal scope - precision sample, round 3
+
+Thirty extracted bounds, drawn with seed 20260924. For each: read the
+provision at laws-lois.justice.gc.ca and confirm that the phrase appears
+as shown and that the bound is what the phrase says. A phrase that is
+accurate but is not really a condition on the provision's operation is a
+failure, and is the kind this sample exists to find.
+
+Record results in `temporal-scope-round3-RESULTS.md`. Do not regenerate this file.
+
+## 1. ITA 19.1(2)(b)
+
+> entered into after January 23, 1975
+
+- bound_kind: `start`
+- date: `1975-01-23`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 2. ITA 37(1)(a)
+
+> in a preceding taxation year ending after 1973
+
+- bound_kind: `start`
+- date: `-`  year: `1973`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 3. ITA 66.1(6)"cumulative Canadian exploration expense"~f1
+
+> Canadian exploration expense incurred after 1980
+
+- bound_kind: `start`
+- date: `-`  year: `1980`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 4. ITA 66.1(6)"cumulative Canadian exploration expense"~f1
+
+> paid to the taxpayer after May 6, 1974 and before May 25, 1976
+
+- bound_kind: `start`
+- date: `1974-05-06`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 5. ITA 110.6(2)(a)~f1
+
+> began before and included February 28, 2000 or October 17, 2000
+
+- bound_kind: `at`
+- date: `2000-10-17`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 6. ITA 113(2)(b)(iii.1)
+
+> after the end of its 1975 taxation year
+
+- bound_kind: `start`
+- date: `-`  year: `1975`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 7. ITA 122.91(2)(a)
+
+> if the taxation year is after 2019
+
+- bound_kind: `start`
+- date: `-`  year: `2019`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 8. ITA 122.93(2)
+
+> that ends before 2031
+
+- bound_kind: `end`
+- date: `-`  year: `2031`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 9. ITA 125.6(1)"low threshold qualifying labour expenditure"(b)~f1
+
+> the number of days in the taxation year that are before 2023 during which the taxpayer is a qualifying journalism organization
+
+- bound_kind: `end`
+- date: `-`  year: `2023`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 10. ITA 125.6(2.1)(c)~f1
+
+> the number of days in the fiscal period that are before 2027
+
+- bound_kind: `step_down`
+- date: `-`  year: `2027`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 11. ITA 125.7(1)"qualifying period"(c.97)
+
+> begins on August 1, 2021
+
+- bound_kind: `start`
+- date: `2021-08-01`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 12. ITA 127(9)"specified percentage"(a.1)(ii)(B)(I)
+
+> the construction of the phase was started by, or on behalf of, the taxpayer before March 29, 2012
+
+- bound_kind: `end`
+- date: `2012-03-29`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 13. ITA 127(9)"specified percentage"(g)(ii)
+
+> after 1988, 45%,
+
+- bound_kind: `step_down`
+- date: `-`  year: `1988`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 14. ITA 127.48(1)"eligible clean hydrogen property"(a)
+
+> becomes available for use in respect of a qualified clean hydrogen project of the taxpayer in Canada on or after March 28, 2023
+
+- bound_kind: `start`
+- date: `2023-03-28`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 15. ITA 127.49(1)"specified percentage"(b)(iii)
+
+> before January 1, 2034, 10%
+
+- bound_kind: `step_down`
+- date: `2034-01-01`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 16. ITA 146(1)"RRSP dollar limit"(c)
+
+> for 2003, $14,500
+
+- bound_kind: `step_down`
+- date: `-`  year: `2003`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 17. ITA 146(1.1)~f1
+
+> that is after 2002
+
+- bound_kind: `start`
+- date: `-`  year: `2002`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 18. ITA 146.4(4.01)
+
+> after March 18, 2019
+
+- bound_kind: `start`
+- date: `2019-03-18`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 19. ITA 207.01(1)"transitional prohibited investment benefit"~f1
+
+> in the case of income, is earned after March 22, 2011 and, in the case of a capital gain, accrues after March 22, 2011
+
+- bound_kind: `start`
+- date: `2011-03-22`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 20. ITR 1100(1)(zc)(iii)
+
+> before 1988
+
+- bound_kind: `end`
+- date: `-`  year: `1988`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 21. ITR 1100(2)~f1
+
+> 1/2, for property that became available for use by the taxpayer before 2030
+
+- bound_kind: `step_down`
+- date: `-`  year: `2030`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 22. ITR 1100(2)~f1
+
+> 2 1/3, for property included in Class 43 that became available for use by the taxpayer before 2030
+
+- bound_kind: `step_down`
+- date: `-`  year: `2030`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 23. ITR 1100(2)~f1
+
+> 3, for property that became available for use by the taxpayer before 2027
+
+- bound_kind: `step_down`
+- date: `-`  year: `2027`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 24. ITR 1100(2)~f1
+
+> 9/11, for property that was acquired and became available for use by the taxpayer after April 15, 2024 and before 2027
+
+- bound_kind: `step_down`
+- date: `2024-04-15`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 25. ITR 1100(2.01)(b)
+
+> ends in 2026
+
+- bound_kind: `step_down`
+- date: `-`  year: `2026`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 26. ITR 1100(2.011)(b)~f1
+
+> the factor otherwise determined for A.1 in subsection (2) for 2026
+
+- bound_kind: `step_down`
+- date: `-`  year: `2026`  precision: `year`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 27. ITR 1100(2.1)(b)
+
+> commenced the construction, manufacture or production of the property before November 13, 1981
+
+- bound_kind: `end`
+- date: `1981-11-13`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 28. ITR 1100(18)(b)
+
+> commenced by the taxpayer or the partnership before May 26, 1976
+
+- bound_kind: `end`
+- date: `1976-05-26`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 29. ITR 1104(2)"eligible mine development property"(b)(i)
+
+> was started by, or on behalf of, the taxpayer before March 21, 2013
+
+- bound_kind: `end`
+- date: `2013-03-21`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
+
+## 30. ITR 1104(3.1)"immediate expensing property"(a)(ii)
+
+> after December 31, 2021
+
+- bound_kind: `start`
+- date: `2021-12-31`  year: `-`  precision: `day`  match: `exact`
+- [ ] phrase appears verbatim   - [ ] bound is correct
