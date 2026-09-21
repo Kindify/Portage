@@ -1,0 +1,2 @@
+act,citation_path,kind,note,recorded_by,recorded_date
+ITR,1100(2.011)(b)~f1,borderline_step_down,"Blended CCA factor for a taxation year straddling 2026 and 2027: A is the factor for 2026 and C the factor for 2027. Arguably a step-down, but the fragment defines a weighted average rather than a step, and the triggering condition (a taxation year that begins in 2026 and ends in 2027) is in the parent, which is sent as a separate request. Not extracted. Found by hand in recall sample round 1, row 20.",MJ,2026-09-20

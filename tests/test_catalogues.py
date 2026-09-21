@@ -46,6 +46,7 @@ CATALOGUES = [
     "amending_acts_unparsed.csv",
     "measure_cost_basis.csv",
     "measure_reference_edition_diffs.csv",
+    "repealed_stubs.csv",
 ]
 
 

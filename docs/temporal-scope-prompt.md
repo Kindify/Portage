@@ -111,6 +111,44 @@ still produced nothing, for a person to read. It sits beside the
 thirty-row precision sample, and the two ask opposite questions - is
 what came back right, and is what did not come back really absent.
 
+## Known limits
+
+Both were found by hand, in recall sample round 1. Neither is a bug:
+each is a thing the design cannot express, counted so the size is
+known before anyone decides whether to widen it.
+
+**A. Conditions outside the three-kind taxonomy.** `start`, `end` and
+`step_down` cannot express a point-in-time condition - "a business
+carried on by the elector ... on February 22, 1994" - or an
+exception-year condition - "for years other than 1996 and 2003". The
+date qualifies a state of affairs on one day, or excludes years from a
+rule, rather than bounding when the provision operates.
+
+| pattern | provisions in scope | of those, produced no bound |
+|---|---|---|
+| `on <Month> <d>, <year>` (not "on or before/after") | 74 | 8 |
+| `other than ... <year>` | 11 | 2 |
+| either | 84 | 10 |
+
+A fourth kind would add rows against up to 84 provisions, but only 10
+of them are silent today - the rest already carry some other bound.
+
+**B. Conditions that span a parent and its child.** Each unit is sent
+alone, so a date in a child whose governing verb is in the parent has
+no context. ITA 146.1(12)(a)(i) is the whole of "January 1, 1972,
+and"; the parent supplies "before 1976 shall be deemed to have been
+registered since the later of".
+
+Counted mechanically as: a provision in scope whose own text names a
+year, which produced no bound, and whose parent's text carries a
+temporal verb (before, after, beginning, ending, commencing, since,
+until, throughout). **12 provisions.**
+
+Sending a parent's text as context would change every request and so
+the prompt hash, making it a different run of the whole corpus rather
+than a patch. At 12 provisions that is not obviously worth it, which
+is the point of counting first.
+
 ## System prompt
 
 ```text

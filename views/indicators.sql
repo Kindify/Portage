@@ -100,6 +100,11 @@ WITH base AS (
         (SELECT COUNT(*) FROM measure_references r
           WHERE r.measure_id = m.id AND r.lang = b.reference_lang
             AND r.status = 'not_in_consolidation')                 AS provisions_not_in_consolidation,
+        (SELECT COUNT(*) FROM measure_references r
+          JOIN sections rs ON rs.id = r.section_id
+          WHERE r.measure_id = m.id AND r.lang = b.reference_lang
+            AND r.status = 'resolved'
+            AND rs.is_repealed_stub = 1)                           AS provisions_repealed_stub,
         (SELECT COUNT(DISTINCT p.act || ' ' || p.top_section)
            FROM measure_resolved_provisions p
           WHERE p.measure_id = m.id)                               AS sections_touched,
@@ -220,6 +225,7 @@ SELECT
     b.provisions_cited,
     b.provisions_resolved,
     b.provisions_not_in_consolidation,
+    b.provisions_repealed_stub,
     b.sections_touched,
     b.shared_with_measures,
     b.amending_acts_count,

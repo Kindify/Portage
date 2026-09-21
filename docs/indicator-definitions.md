@@ -152,6 +152,7 @@ The formula is the SQL below; this is the meaning and the null rule beside it.
 | `provisions_cited` | Count of reference rows Finance lists for the measure, in the edition named by `measure_figure_basis.reference_lang`. | never; 0 where none |
 | `provisions_resolved` | Of those, the count with `status = 'resolved'`. | never; 0 |
 | `provisions_not_in_consolidation` | Of those, the count with `status = 'not_in_consolidation'` - the gap between the report's as-of date of 31 December 2025 and the consolidation's of 18 June 2026. | never; 0 |
+| `provisions_repealed_stub` | Of the measure's resolved references, the count pointing at a provision whose whole text is a repeal tombstone - "[Repealed, 2001, c. 17, s. 3(1)]". The citation path still resolves, but the provision is gone. Distinct from `provisions_not_in_consolidation`, which is a path the consolidation never had: this is a path it has, pointing at nothing. | never; 0 |
 | `sections_touched` | Distinct top-level sections among the resolved paths. The section is the leading run of the citation path before the first `(`, `"` or `~`, so `110(1)(d)` is section 110 and `54"principal residence"` is section 54. | never; 0 |
 | `shared_with_measures` | Count of other measures citing at least one of the same resolved citation paths. A pure join over `measure_provision_overlap`. | never; 0 |
 | `amending_acts_count` | Summed over the distinct top-level sections the measure cites: the number of statute entries in that section's Phase 0 `history_note` after the first. Entries are semicolon separated after the `[NOTE: ...]` prefix; the first entry is the enactment that put the section there, so the rest are amendments. **Double counts by design**: a section cited by several measures contributes to each, because this is a property of the measure's legal footprint and not a partition of the Act. | no section the measure cites carries a history note |
@@ -235,7 +236,7 @@ Every column is computed here from the Phase 0 and Phase 1 tables and from the
 Phase 2 extraction tables. Nothing is stored, nothing is imputed, and a null
 input produces a null output rather than a zero.
 
-**Columns:** `measure_id`, `join_method`, `name_en`, `name_fr`, `cost_figure_basis`, `cost_figure_row_label`, `cost_edition`, `cost_latest_estimate`, `cost_latest_estimate_year`, `cost_latest_estimate_raw`, `cost_latest_projection`, `cost_latest_projection_year`, `cost_latest_projection_raw`, `cost_first_estimate`, `cost_first_estimate_year`, `cost_first_estimate_raw`, `cost_change_abs`, `cost_change_pct`, `cost_status`, `cost_withheld_years`, `beneficiaries_latest`, `beneficiaries_latest_year`, `beneficiaries_raw_en`, `beneficiaries_raw_fr`, `cost_per_beneficiary`, `cost_per_beneficiary_note`, `introduced_year`, `last_change_year`, `years_since_last_change`, `history_events`, `objective_source_year`, `objective_source_raw`, `objective_source_method`, `category_en`, `category_fr`, `objective_category_en`, `objective_category_fr`, `subject_en`, `subject_fr`, `ccofog_code_en`, `ccofog_code_fr`, `type_of_tax_en`, `type_of_tax_fr`, `type_of_measure_en`, `type_of_measure_fr`, `objective_category_internal`, `objective_category_mixed`, `has_overlapping_program`, `overlapping_program_raw_en`, `overlapping_program_raw_fr`, `provisions_cited`, `provisions_resolved`, `provisions_not_in_consolidation`, `sections_touched`, `shared_with_measures`, `amending_acts_count`, `amending_acts_method`, `earliest_end_date`, `latest_end_date`, `has_step_down`
+**Columns:** `measure_id`, `join_method`, `name_en`, `name_fr`, `cost_figure_basis`, `cost_figure_row_label`, `cost_edition`, `cost_latest_estimate`, `cost_latest_estimate_year`, `cost_latest_estimate_raw`, `cost_latest_projection`, `cost_latest_projection_year`, `cost_latest_projection_raw`, `cost_first_estimate`, `cost_first_estimate_year`, `cost_first_estimate_raw`, `cost_change_abs`, `cost_change_pct`, `cost_status`, `cost_withheld_years`, `beneficiaries_latest`, `beneficiaries_latest_year`, `beneficiaries_raw_en`, `beneficiaries_raw_fr`, `cost_per_beneficiary`, `cost_per_beneficiary_note`, `introduced_year`, `last_change_year`, `years_since_last_change`, `history_events`, `objective_source_year`, `objective_source_raw`, `objective_source_method`, `category_en`, `category_fr`, `objective_category_en`, `objective_category_fr`, `subject_en`, `subject_fr`, `ccofog_code_en`, `ccofog_code_fr`, `type_of_tax_en`, `type_of_tax_fr`, `type_of_measure_en`, `type_of_measure_fr`, `objective_category_internal`, `objective_category_mixed`, `has_overlapping_program`, `overlapping_program_raw_en`, `overlapping_program_raw_fr`, `provisions_cited`, `provisions_resolved`, `provisions_not_in_consolidation`, `provisions_repealed_stub`, `sections_touched`, `shared_with_measures`, `amending_acts_count`, `amending_acts_method`, `earliest_end_date`, `latest_end_date`, `has_step_down`
 
 **Rows in this build:** 247
 
@@ -328,6 +329,11 @@ WITH base AS (
         (SELECT COUNT(*) FROM measure_references r
           WHERE r.measure_id = m.id AND r.lang = b.reference_lang
             AND r.status = 'not_in_consolidation')                 AS provisions_not_in_consolidation,
+        (SELECT COUNT(*) FROM measure_references r
+          JOIN sections rs ON rs.id = r.section_id
+          WHERE r.measure_id = m.id AND r.lang = b.reference_lang
+            AND r.status = 'resolved'
+            AND rs.is_repealed_stub = 1)                           AS provisions_repealed_stub,
         (SELECT COUNT(DISTINCT p.act || ' ' || p.top_section)
            FROM measure_resolved_provisions p
           WHERE p.measure_id = m.id)                               AS sections_touched,
@@ -448,6 +454,7 @@ SELECT
     b.provisions_cited,
     b.provisions_resolved,
     b.provisions_not_in_consolidation,
+    b.provisions_repealed_stub,
     b.sections_touched,
     b.shared_with_measures,
     b.amending_acts_count,

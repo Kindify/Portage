@@ -68,6 +68,13 @@ CREATE TABLE sections (
     defined_term_fr TEXT,
     history_note    TEXT,
     bilingual_gap   INTEGER NOT NULL DEFAULT 0,
+    -- 1 where the whole of text_en is a repeal tombstone - "[Repealed, 2001,
+    -- c. 17, s. 3(1)]", optionally preceded by the defined term whose slot it
+    -- occupies. The provision is gone; the row survives so the citation path
+    -- still resolves. The year in it cites the repealing statute and is not a
+    -- condition on anything, which is why these are out of the temporal
+    -- extraction scope.
+    is_repealed_stub INTEGER NOT NULL DEFAULT 0,
     alignment_unverified INTEGER NOT NULL DEFAULT 0,
     alignment       TEXT,
     same_path_counterpart TEXT,
@@ -215,6 +222,36 @@ def _unverified_alignments(en_records, fr_records):
 #: <Label>. A key ending in one of these carries no independent meaning, so a
 #: cross-language join on it is positional.
 ORDINAL_KEYS = ("~c", "~f", "~h", "~t", "~d")
+
+
+_REPEAL_STUB = re.compile(r"^\s*\[Repealed[^\]]*\]\s*$")
+
+
+def _mark_repealed_stubs(conn):
+    """Flag rows whose entire text is a repeal tombstone.
+
+    Two shapes occur. A bare "[Repealed, 2001, c. 17, s. 3(1)]", and - in a
+    definition slot - the defined term followed by the tombstone, as in
+    'specified proportion[Repealed, 2013, c. 34, s. 427]'. Both are the same
+    thing: the provision is repealed and the row exists so the citation path
+    still resolves.
+
+    Found by matching the text against the published bracket form, never by
+    looking for the word "repealed" anywhere in a provision - a live provision
+    may well mention a repeal.
+    """
+    marked = []
+    for sid, text, term in conn.execute(
+            "SELECT id, text_en, defined_term_en FROM sections "
+            "WHERE text_en IS NOT NULL AND text_en != ''"):
+        body = text.strip()
+        if not _REPEAL_STUB.match(body):
+            if not (term and body.startswith(term)
+                    and _REPEAL_STUB.match(body[len(term):])):
+                continue
+        marked.append((sid,))
+    conn.executemany("UPDATE sections SET is_repealed_stub=1 WHERE id=?", marked)
+    return len(marked)
 
 
 def _set_alignment(conn):
@@ -740,6 +777,15 @@ def build(db_path=DB_PATH):
         DATA / "terms_defined_more_than_once.csv", multi,
         ["act", "lang", "term", "definition_count", "definitions"])
 
+    n_stubs = _mark_repealed_stubs(conn)
+    stub_rows = [(r[0], r[1], r[2], " ".join((r[3] or "").split())[:120])
+                 for r in conn.execute(
+                     "SELECT act, citation_path, level, text_en FROM sections "
+                     "WHERE is_repealed_stub=1 ORDER BY act, citation_path")]
+    n_stub_cat = _write_catalogue(
+        DATA / "repealed_stubs.csv", stub_rows,
+        ["act", "citation_path", "level", "text_en"])
+
     _set_alignment(conn)
 
     positional_rows = [
@@ -855,6 +901,7 @@ def build(db_path=DB_PATH):
         "rows_measure_reference_edition_diffs": str(
             indicator_counts["measure_reference_edition_diffs"]),
         "indicator_views": str(indicator_counts["views"]),
+        "rows_repealed_stubs": str(n_stubs),
         "rows_provision_temporal_scope": str(
             indicator_counts["provision_temporal_scope"]),
         "rows_temporal_scope_dropped": str(

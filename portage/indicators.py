@@ -451,6 +451,11 @@ WITH base AS (
         (SELECT COUNT(*) FROM measure_references r
           WHERE r.measure_id = m.id AND r.lang = b.reference_lang
             AND r.status = 'not_in_consolidation')                 AS provisions_not_in_consolidation,
+        (SELECT COUNT(*) FROM measure_references r
+          JOIN sections rs ON rs.id = r.section_id
+          WHERE r.measure_id = m.id AND r.lang = b.reference_lang
+            AND r.status = 'resolved'
+            AND rs.is_repealed_stub = 1)                           AS provisions_repealed_stub,
         (SELECT COUNT(DISTINCT p.act || ' ' || p.top_section)
            FROM measure_resolved_provisions p
           WHERE p.measure_id = m.id)                               AS sections_touched,
@@ -571,6 +576,7 @@ SELECT
     b.provisions_cited,
     b.provisions_resolved,
     b.provisions_not_in_consolidation,
+    b.provisions_repealed_stub,
     b.sections_touched,
     b.shared_with_measures,
     b.amending_acts_count,
@@ -1188,6 +1194,13 @@ COLUMN_NOTES = {
     "Of those, the count with `status = 'not_in_consolidation'` - the gap "
     "between the report's as-of date of 31 December 2025 and the "
     "consolidation's of 18 June 2026.", "never; 0"),
+"provisions_repealed_stub": (
+    "Of the measure's resolved references, the count pointing at a provision "
+    "whose whole text is a repeal tombstone - \"[Repealed, 2001, c. 17, "
+    "s. 3(1)]\". The citation path still resolves, but the provision is gone. "
+    "Distinct from `provisions_not_in_consolidation`, which is a path the "
+    "consolidation never had: this is a path it has, pointing at nothing.",
+    "never; 0"),
 "sections_touched": (
     "Distinct top-level sections among the resolved paths. The section is the "
     "leading run of the citation path before the first `(`, `\"` or `~`, so "

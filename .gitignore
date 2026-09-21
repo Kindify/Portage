@@ -28,6 +28,9 @@ data/finance/*
 !data/temporal_scope_filtered.csv
 !data/temporal_scope_run.json
 !data/temporal_scope_batches.csv
+# Hand-recorded, never written by the build: notes from the precision and
+# recall checks on provisions the extraction deliberately left alone.
+!data/extraction_notes.csv
 *.parquet
 *.xml
 *.zip
