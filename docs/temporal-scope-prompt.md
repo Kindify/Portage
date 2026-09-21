@@ -14,7 +14,7 @@ and because Matt reads it before the key is supplied.
 | effort | `high`, adaptive thinking |
 | max_tokens | 16000 |
 | transport | Batch API, one request per provision, keyed by `custom_id` |
-| prompt sha256 | `105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e` |
+| prompt sha256 | `5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a` |
 
 The hash covers the system prompt, the user template, the response
 schema, the model and the effort together. Change any one of them and
@@ -168,6 +168,11 @@ Return three kinds of bound:
 - "step_down": a rate, percentage or amount that changes at a date or year
   without the provision ceasing. "75% for 2024, 50% for 2025", "reduced to
   nil after 2033".
+- "at": a condition that holds ON, AS OF, or INCLUDING a named date, rather
+  than opening or closing a period. "a business carried on by the elector on
+  February 22, 1994" - what matters is what was true that day. "a taxation
+  year that included September 30, 2006" - the year is identified by
+  containing that date, not bounded by it.
 
 Rules, in order of importance:
 
@@ -186,6 +191,20 @@ Rules, in order of importance:
    Census", "Class 43.1". These are labels, not conditions.
 4. Most provisions contain no date bound at all. Returning an empty list is
    the normal and correct answer. Do not hunt for something to return.
+4a. "start" and "end" are for conditions that OPEN or CLOSE a period. A date
+   that fixes a state of affairs on one day is "at", not "start". The test is
+   the verb, not the preposition: "begins on March 14, 2021" opens a period
+   and is "start"; "has, on March 18, 2020, a business number" describes one
+   day and is "at". When a date could be read either way, ask whether the
+   provision runs FROM that date - if not, it is "at".
+4b. EVERY DATED COMPONENT OF A RATE PHASE-DOWN IS "step_down". Where a
+   provision sets a rate, percentage or amount that differs by period - 30%
+   for one span, 20% for the next, nil after - each dated component is
+   "step_down", never "end" and never "start", including the last one and
+   including the component whose rate is nil. The schedule as a whole may end
+   the benefit, but a component of it is a step in that schedule and labelling
+   it "end" says the provision expires on that date. Where a component names
+   two dates, return one object per date, both "step_down".
 5. Report the bound in "bound_value", at exactly the precision the phrase
    uses and no finer:
      - "YYYY-MM-DD" when the phrase names a full calendar date
@@ -241,7 +260,8 @@ Enforced by `output_config.format`, so the model cannot return prose.
             "enum": [
               "start",
               "end",
-              "step_down"
+              "step_down",
+              "at"
             ]
           },
           "bound_value": {

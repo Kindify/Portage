@@ -146,6 +146,11 @@ CREATE TABLE provision_temporal_scope (
     -- ran under different output ceilings, so a single run-level field would
     -- have been a false claim about half the rows.
     batch_id        TEXT,
+    -- Which version of the prompt produced this row. Round 1 ran under one
+    -- prompt; the taxonomy rerun runs under another that adds the 'at' kind
+    -- and the phase-down rule. Both sets live in this table, and a row that
+    -- could not say which prompt wrote it would be unreadable evidence.
+    prompt_sha256   TEXT,
     method          TEXT    NOT NULL      -- 'extracted_llm'
 );
 
@@ -960,14 +965,15 @@ def load_temporal_scope(conn, data_dir):
                 """INSERT INTO provision_temporal_scope
                    (section_id, cited_section_id, phrase, bound_kind,
                     bound_date, bound_year, bound_precision, phrase_match,
-                    batch_id, method)
-                   VALUES (?,?,?,?,?,?,?,?,?,'extracted_llm')""",
+                    batch_id, prompt_sha256, method)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,'extracted_llm')""",
                 (sid, int(row["cited_section_id"]), row["phrase"],
                  row["bound_kind"], row["bound_date"] or None,
                  int(row["bound_year"]) if row["bound_year"] else None,
                  row.get("bound_precision") or None,
                  row.get("phrase_match") or None,
-                 row.get("batch_id") or None))
+                 row.get("batch_id") or None,
+                 row.get("prompt_sha256") or None))
             kept += 1
 
     if run_path.exists():
@@ -984,6 +990,8 @@ def load_temporal_scope(conn, data_dir):
             ("temporal_scope_batch_ids",
              "; ".join(str(b.get("batch_id")) for b in batches)),
             ("temporal_scope_batch_count", str(len(batches))),
+            ("temporal_scope_prompt_sha256_in_rows",
+             "; ".join(run.get("prompt_sha256_in_rows") or [])),
             ("temporal_scope_batch_max_tokens",
              "; ".join("%s=%s" % (b.get("batch_id"), b.get("max_tokens"))
                        for b in batches)),

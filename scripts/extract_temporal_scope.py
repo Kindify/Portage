@@ -75,6 +75,11 @@ Return three kinds of bound:
 - "step_down": a rate, percentage or amount that changes at a date or year
   without the provision ceasing. "75% for 2024, 50% for 2025", "reduced to
   nil after 2033".
+- "at": a condition that holds ON, AS OF, or INCLUDING a named date, rather
+  than opening or closing a period. "a business carried on by the elector on
+  February 22, 1994" - what matters is what was true that day. "a taxation
+  year that included September 30, 2006" - the year is identified by
+  containing that date, not bounded by it.
 
 Rules, in order of importance:
 
@@ -93,6 +98,20 @@ Rules, in order of importance:
    Census", "Class 43.1". These are labels, not conditions.
 4. Most provisions contain no date bound at all. Returning an empty list is
    the normal and correct answer. Do not hunt for something to return.
+4a. "start" and "end" are for conditions that OPEN or CLOSE a period. A date
+   that fixes a state of affairs on one day is "at", not "start". The test is
+   the verb, not the preposition: "begins on March 14, 2021" opens a period
+   and is "start"; "has, on March 18, 2020, a business number" describes one
+   day and is "at". When a date could be read either way, ask whether the
+   provision runs FROM that date - if not, it is "at".
+4b. EVERY DATED COMPONENT OF A RATE PHASE-DOWN IS "step_down". Where a
+   provision sets a rate, percentage or amount that differs by period - 30%
+   for one span, 20% for the next, nil after - each dated component is
+   "step_down", never "end" and never "start", including the last one and
+   including the component whose rate is nil. The schedule as a whole may end
+   the benefit, but a component of it is a step in that schedule and labelling
+   it "end" says the provision expires on that date. Where a component names
+   two dates, return one object per date, both "step_down".
 5. Report the bound in "bound_value", at exactly the precision the phrase
    uses and no finer:
      - "YYYY-MM-DD" when the phrase names a full calendar date
@@ -134,7 +153,7 @@ RESPONSE_SCHEMA = {
                     },
                     "bound_kind": {
                         "type": "string",
-                        "enum": ["start", "end", "step_down"],
+                        "enum": ["start", "end", "step_down", "at"],
                     },
                     # One field, one type. A nullable union on the wire is
                     # a needless risk against strict schema validation, and
@@ -282,6 +301,43 @@ SCOPES = {
 }
 
 
+_MONTH = (r"(?:January|February|March|April|May|June|July|August|September"
+          r"|October|November|December)")
+#: A condition that fixes a state of affairs on a named day. "on or before"
+#: and "on or after" are boundaries, not points, so they are excluded.
+_POINT_IN_TIME = re.compile(r"(?<!or )\bon\s+" + _MONTH + r"\s+\d{1,2},\s*(?:1[89]|20)\d\d")
+#: "for years other than 1996 and 2003" - years excluded from a rule.
+_EXCEPTION_YEAR = re.compile(r"other than[^.]{0,80}?\b(?:1[89]|20)\d\d\b")
+#: A rate, which is what a phase-down is made of.
+_PERCENTAGE = re.compile(r"%|\bper\s?cent\b", re.I)
+
+
+def rerun_taxonomy_filter(text):
+    """Provisions the round-1 precision check showed the taxonomy mishandled.
+
+    Two groups, and both come from evidence rather than from a hunch:
+
+    - a point-in-time or exception-year condition, which had no correct kind
+      before `at` existed. 84 provisions; three of the four wrong kinds in the
+      precision sample were of this shape, and the recall sample found the
+      same limit from the other side.
+    - a percentage beside a year, which is what a rate phase-down looks like.
+      113 provisions. One row in thirty labelled a phase-down component `end`,
+      which reads as an expiry date.
+
+    One provision is in both groups, so the rerun is 196 of the 814 in scope.
+    """
+    return bool(_POINT_IN_TIME.search(text)
+                or _EXCEPTION_YEAR.search(text)
+                or _PERCENTAGE.search(text))
+
+
+#: Extra predicates applied after a scope's SQL. Filtering here rather than in
+#: SQL keeps the pattern that defines a rerun in one place with the reason it
+#: exists.
+SCOPE_FILTERS = {"rerun_taxonomy": rerun_taxonomy_filter}
+
+
 def provisions(conn, scope, year_filter=True):
     """(kept, filtered_out) provisions for a scope.
 
@@ -292,8 +348,12 @@ def provisions(conn, scope, year_filter=True):
     silently - the recall sample exists because a filter that is wrong is
     invisible in the output.
     """
+    sql = SCOPES.get(scope, SCOPES["cited_and_subtree"])
     rows = [dict(id=r[0], cited_id=r[1], act=r[2], citation_path=r[3], text=r[4])
-            for r in conn.execute(SCOPES[scope])]
+            for r in conn.execute(sql)]
+    extra = SCOPE_FILTERS.get(scope)
+    if extra:
+        rows = [r for r in rows if extra(r["text"])]
     if not year_filter:
         return rows, []
     kept = [r for r in rows if _YEAR_IN.search(r["text"])]
@@ -383,8 +443,8 @@ def verify(bound, text):
     if located is None:
         return False, "phrase is not a verbatim substring of text_en"
     phrase = located
-    if bound.get("bound_kind") not in ("start", "end", "step_down"):
-        return False, "bound_kind is not one of start, end, step_down"
+    if bound.get("bound_kind") not in ("start", "end", "step_down", "at"):
+        return False, "bound_kind is not one of start, end, step_down, at"
 
     date, year, precision = split_bound(bound.get("bound_value"))
     if precision is None:
@@ -614,7 +674,7 @@ def write_outputs(provs, messages, failures, scope, batch_id, run_date,
                 rows.append((pid, prov["cited_id"], prov["act"],
                              prov["citation_path"], phrase,
                              bound["bound_kind"], date or "", year or "",
-                             precision, match, batch_id))
+                             precision, match, batch_id, prompt_sha256()))
             else:
                 rejects.append((prov["act"], prov["citation_path"],
                                 bound.get("phrase", ""),
@@ -650,7 +710,8 @@ def write_outputs(provs, messages, failures, scope, batch_id, run_date,
     _write_csv(DATA / "provision_temporal_scope.csv", rows,
                ["section_id", "cited_section_id", "act", "citation_path",
                 "phrase", "bound_kind", "bound_date", "bound_year",
-                "bound_precision", "phrase_match", "batch_id"])
+                "bound_precision", "phrase_match", "batch_id",
+                "prompt_sha256"])
     _write_csv(DATA / "temporal_scope_rejects.csv", sorted(rejects),
                ["act", "citation_path", "phrase", "bound_kind", "bound_value",
                 "reason"])
@@ -662,6 +723,7 @@ def write_outputs(provs, messages, failures, scope, batch_id, run_date,
                 "reason"])
 
     truncated = [b for b in broken if b[2] == "max_tokens"]
+    prompts = sorted({r[11] for r in rows if len(r) > 11 and r[11]})
     ledger = read_ledger()
     contributing = sorted({r[10] for r in rows if r[10]})
     batches = []
@@ -685,6 +747,11 @@ def write_outputs(provs, messages, failures, scope, batch_id, run_date,
         # provenance claim the moment two batches produced one dataset.
         "batches": batches,
         "prompt_sha256": prompt_sha256(),
+        # Rows may have been produced by more than one version of the prompt.
+        # A single run-level hash would claim this run's prompt for rows a
+        # different one wrote, the same way one max_tokens field once claimed
+        # 16000 for a batch submitted at 4000.
+        "prompt_sha256_in_rows": prompts,
         "run_date": run_date,
         "scope": scope,
         "batch_id_this_run": batch_id,
@@ -792,7 +859,7 @@ def _merge(path, new_rows, covered_ids, id_field):
         for row in reader:
             if int(row[0]) not in covered_ids:
                 kept.append((int(row[0]), int(row[1])) + tuple(row[2:]))
-                while len(kept[-1]) < 11:   # a CSV written before these columns
+                while len(kept[-1]) < 12:   # a CSV written before these columns
                     kept[-1] = kept[-1] + ("",)
     return kept + new_rows
 
@@ -864,7 +931,8 @@ def _write_sample(rows):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--scope", choices=sorted(SCOPES),
+    ap.add_argument("--scope",
+                    choices=sorted(set(SCOPES) | set(SCOPE_FILTERS)),
                     default="cited_and_subtree")
     ap.add_argument("--no-year-filter", action="store_true",
                     help="send provisions with no year token too; they "
@@ -955,6 +1023,15 @@ def main(argv=None):
             or (pathlib.Path.home() / ".config" / "anthropic").exists()):
         sys.exit("No credentials found. Set ANTHROPIC_API_KEY or run `ant auth login`.")
 
+    # Merge unless this run covers the whole default scope. A partial run that
+    # replaced the file would delete every provision it did not cover, which
+    # is exactly what a targeted rerun is: 196 provisions standing in for 814.
+    merging = bool(args.only or args.resume or args.limit
+                   or args.scope in SCOPE_FILTERS)
+    print("write mode: %s" % ("merge - rows for provisions outside this run "
+                              "are kept" if merging else
+                              "REPLACE - the file is rewritten from this run alone"))
+
     run_date = dt.datetime.now(dt.timezone.utc).date().isoformat()
     if args.resume:
         if args.submitted_max_tokens and args.resume not in read_ledger():
@@ -964,7 +1041,7 @@ def main(argv=None):
     else:
         messages, failures, batch_id = submit_and_wait(requests, args.max_tokens)
     run = write_outputs(provs, messages, failures, args.scope, batch_id,
-                        run_date, merge=bool(args.only or args.resume),
+                        run_date, merge=merging,
                         max_tokens=args.max_tokens, resumed=bool(args.resume))
     run["filtered_no_year_token"] = len(filtered)
     run["resumed"] = bool(args.resume)

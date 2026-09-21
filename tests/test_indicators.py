@@ -270,6 +270,33 @@ def test_temporal_bounds_carry_a_date_that_is_in_the_phrase(conn):
     assert not bad, "bounds whose date is not in their phrase: %s" % bad[:5]
 
 
+def test_every_temporal_row_names_the_prompt_that_wrote_it(conn):
+    """Two prompt versions produce rows into one table.
+
+    Round 1 ran under one prompt; the taxonomy rerun adds the `at` kind and
+    the phase-down rule and runs under another. A row that cannot say which
+    wrote it is unreadable evidence, and `meta` must name every version the
+    rows actually carry.
+    """
+    used = {r[0] for r in conn.execute(
+        "SELECT DISTINCT prompt_sha256 FROM provision_temporal_scope")}
+    if not used:
+        pytest.skip("provision_temporal_scope is empty - Phase 2 step 3")
+    assert None not in used, "temporal rows with no prompt_sha256"
+    meta = dict(conn.execute("SELECT key, value FROM meta"))
+    named = {h.strip() for h in
+             meta.get("temporal_scope_prompt_sha256_in_rows", "").split(";")
+             if h.strip()}
+    assert used == named, "prompts in rows %s but meta names %s" % (used, named)
+
+
+def test_bound_kind_is_one_of_the_four(conn):
+    kinds = {r[0] for r in conn.execute(
+        "SELECT DISTINCT bound_kind FROM provision_temporal_scope")}
+    assert kinds <= {"start", "end", "step_down", "at"}, (
+        "unexpected bound_kind values: %s" % (kinds - {"start", "end", "step_down", "at"}))
+
+
 def test_temporal_precision_matches_the_stored_bound(conn):
     """bound_precision must describe what bound_date/bound_year actually hold.
 

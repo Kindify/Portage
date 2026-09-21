@@ -21,6 +21,9 @@
   "effort": "high",
   "model": "claude-opus-5",
   "prompt_sha256": "105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e",
+  "prompt_sha256_in_rows": [
+    "105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e"
+  ],
   "provisions_sent": 997,
   "responses": 1,
   "responses_truncated_at_max_tokens": 0,
