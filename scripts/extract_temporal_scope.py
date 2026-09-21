@@ -51,11 +51,13 @@ RECALL_SAMPLE_SIZE = 20
 #: samples established this: the first sample is the evidence for the first
 #: check, and regenerating it would orphan the results that cite it. A new
 #: round gets a new seed and its own file.
-SAMPLE_SEEDS = {1: 20260920, 2: 20260922}
-RECALL_SEEDS = {1: 20260921, 2: 20260923}
-SAMPLE_FILES = {1: "temporal-scope.md", 2: "temporal-scope-round2.md"}
+SAMPLE_SEEDS = {1: 20260920, 2: 20260922, 3: 20260924}
+RECALL_SEEDS = {1: 20260921, 2: 20260923, 3: 20260925}
+SAMPLE_FILES = {1: "temporal-scope.md", 2: "temporal-scope-round2.md",
+                3: "temporal-scope-round3.md"}
 RECALL_FILES = {1: "temporal-scope-recall.md",
-                2: "temporal-scope-recall-round2.md"}
+                2: "temporal-scope-recall-round2.md",
+                3: "temporal-scope-recall-round3.md"}
 
 #: Published rates, $ per million tokens, for the estimate only. The Batch API
 #: is half of these. Update with the model.
@@ -1049,6 +1051,13 @@ def _write_sample(rows, round_number=1):
     if not pool:
         print("  no rows for sample round %d - not written" % round_number)
         return
+    if round_number > 1 and len(pool) < len(rows):
+        # Drawing 30 rows from the fraction of the corpus that happens to be
+        # on the current prompt makes a sample of a migration, not of the
+        # dataset. Round 2 was drawn that way deliberately, to read a rerun;
+        # a later round should be drawn after the corpus is on one prompt.
+        print("  NOTE: %d of %d rows are on the current prompt - sample round "
+              "%d covers only those" % (len(pool), len(rows), round_number))
     sample = sorted(random.Random(seed).sample(pool, min(SAMPLE_SIZE, len(pool))))
     lines = [
         "# Temporal scope - precision sample, round %d" % round_number,
