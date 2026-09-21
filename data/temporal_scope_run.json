@@ -1,6 +1,14 @@
 {
-  "batch_id_this_run": "msgbatch_01PAmDKwYrxqTy6FGwKztARN",
+  "batch_id_this_run": "msgbatch_016eDcdn9uNXaHf3uegqfihG",
   "batches": [
+    {
+      "batch_id": "msgbatch_016eDcdn9uNXaHf3uegqfihG",
+      "max_tokens": 16000,
+      "provisions_submitted": 27,
+      "rows_from_this_batch": 43,
+      "source": "submitted",
+      "submitted_date": "2026-09-21"
+    },
     {
       "batch_id": "msgbatch_01994ACyYJVJfcoySYAdCGaw",
       "max_tokens": 16000,
@@ -13,7 +21,7 @@
       "batch_id": "msgbatch_01MAMQYzwFgpXmFNT65qsCPu",
       "max_tokens": 4000,
       "provisions_submitted": 997,
-      "rows_from_this_batch": 602,
+      "rows_from_this_batch": 562,
       "source": "recorded_by_hand",
       "submitted_date": "2026-09-20"
     },
@@ -33,13 +41,52 @@
     "105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e",
     "5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a"
   ],
-  "provisions_sent": 10,
-  "responses": 10,
+  "provisions_sent": 27,
+  "responses": 27,
   "responses_truncated_at_max_tokens": 0,
   "responses_unreadable": 0,
-  "rows_accepted": 996,
+  "rows_accepted": 999,
   "rows_rejected": 1,
   "run_date": "2026-09-21",
   "scope": "cited_and_subtree",
+  "selection": {
+    "base_scope": "cited_and_subtree",
+    "how": "only",
+    "limit": null,
+    "named": [
+      "ITA 122.93(2)",
+      "ITA 125.6(2)(a)",
+      "ITA 125.6(2)(b)",
+      "ITA 125.6(2)(c)",
+      "ITA 125.6(2)(d)",
+      "ITA 125.6(2.1)(a)",
+      "ITA 125.6(2.1)(b)",
+      "ITA 125.6(2.1)(c)",
+      "ITA 125.6(2.1)(d)",
+      "ITA 127(9)\"specified percentage\"(a)(ii)",
+      "ITA 127(9)\"specified percentage\"(e)(i)",
+      "ITA 127(9)\"specified percentage\"(e)(ii)",
+      "ITA 127(9)\"specified percentage\"(e)(iii)",
+      "ITA 127.43(3)",
+      "ITA 146(1)\"unused RRSP deduction room\"(b)",
+      "ITA 153(4)",
+      "ITA 18(3.4)",
+      "ITA 191.5(2)",
+      "ITA 66.1(6)\"eligible oil sands mine development expense\"",
+      "ITA 87(2)",
+      "ITR 1100(1)(b)(i)",
+      "ITR 1100(1)(b)(i)(A)",
+      "ITR 1100(1)(c.1)",
+      "ITR 1100(1)(t)",
+      "ITR 1100(2.1)",
+      "ITR 1104(13)\"producer gas\"(b)",
+      "ITR 1104(2)\"certified production\""
+    ],
+    "provisions_selected": 27,
+    "repealed_stubs_excluded": true,
+    "resumed_batch": null,
+    "scope_filter": null,
+    "year_token_filter": true
+  },
   "truncated_citations": []
 }

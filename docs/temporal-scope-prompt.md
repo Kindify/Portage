@@ -111,6 +111,48 @@ still produced nothing, for a person to read. It sits beside the
 thirty-row precision sample, and the two ask opposite questions - is
 what came back right, and is what did not come back really absent.
 
+## The rerun filter
+
+After round 1's hand checks the prompt gained the `at` kind and the
+phase-down rule, and a subset of the corpus was rerun under it rather
+than all 814. The subset is defined by four criteria - three textual,
+one structural:
+
+| criterion | shape | provisions |
+|---|---|---|
+| point-in-time | `on <Month> <d>, <year>`, not "on or before/after" | 74 |
+| exception-year | `other than ... <year>` | 11 |
+| rate | a percent sign, or a decimal coefficient such as `0.35 x A` | 123 |
+| **parent-of-rate** | **no rate of its own, but a child carries one** | **27** |
+
+233 provisions after overlaps.
+
+**The structural criterion is there because the textual ones kept
+missing the same thing.** ITA 125.6(2) is a four-branch rate schedule:
+paragraph (a) covers years beginning before 2023, (b) years ending
+before 2027, (c) years straddling 2026 and 2027, (d) years after 2026,
+and each points at a formula fragment. The rate is in the fragment and
+**the dates are in the paragraph**. Every textual pattern keys on the
+rate, so all of them select the fragment and none select the
+paragraph - and the paragraph is where the wrong labels were.
+
+That was discovered twice before it was named. The first filter looked
+only for a percent sign and missed the decimal coefficient that states
+the journalism credit's rates. The second found the fragment and left
+its parent behind, so the measure stayed in `v_end_bound_by_year` at
+2027 after a rerun that was supposed to remove it. A filter built from
+where the rate is will keep missing where the date is, which is what
+the structural criterion exists to stop.
+
+It is also limit B below, in the one form that can be detected
+mechanically: a condition spanning a parent and its child, where the
+child is what gives the parent away.
+
+**No further widening without a hand check first.** Each round so far
+has been justified by a sample someone read. A filter widened on
+reasoning alone is a guess about what is wrong, and the last two
+guesses were both incomplete.
+
 ## Known limits
 
 Both were found by hand, in recall sample round 1. Neither is a bug:
@@ -148,6 +190,24 @@ Sending a parent's text as context would change every request and so
 the prompt hash, making it a different run of the whole corpus rather
 than a patch. At 12 provisions that is not obviously worth it, which
 is the point of counting first.
+
+**This was tested, and selection turned out not to be a substitute for
+context.** The parent-of-rate criterion was added precisely to catch
+the paragraphs of ITA 125.6(2), and it did: all 27 provisions were
+rerun under the revised prompt. They came back 23 `start`, 17 `end`,
+3 `at` and **zero `step_down`**. Nothing moved.
+
+The reason is visible in the request. The whole of 125.6(2)(b) is
+"if the year begins after 2022 and ends before 2027, an amount
+determined by the formula" - there is no rate in it. Rule 4b asks for
+every dated component of a rate phase-down to be `step_down`, and the
+model cannot tell that this is one, because the rate is in a child
+that the request does not contain.
+
+So the filter now selects the right provisions and the answer is
+still wrong, which is the cleanest possible demonstration that this
+is limit B and not a scope problem. No further widening will fix it;
+only context in the request will, and that is a full rerun.
 
 ## System prompt
 

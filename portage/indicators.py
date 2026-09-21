@@ -985,6 +985,12 @@ def load_temporal_scope(conn, data_dir):
             ("temporal_scope_prompt_sha256", str(run.get("prompt_sha256"))),
             ("temporal_scope_run_date", str(run.get("run_date"))),
             ("temporal_scope_scope", str(run.get("scope"))),
+            # How the last run chose its provisions. The scope alone cannot
+            # tell a 27-provision repair from a 814-provision sweep.
+            ("temporal_scope_selection",
+             str((run.get("selection") or {}).get("how", "unrecorded"))),
+            ("temporal_scope_scope_filter",
+             str((run.get("selection") or {}).get("scope_filter") or "none")),
             ("temporal_scope_method", "extracted_llm"),
             # Every batch that produced a row, and the ceiling each ran under.
             ("temporal_scope_batch_ids",

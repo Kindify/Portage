@@ -325,7 +325,34 @@ _PERCENTAGE = re.compile(r"%|\bper\s?cent\b", re.I)
 _DECIMAL_RATE = re.compile(r"(?<![\d.])0\.\d+")
 
 
-def rerun_taxonomy_filter(text):
+def _is_rate(text):
+    """A rate, however the Act happens to spell it."""
+    return bool(_PERCENTAGE.search(text) or _DECIMAL_RATE.search(text))
+
+
+def carries_rate_in_a_child(text, child_texts):
+    """PARENT-OF-RATE: this provision has no rate, but a child of it does.
+
+    A structural criterion, not a textual one, and the only one in this
+    filter. ITA 125.6(2) is a four-branch rate schedule - paragraph (a) covers
+    years beginning before 2023, (b) years ending before 2027, (c) years
+    straddling 2026 and 2027, (d) years after 2026 - and each paragraph points
+    at a formula fragment. **The rate is in the fragment; the dates are in the
+    paragraph.**
+
+    Every textual pattern in this filter keys on the rate, so all of them
+    select the fragment and none select the paragraph - and the paragraph is
+    where the mislabelled rows are. That happened twice before it was named:
+    once when the percent-sign pattern missed a decimal coefficient, and again
+    when the decimal pattern found the fragment and left its parent behind.
+
+    This is the recall sample's limit B - a condition spanning a parent and
+    its child - in the one form where it can be detected mechanically.
+    """
+    return not _is_rate(text) and any(_is_rate(t) for t in child_texts)
+
+
+def rerun_taxonomy_filter(text, child_texts=()):
     """Provisions the round-1 precision check showed the taxonomy mishandled.
 
     Two groups, and both come from evidence rather than from a hunch:
@@ -345,12 +372,16 @@ def rerun_taxonomy_filter(text):
     provision the phase-down rule was written for. A filter built from the
     shape of the error rather than from the shape of the text will do that.
 
-    206 of the 814 in scope, after overlaps.
+    - a provision that carries no rate itself but whose child carries one,
+      which is where the dates of a phase-down live when the rates are a
+      level down. 27 provisions. See carries_rate_in_a_child.
+
+    233 of the 814 in scope, after overlaps.
     """
     return bool(_POINT_IN_TIME.search(text)
                 or _EXCEPTION_YEAR.search(text)
-                or _PERCENTAGE.search(text)
-                or _DECIMAL_RATE.search(text))
+                or _is_rate(text)
+                or carries_rate_in_a_child(text, child_texts))
 
 
 #: Extra predicates applied after a scope's SQL. Filtering here rather than in
@@ -374,7 +405,17 @@ def provisions(conn, scope, year_filter=True):
             for r in conn.execute(sql)]
     extra = SCOPE_FILTERS.get(scope)
     if extra:
-        rows = [r for r in rows if extra(r["text"])]
+        # One criterion is structural, so the filter needs each provision's
+        # children as well as its own text.
+        children = {}
+        for kid, parent in conn.execute(
+                "SELECT id, parent_id FROM sections WHERE parent_id IS NOT NULL"):
+            children.setdefault(parent, []).append(kid)
+        text_of = dict(conn.execute(
+            "SELECT id, COALESCE(text_en,'') FROM sections"))
+        rows = [r for r in rows
+                if extra(r["text"],
+                         [text_of.get(k, "") for k in children.get(r["id"], [])])]
     if not year_filter:
         return rows, []
     kept = [r for r in rows if _YEAR_IN.search(r["text"])]
@@ -662,7 +703,7 @@ def parse_message(message):
 
 def write_outputs(provs, messages, failures, scope, batch_id, run_date,
                   merge=False, max_tokens=MAX_TOKENS, resumed=False,
-                  sample_round=1):
+                  sample_round=1, selection=None):
     """The committed data, the catalogues, the run record, the samples.
 
     `merge` keeps rows for provisions this run did not cover, so that an
@@ -775,7 +816,12 @@ def write_outputs(provs, messages, failures, scope, batch_id, run_date,
         # 16000 for a batch submitted at 4000.
         "prompt_sha256_in_rows": prompts,
         "run_date": run_date,
+        # What was actually asked for, not just the pool it came from. A run
+        # that sent 27 named provisions and a run that sent all 814 both had
+        # scope "cited_and_subtree", and recording only that made the two
+        # indistinguishable in the record.
         "scope": scope,
+        "selection": selection or {"how": "full_scope"},
         "batch_id_this_run": batch_id,
         "provisions_sent": len(provs),
         "responses": len(messages),
@@ -1107,9 +1153,24 @@ def main(argv=None):
         messages, failures, batch_id = fetch_results(args.resume)
     else:
         messages, failures, batch_id = submit_and_wait(requests, args.max_tokens)
+    selection = {
+        "how": ("only" if args.only else
+                "limit" if args.limit else
+                "scope_filter" if args.scope in SCOPE_FILTERS else "full_scope"),
+        "base_scope": args.scope,
+        "scope_filter": args.scope if args.scope in SCOPE_FILTERS else None,
+        "year_token_filter": not args.no_year_filter,
+        "repealed_stubs_excluded": True,
+        "provisions_selected": len(provs),
+        "named": sorted("%s %s" % (p["act"], p["citation_path"])
+                        for p in provs) if args.only else None,
+        "limit": args.limit,
+        "resumed_batch": args.resume,
+    }
     run = write_outputs(provs, messages, failures, args.scope, batch_id,
                         run_date, merge=merging,
-                        max_tokens=args.max_tokens, resumed=bool(args.resume))
+                        max_tokens=args.max_tokens, resumed=bool(args.resume),
+                        selection=selection)
     run["filtered_no_year_token"] = len(filtered)
     run["resumed"] = bool(args.resume)
     print(json.dumps(run, indent=2, sort_keys=True))
@@ -1237,6 +1298,48 @@ def prompt_doc():
         "thirty-row precision sample, and the two ask opposite questions - is",
         "what came back right, and is what did not come back really absent.",
         "",
+        "## The rerun filter",
+        "",
+        "After round 1's hand checks the prompt gained the `at` kind and the",
+        "phase-down rule, and a subset of the corpus was rerun under it rather",
+        "than all 814. The subset is defined by four criteria - three textual,",
+        "one structural:",
+        "",
+        "| criterion | shape | provisions |",
+        "|---|---|---|",
+        "| point-in-time | `on <Month> <d>, <year>`, not \"on or before/after\" | 74 |",
+        "| exception-year | `other than ... <year>` | 11 |",
+        "| rate | a percent sign, or a decimal coefficient such as `0.35 x A` | 123 |",
+        "| **parent-of-rate** | **no rate of its own, but a child carries one** | **27** |",
+        "",
+        "233 provisions after overlaps.",
+        "",
+        "**The structural criterion is there because the textual ones kept",
+        "missing the same thing.** ITA 125.6(2) is a four-branch rate schedule:",
+        "paragraph (a) covers years beginning before 2023, (b) years ending",
+        "before 2027, (c) years straddling 2026 and 2027, (d) years after 2026,",
+        "and each points at a formula fragment. The rate is in the fragment and",
+        "**the dates are in the paragraph**. Every textual pattern keys on the",
+        "rate, so all of them select the fragment and none select the",
+        "paragraph - and the paragraph is where the wrong labels were.",
+        "",
+        "That was discovered twice before it was named. The first filter looked",
+        "only for a percent sign and missed the decimal coefficient that states",
+        "the journalism credit's rates. The second found the fragment and left",
+        "its parent behind, so the measure stayed in `v_end_bound_by_year` at",
+        "2027 after a rerun that was supposed to remove it. A filter built from",
+        "where the rate is will keep missing where the date is, which is what",
+        "the structural criterion exists to stop.",
+        "",
+        "It is also limit B below, in the one form that can be detected",
+        "mechanically: a condition spanning a parent and its child, where the",
+        "child is what gives the parent away.",
+        "",
+        "**No further widening without a hand check first.** Each round so far",
+        "has been justified by a sample someone read. A filter widened on",
+        "reasoning alone is a guess about what is wrong, and the last two",
+        "guesses were both incomplete.",
+        "",
         "## Known limits",
         "",
         "Both were found by hand, in recall sample round 1. Neither is a bug:",
@@ -1274,6 +1377,24 @@ def prompt_doc():
         "the prompt hash, making it a different run of the whole corpus rather",
         "than a patch. At 12 provisions that is not obviously worth it, which",
         "is the point of counting first.",
+        "",
+        "**This was tested, and selection turned out not to be a substitute for",
+        "context.** The parent-of-rate criterion was added precisely to catch",
+        "the paragraphs of ITA 125.6(2), and it did: all 27 provisions were",
+        "rerun under the revised prompt. They came back 23 `start`, 17 `end`,",
+        "3 `at` and **zero `step_down`**. Nothing moved.",
+        "",
+        "The reason is visible in the request. The whole of 125.6(2)(b) is",
+        "\"if the year begins after 2022 and ends before 2027, an amount",
+        "determined by the formula\" - there is no rate in it. Rule 4b asks for",
+        "every dated component of a rate phase-down to be `step_down`, and the",
+        "model cannot tell that this is one, because the rate is in a child",
+        "that the request does not contain.",
+        "",
+        "So the filter now selects the right provisions and the answer is",
+        "still wrong, which is the cleanest possible demonstration that this",
+        "is limit B and not a scope problem. No further widening will fix it;",
+        "only context in the request will, and that is a full rerun.",
         "",
         "## System prompt",
         "",

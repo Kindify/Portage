@@ -137,42 +137,42 @@ years present: 2022
 
 - [ ] correctly empty   - [ ] a bound was missed: ______
 
-## 16. ITA 82(2)
+## 16. ITA 87(2)(j.4)
 
 years present: 1952
 
-> Where by reason of subsection 56(4) or 56(4.1) or sections 74.1 to 75 of this Act or section 74 of the Income Tax Act, chapter 148 of the Revised Statutes of Canada, 1952, there is included in computing a taxpayer’s income for a taxation year a dividend received by another person, for the purposes of this Act, the dividend shall be deemed to have been received by the taxpayer.
+> for the purposes of subsections 12(3) and 12(9), section 12.2, subsection 20(19) and the definition adjusted cost basis in subsection 148(9) of this Act, and subsections 12(5) and (6) and paragraph 56(1)(d.1) of the Income Tax Act, chapter 148 of the Revised Statutes of Canada, 1952, the new corporation shall be deemed to be the same corporation as, and a continuation of, each predecessor corporation;
 
 - [ ] correctly empty   - [ ] a bound was missed: ______
 
-## 17. ITR 1104~h6
+## 17. ITR 2400(4)(a)
 
-years present: 2006
+years present: 1977
 
-> Classes 43.1 and 43.2 — Energy Conservation Property[NOTE: Application provisions are not included in the consolidated text; see relevant amending Acts and regulations.] SOR/2006-117, s. 4
-
-- [ ] correctly empty   - [ ] a bound was missed: ______
-
-## 18. ITR 5902(5)(a)
-
-years present: 1989
-
-> December 31, 1989; and
+> of subsection 138(14) of the Act, the expressions “Canadian investment fund for a taxation year”, “specified Canadian assets” and “value for the taxation year” have the meanings prescribed for them by subsection 2404(1) as it read in its application to the 1977 taxation year; and
 
 - [ ] correctly empty   - [ ] a bound was missed: ______
 
-## 19. ITR 7305(1)(e)
-
-years present: 2000
-
-> the 2000 calendar year are
-
-- [ ] correctly empty   - [ ] a bound was missed: ______
-
-## 20. ITR 7800
+## 18. ITR 5907(2.6)(a)
 
 years present: 1986
 
-> For the purposes of the definition specified pension plan in subsection 248(1) of the Act, a prescribed arrangement is the Saskatchewan Pension Plan established under The Saskatchewan Pension Plan Act, chapter S-32.2 of the Statutes of Saskatchewan, 1986, as amended from time to time.
+> June 30, 1986, and
+
+- [ ] correctly empty   - [ ] a bound was missed: ______
+
+## 19. ITR 7305(1)(f)
+
+years present: 2001
+
+> the 2001 calendar year are
+
+- [ ] correctly empty   - [ ] a bound was missed: ______
+
+## 20. ITR 7305(1)(o)(i)
+
+years present: 2011
+
+> in Ontario, the Census Divisions Brant, Haldimand-Norfolk, Hamilton and Ottawa, as these divisions were developed by Statistics Canada for the 2011 Census, the Counties of Bruce, Dufferin, Frontenac, Grey, Hastings, Huron, Lanark, Lennox and Addington, Northumberland, Oxford, Perth, Prince Edward, Renfrew and Wellington, the Districts of Parry Sound and Rainy River, as these districts were developed by Statistics Canada for the 2011 Census, the District Municipality of Muskoka, the Regional Municipalities of Halton, Niagara and Waterloo, the Territorial Districts of Algoma and Manitoulin and the United Counties of Prescott and Russell,
 
 - [ ] correctly empty   - [ ] a bound was missed: ______

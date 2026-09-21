@@ -86,8 +86,8 @@ section_id,cited_section_id,act,citation_path,phrase,bound_kind,bound_date,bound
 16347,16282,ITA,122.5(4.5),April 2031,end,2031-04,,month,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 16347,16282,ITA,122.5(4.5),July 2026,start,2026-07,,month,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 16648,16641,ITA,122.91(2)(a),if the taxation year is after 2019,start,,2019,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-16737,16726,ITA,122.93(2),that begins after 2025,start,,2025,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-16737,16726,ITA,122.93(2),that ends before 2031,end,,2031,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+16737,16726,ITA,122.93(2),for a taxation year that begins after 2025,start,,2025,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+16737,16726,ITA,122.93(2),that ends before 2031,end,,2031,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 16780,16764,ITA,"123.4(1)""general rate reduction percentage""(a)",the number of days in the taxation year that are before 2008,end,,2008,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 16781,16764,ITA,"123.4(1)""general rate reduction percentage""(b)",the number of days in the taxation year that are in 2008,step_down,,2008,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 16782,16764,ITA,"123.4(1)""general rate reduction percentage""(c)",that proportion of 9% that the number of days in the taxation year that are in 2009,step_down,,2009,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
@@ -129,24 +129,24 @@ section_id,cited_section_id,act,citation_path,phrase,bound_kind,bound_date,bound
 17196,17168,ITA,"125.6(1)""qualifying labour expenditure""(a)(ii)~f1","the number of days in the taxation year that are after 2022 during which the taxpayer is a qualifying journalism organization, and",start,,2022,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 17196,17168,ITA,"125.6(1)""qualifying labour expenditure""(a)(ii)~f1","the number of days in the taxation year that are after 2022 during which the taxpayer is a qualifying journalism organization, and H",start,,2022,year,whitespace_normalized,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 17197,17168,ITA,"125.6(1)""qualifying labour expenditure""(b)",that begins after 2022,start,,2022,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-17203,17168,ITA,125.6(2)(a),begins before 2023,end,,2023,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-17203,17168,ITA,125.6(2)(a),ends after 2022,start,,2022,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-17205,17168,ITA,125.6(2)(b),ends before 2027,end,,2027,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-17205,17168,ITA,125.6(2)(b),if the year begins after 2022,start,,2022,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-17207,17168,ITA,125.6(2)(c),ends after 2026,start,,2026,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-17207,17168,ITA,125.6(2)(c),the year begins before 2027,end,,2027,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+17203,17168,ITA,125.6(2)(a),begins before 2023,end,,2023,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+17203,17168,ITA,125.6(2)(a),ends after 2022,start,,2022,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+17205,17168,ITA,125.6(2)(b),ends before 2027,end,,2027,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+17205,17168,ITA,125.6(2)(b),the year begins after 2022,start,,2022,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+17207,17168,ITA,125.6(2)(c),ends after 2026,start,,2026,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+17207,17168,ITA,125.6(2)(c),the year begins before 2027,end,,2027,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 17208,17168,ITA,125.6(2)(c)~f1,the number of days in the taxation year that are after 2026,step_down,,2026,year,exact,msgbatch_01PAmDKwYrxqTy6FGwKztARN,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 17208,17168,ITA,125.6(2)(c)~f1,the number of days in the taxation year that are before 2027,step_down,,2027,year,exact,msgbatch_01PAmDKwYrxqTy6FGwKztARN,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
-17209,17168,ITA,125.6(2)(d),if the year begins after 2026,start,,2026,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-17212,17168,ITA,125.6(2.1)(a),begins before 2023,end,,2023,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-17212,17168,ITA,125.6(2.1)(a),ends after 2022,start,,2022,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-17214,17168,ITA,125.6(2.1)(b),ends before 2027,end,,2027,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-17214,17168,ITA,125.6(2.1)(b),if the fiscal period begins after 2022,start,,2022,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-17216,17168,ITA,125.6(2.1)(c),ends after 2026,start,,2026,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-17216,17168,ITA,125.6(2.1)(c),the fiscal period begins before 2027,end,,2027,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+17209,17168,ITA,125.6(2)(d),if the year begins after 2026,start,,2026,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+17212,17168,ITA,125.6(2.1)(a),begins before 2023,end,,2023,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+17212,17168,ITA,125.6(2.1)(a),ends after 2022,start,,2022,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+17214,17168,ITA,125.6(2.1)(b),ends before 2027,end,,2027,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+17214,17168,ITA,125.6(2.1)(b),if the fiscal period begins after 2022,start,,2022,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+17216,17168,ITA,125.6(2.1)(c),ends after 2026,start,,2026,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+17216,17168,ITA,125.6(2.1)(c),if the fiscal period begins before 2027,end,,2027,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 17217,17168,ITA,125.6(2.1)(c)~f1,days in the fiscal period that are after 2026,step_down,,2026,year,exact,msgbatch_01PAmDKwYrxqTy6FGwKztARN,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 17217,17168,ITA,125.6(2.1)(c)~f1,days in the fiscal period that are before 2027,step_down,,2027,year,exact,msgbatch_01PAmDKwYrxqTy6FGwKztARN,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
-17218,17168,ITA,125.6(2.1)(d),if the fiscal period begins after 2026,start,,2026,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+17218,17168,ITA,125.6(2.1)(d),if the fiscal period begins after 2026,start,,2026,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 17225,17222,ITA,"125.7(1)""baseline remuneration""(a)","begins on January 1, 2020",start,2020-01-01,,day,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 17225,17222,ITA,"125.7(1)""baseline remuneration""(a)","ends on March 15, 2020",end,2020-03-15,,day,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 17227,17222,ITA,"125.7(1)""baseline remuneration""(b)(i)","begins on March 1, 2019",start,2019-03-01,,day,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
@@ -301,8 +301,8 @@ section_id,cited_section_id,act,citation_path,phrase,bound_kind,bound_date,bound
 18117,17863,ITA,"127(9)""qualified property""(b.1)","acquired by the taxpayer after March 28, 2012",start,2012-03-28,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 18136,17863,ITA,"127(9)""qualified resource property""","acquired by the taxpayer after March 28, 2012",start,2012-03-28,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 18160,17863,ITA,"127(9)""specified percentage""(a)(i)","acquired before April, 1977, 5%",step_down,1977-04,,month,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
-18161,17863,ITA,"127(9)""specified percentage""(a)(ii)","acquired after March 31, 1977",start,1977-03-31,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-18161,17863,ITA,"127(9)""specified percentage""(a)(ii)","before November 17, 1978",end,1978-11-17,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+18161,17863,ITA,"127(9)""specified percentage""(a)(ii)","acquired after March 31, 1977",start,1977-03-31,,day,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+18161,17863,ITA,"127(9)""specified percentage""(a)(ii)","before November 17, 1978",end,1978-11-17,,day,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 18166,17863,ITA,"127(9)""specified percentage""(a)(iii)(A)","after November 16, 1978 and before 1989, 20%",step_down,1978-11-16,,day,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 18166,17863,ITA,"127(9)""specified percentage""(a)(iii)(A)","after November 16, 1978 and before 1989, 20%",step_down,,1989,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 18167,17863,ITA,"127(9)""specified percentage""(a)(iii)(B)",after 1988,step_down,,1988,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
@@ -349,12 +349,13 @@ section_id,cited_section_id,act,citation_path,phrase,bound_kind,bound_date,bound
 18207,17863,ITA,"127(9)""specified percentage""(c)(i)","before 1987, 7%,",step_down,,1987,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 18208,17863,ITA,"127(9)""specified percentage""(c)(ii)","in 1987, 5%",step_down,,1987,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 18209,17863,ITA,"127(9)""specified percentage""(c)(iii)","in 1988, 3%,",step_down,,1988,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
-18215,17863,ITA,"127(9)""specified percentage""(e)(i)","before November 17, 1978",end,1978-11-17,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-18215,17863,ITA,"127(9)""specified percentage""(e)(i)","made after March 31, 1977",start,1977-03-31,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-18219,17863,ITA,"127(9)""specified percentage""(e)(ii)","before the taxpayer’s taxation year that includes November 1, 1983",end,1983-11-01,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-18219,17863,ITA,"127(9)""specified percentage""(e)(ii)","made by a taxpayer after November 16, 1978",start,1978-11-16,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-18224,17863,ITA,"127(9)""specified percentage""(e)(iii)","before January 1, 1985",end,1985-01-01,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-18224,17863,ITA,"127(9)""specified percentage""(e)(iii)","ends after October 31, 1983",start,1983-10-31,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+18215,17863,ITA,"127(9)""specified percentage""(e)(i)","after March 31, 1977",start,1977-03-31,,day,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+18215,17863,ITA,"127(9)""specified percentage""(e)(i)","before November 17, 1978",end,1978-11-17,,day,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+18219,17863,ITA,"127(9)""specified percentage""(e)(ii)","after November 16, 1978",start,1978-11-16,,day,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+18219,17863,ITA,"127(9)""specified percentage""(e)(ii)","before the taxpayer’s taxation year that includes November 1, 1983",end,1983-11-01,,day,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+18219,17863,ITA,"127(9)""specified percentage""(e)(ii)","in the taxpayer’s taxation year that includes November 1, 1983 or a subsequent taxation year",start,1983-11-01,,day,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+18224,17863,ITA,"127(9)""specified percentage""(e)(iii)","before January 1, 1985",end,1985-01-01,,day,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+18224,17863,ITA,"127(9)""specified percentage""(e)(iii)","ends after October 31, 1983",start,1983-10-31,,day,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 18230,17863,ITA,"127(9)""specified percentage""(e)(iv)(A)",after the taxpayer’s 1984 taxation year,start,,1984,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 18230,17863,ITA,"127(9)""specified percentage""(e)(iv)(A)",before 1995,end,,1995,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 18231,17863,ITA,"127(9)""specified percentage""(e)(iv)(B)",after 1994,start,,1994,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
@@ -387,7 +388,7 @@ section_id,cited_section_id,act,citation_path,phrase,bound_kind,bound_date,bound
 18852,18839,ITA,"127.43(1)""qualifying period""","ends on December 31, 2022",end,2022-12-31,,day,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 18855,18839,ITA,"127.43(1)""total per location expense""(a)~f1",for the first taxation year that ends after 2021,start,,2021,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 18862,18839,ITA,127.43(2),a taxation year that ends after 2021,start,,2021,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
-18863,18839,ITA,127.43(3),that ends after 2021,start,,2021,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+18863,18839,ITA,127.43(3),that ends after 2021,start,,2021,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 18977,18872,ITA,"127.44(1)""qualified CCUS project""(d)(i)","was on or before April 7, 2022",end,2022-04-07,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 18986,18872,ITA,"127.44(1)""specified percentage""(a)(i)(A)",after 2021,step_down,,2021,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 18986,18872,ITA,"127.44(1)""specified percentage""(a)(i)(A)",before 2036,step_down,,2036,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
@@ -459,7 +460,7 @@ section_id,cited_section_id,act,citation_path,phrase,bound_kind,bound_date,bound
 23316,23239,ITA,"146(1)""RRSP dollar limit""(c)","for 2003, $14,500",step_down,,2003,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 23322,23239,ITA,"146(1)""retirement income""(a)","in the case of a plan entered into before March 14, 1957",end,1957-03-14,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 23353,23239,ITA,"146(1)""unused RRSP deduction room""(a)",for taxation years ending before 1991,end,,1991,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-23354,23239,ITA,"146(1)""unused RRSP deduction room""(b)",for taxation years that end after 1990,start,,1990,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+23354,23239,ITA,"146(1)""unused RRSP deduction room""(b)",for taxation years that end after 1990,start,,1990,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 23357,23239,ITA,146(1.1)~f1,each such preceding taxation year that is after 2002,start,,2002,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 23393,23239,ITA,146(4)(a),"has, after June 18, 1971, borrowed money",start,1971-06-18,,day,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 23400,23239,ITA,146(5)(a),a premium paid by the taxpayer after 1990,start,,1990,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
@@ -537,7 +538,7 @@ section_id,cited_section_id,act,citation_path,phrase,bound_kind,bound_date,bound
 26508,26463,ITA,"153(1.03)""eligible employer""(b)","has, on March 18, 2020, a business number",at,2020-03-18,,day,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 26517,26463,ITA,"153(1.03)""eligible period""","that ends on June 19, 2020",end,2020-06-19,,day,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 26517,26463,ITA,"153(1.03)""eligible period""","the period beginning on March 18, 2020",start,2020-03-18,,day,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
-26540,26463,ITA,153(4),received by the taxpayer after 1984,start,,1984,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+26540,26463,ITA,153(4),received by the taxpayer after 1984,start,,1984,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 1633,1624,ITA,18(1)(g),have been issued or the income provisions thereof have been adopted since 1930,start,,1930,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 1635,1624,ITA,18(1)(g)(ii),at the end of 1930,end,,1930,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 1643,1624,ITA,18(1)(l),made or incurred by the taxpayer after 1971,start,,1971,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
@@ -547,7 +548,7 @@ section_id,cited_section_id,act,citation_path,phrase,bound_kind,bound_date,bound
 1973,1624,ITA,18(11)(c)(i),"entered into before November 13, 1981",end,1981-11-13,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 1687,1624,ITA,18(2.1),"an obligation entered into by the taxpayer before April 1, 1977",end,1977-04-01,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 1687,1624,ITA,18(2.1),"money that was borrowed by the taxpayer before April 1, 1977",end,1977-04-01,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-1730,1624,ITA,18(3.4),made or incurred before 1992,end,,1992,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+1730,1624,ITA,18(3.4),made or incurred before 1992,end,,1992,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 1735,1624,ITA,18(3.4)~c1,"in 1988, 80%",step_down,,1988,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 1735,1624,ITA,18(3.4)~c1,"in 1989, 60%",step_down,,1989,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 1735,1624,ITA,18(3.4)~c1,"in 1990, 40%",step_down,,1990,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
@@ -581,6 +582,8 @@ section_id,cited_section_id,act,citation_path,phrase,bound_kind,bound_date,bound
 2866,2863,ITA,19.1(2)(a),"entered into on or before January 23, 1975",end,1975-01-23,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 2867,2863,ITA,19.1(2)(b),"before September 22, 1976",end,1976-09-22,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 2867,2863,ITA,19.1(2)(b),"entered into after January 23, 1975",start,1975-01-23,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+28757,28751,ITA,191.5(2),at any time during a 2021 taxation year,at,,2021,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+28757,28751,ITA,191.5(2),for its 2022 taxation year,at,,2022,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 28758,28751,ITA,191.5(2)~f1,2020 taxation years of the corporation,at,,2020,year,exact,msgbatch_01PAmDKwYrxqTy6FGwKztARN,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 28758,28751,ITA,191.5(2)~f1,2021 taxation years of the corporation,at,,2021,year,exact,msgbatch_01PAmDKwYrxqTy6FGwKztARN,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 28758,28751,ITA,191.5(2)~f1,at the end of each 2021 taxation year of the corporation,at,,2021,year,exact,msgbatch_01PAmDKwYrxqTy6FGwKztARN,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
@@ -678,8 +681,8 @@ section_id,cited_section_id,act,citation_path,phrase,bound_kind,bound_date,bound
 6869,6778,ITA,"66.1(6)""cumulative Canadian exploration expense""~f1","paid by the taxpayer after May 6, 1974 and before that time",start,1974-05-06,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 6869,6778,ITA,"66.1(6)""cumulative Canadian exploration expense""~f1","paid to the taxpayer after May 6, 1974 and before May 25, 1976",start,1974-05-06,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 6869,6778,ITA,"66.1(6)""cumulative Canadian exploration expense""~f1","paid to the taxpayer after May 6, 1974 and before May 25, 1976",end,1976-05-25,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-6885,6778,ITA,"66.1(6)""eligible oil sands mine development expense""",before 2016,end,,2016,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-6885,6778,ITA,"66.1(6)""eligible oil sands mine development expense""","incurred by the taxpayer after March 21, 2011",start,2011-03-21,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+6885,6778,ITA,"66.1(6)""eligible oil sands mine development expense""",before 2016,end,,2016,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+6885,6778,ITA,"66.1(6)""eligible oil sands mine development expense""","incurred by the taxpayer after March 21, 2011",start,2011-03-21,,day,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 6886,6778,ITA,"66.1(6)""eligible oil sands mine development expense""~f1",100% if the expense is incurred before 2013,step_down,,2013,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 6886,6778,ITA,"66.1(6)""eligible oil sands mine development expense""~f1",30% if the expense is incurred in 2015,step_down,,2015,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 6886,6778,ITA,"66.1(6)""eligible oil sands mine development expense""~f1",60% if the expense is incurred in 2014,step_down,,2014,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
@@ -719,7 +722,7 @@ section_id,cited_section_id,act,citation_path,phrase,bound_kind,bound_date,bound
 9351,9259,ITA,85(2.1)(b)(i)(A),"paid after November 21, 1985",start,1985-11-21,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 9354,9259,ITA,85(2.1)(b)(ii),"after November 21, 1985",start,1985-11-21,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 9383,9259,ITA,85(7),"that day is after May 6, 1974",start,1974-05-06,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-9601,9585,ITA,87(2),amalgamation of two or more corporations after 1971,start,,1971,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+9601,9585,ITA,87(2),after 1971,start,,1971,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 9617,9585,ITA,87(2)(d.1),deemed to have acquired the property before 1972,end,,1972,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 9671,9585,ITA,87(2)(l.1)(i)(A)(I),that ended after 1976,start,,1976,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 9694,9585,ITA,87(2)(p),as it read in its application to a taxation year before the 1972 taxation year,end,,1972,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
@@ -756,18 +759,18 @@ section_id,cited_section_id,act,citation_path,phrase,bound_kind,bound_date,bound
 38850,38844,ITR,1100(0.3),"before April 19, 2021",end,2021-04-19,,day,exact,msgbatch_01PAmDKwYrxqTy6FGwKztARN,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 38852,38844,ITR,1100(0.3)(a)(i),"after April 18, 2021",start,2021-04-18,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 38853,38844,ITR,1100(0.3)(a)(ii),"after December 31, 2021",start,2021-12-31,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-38925,38844,ITR,1100(1)(b)(i),"after November 12, 1981",start,1981-11-12,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-38926,38844,ITR,1100(1)(b)(i)(A),the capital cost of the property was incurred before 2024,end,,2024,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-38926,38844,ITR,1100(1)(b)(i)(A),the capital cost of the property was incurred before 2030,end,,2030,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+38925,38844,ITR,1100(1)(b)(i),"after November 12, 1981",start,1981-11-12,,day,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+38926,38844,ITR,1100(1)(b)(i)(A),the capital cost of the property was incurred before 2024,end,,2024,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+38926,38844,ITR,1100(1)(b)(i)(A),the capital cost of the property was incurred before 2030,end,,2030,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 38937,38844,ITR,1100(1)(c)(i)(B)(I),if the property becomes available for use in the year and before 2024,step_down,,2024,year,exact,msgbatch_01PAmDKwYrxqTy6FGwKztARN,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 38938,38844,ITR,1100(1)(c)(i)(B)(II),"0.25, if the property becomes available for use in the year and after 2023",step_down,,2023,year,exact,msgbatch_01PAmDKwYrxqTy6FGwKztARN,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 38940,38844,ITR,1100(1)(c)(i)(C)(I),"0.5, if the property becomes available for use in the year and before 2030",step_down,,2030,year,exact,msgbatch_01PAmDKwYrxqTy6FGwKztARN,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 38941,38844,ITR,1100(1)(c)(i)(C)(II),"0.25, if the property becomes available for use in the year and after 2029",step_down,,2029,year,exact,msgbatch_01PAmDKwYrxqTy6FGwKztARN,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
-38944,38844,ITR,1100(1)(c.1),for a taxation year that ends before 2027,end,,2027,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+38944,38844,ITR,1100(1)(c.1),for a taxation year that ends before 2027,end,,2027,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 38945,38844,ITR,1100(1)(c.1)(i),at the beginning of 2017,at,,2017,year,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 39004,38844,ITR,1100(1)(sb)(ii),"after April 1, 1972",start,1972-04-01,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 39004,38844,ITR,1100(1)(sb)(ii),"before August 1, 1974",end,1974-08-01,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-39012,38844,ITR,1100(1)(t),"for the taxation year that includes November 12, 1981",start,1981-11-12,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+39012,38844,ITR,1100(1)(t),"for the taxation year that includes November 12, 1981",at,1981-11-12,,day,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 39015,38844,ITR,1100(1)(t)(i)(B),"acquired after November 12, 1981",start,1981-11-12,,day,exact,msgbatch_01994ACyYJVJfcoySYAdCGaw,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 39020,38844,ITR,1100(1)(ta),"for taxation years commencing after November 12, 1981",start,1981-11-12,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 39037,38844,ITR,1100(1)(ta)(iii),"acquired by him before November 13, 1981",end,1981-11-13,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
@@ -879,8 +882,8 @@ section_id,cited_section_id,act,citation_path,phrase,bound_kind,bound_date,bound
 39244,38844,ITR,1100(2.021)(a)(i),if the amounts are incurred before 2025,end,,2025,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 39245,38844,ITR,1100(2.021)(a)(i)(A),the property was acquired after 2024,start,,2024,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 39252,38844,ITR,1100(2.021)(a)(ii),if the amounts are incurred after 2024,start,,2024,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-39254,38844,ITR,1100(2.1),"after November 12, 1981",start,1981-11-12,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-39254,38844,ITR,1100(2.1),before 1983,end,,1983,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+39254,38844,ITR,1100(2.1),"after November 12, 1981",start,1981-11-12,,day,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
+39254,38844,ITR,1100(2.1),before 1983,end,,1983,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 39255,38844,ITR,1100(2.1)(a),before 1982,end,,1982,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 39255,38844,ITR,1100(2.1)(a),"entered into before November 13, 1981",end,1981-11-13,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 39256,38844,ITR,1100(2.1)(b),before 1982,end,,1982,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
@@ -908,11 +911,11 @@ section_id,cited_section_id,act,citation_path,phrase,bound_kind,bound_date,bound
 39489,38844,ITR,1100(27)(c)(iii),"before February 10, 1988",end,1988-02-10,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 39491,38844,ITR,1100(27)(d),"before February 10, 1988",end,1988-02-10,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 40331,39937,ITR,"1104(13)""producer gas""(a)",becomes available for use by the taxpayer before 2025,end,,2025,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-40332,39937,ITR,"1104(13)""producer gas""(b)",that becomes available for use by the taxpayer after 2024,start,,2024,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+40332,39937,ITR,"1104(13)""producer gas""(b)",that becomes available for use by the taxpayer after 2024,start,,2024,year,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 39943,39937,ITR,"1104(2)""certified feature film""","commenced after November 18, 1974",start,1974-11-18,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 39943,39937,ITR,"1104(2)""certified feature film""","the film was completed before May 26, 1976",end,1976-05-26,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 39943,39937,ITR,"1104(2)""certified feature film""","the photography or art work was commenced before May 26, 1976",end,1976-05-26,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
-39961,39937,ITR,"1104(2)""certified production""","were commenced after May 25, 1976",start,1976-05-25,,day,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
+39961,39937,ITR,"1104(2)""certified production""","were commenced after May 25, 1976",start,1976-05-25,,day,exact,msgbatch_016eDcdn9uNXaHf3uegqfihG,5d4fbebf557535ebdcf651adda9f3b9d12093e3e7b3da50aedc79177fb876a4a
 39986,39937,ITR,"1104(2)""certified production""(h)",acquired in 1987,start,,1987,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 39986,39937,ITR,"1104(2)""certified production""(h)",commenced before the end of 1987,end,,1987,year,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
 39986,39937,ITR,"1104(2)""certified production""(h)","was completed before July, 1988",end,1988-07,,month,exact,msgbatch_01MAMQYzwFgpXmFNT65qsCPu,105e4ae4d8e52a8264a85f937a329ac261025c3f3a2c4e8ffe45914bac17f16e
