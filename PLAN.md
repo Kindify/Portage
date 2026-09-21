@@ -2,8 +2,8 @@
 
 ## Where things stand
 
-**Phase 0 and Phase 1 are complete and released** - `v0.1.0` and `v0.2.0`.
-**Phase 2 is in progress: steps 1 and 2 of 4 are done.**
+**Phases 0, 1 and 2 are complete and released** - `v0.1.0`, `v0.2.0`, `v0.3.0`.
+**Next: the findings review, then the Excise Tax Act.**
 
 Start here, then read `CLAUDE.md`. Where this file and CLAUDE.md differ,
 **CLAUDE.md governs**, with four amendments Matt adopted on 2026-09-20, recorded
@@ -16,10 +16,10 @@ in `docs/decisions.md` and summarised under Phase 2 below.
 | `portage.sqlite` | built by `python -m portage.build` in about a minute |
 | Phase 0 | 49,032 provision records, ITA and ITR, both languages, consolidation 2026-06-18 |
 | Phase 1 | 229 tax expenditure measures per language, 774 references, 6,440 cost cells |
-| Phase 2 | 13 views, 60 indicator columns, 6 new extraction tables |
-| tests | 105 + 22 Phase 2, `pytest` |
-| catalogues | 24, each diffed against a committed fixture in `tests/fixtures/` |
-| hand checks | 40 provision spot checks + 60 reference checks, all recorded |
+| Phase 2 | 13 views, 61 indicator columns, 6 extraction tables, 1,086 temporal bounds |
+| tests | 146, `pytest`, none skipped |
+| catalogues | 25, each diffed against a committed fixture in `tests/fixtures/` |
+| hand checks | 40 provision + 60 reference + 110 temporal, all recorded with results |
 
 ### The documents, and what each is for
 
@@ -330,7 +330,53 @@ agree; this list is here so the change is not invisible:
 The cost basis column is also named as built - `cost_figure_basis`, five values
 - rather than `cost_total_or_component`, which was never written.
 
-### Step 3 - temporal scope - **NEXT**
+### Step 3 - temporal scope - **DONE**
+
+1,086 date-bounded conditions over 814 provisions, one prompt hash, one
+reject, none dropped by the build's independent re-check. Model
+`claude-opus-5`, effort `high`, Batch API, ~$25 across seven batches.
+
+| kind | rows | |
+|---|---|---|
+| `start` | 323 | opens a period |
+| `step_down` | 304 | a dated component of a rate schedule |
+| `end` | 266 | closes a period |
+| `at` | 193 | holds on, as of, or including a named date |
+
+**Six hand-check samples, all read, all with recorded results**: precision and
+recall for three rounds, plus a supplementary sample drawn from `at` alone.
+Every one found something, and what each found is in its RESULTS file.
+
+The sequence is worth reading before the next extraction is designed. Round 1
+found conditions that are not boundaries labelled as boundaries, and the fix
+was a fourth kind. Round 2 found the same class again plus version references
+over-extracted by that new kind. Three rounds of widening a *filter* fixed
+less each time, and the last proved why - the filter selected exactly the
+right provisions and the answers did not change, because the cause was missing
+context, not missing selection. Putting the parent and children in the request
+closed both classes at once. Then the `at` sample found that the same change
+had **opened** a third class.
+
+### Pending: the designated-period rerun
+
+**Prompt version 4 is written and has not been run.** Rule 3b: a designated
+reference period, specified month or qualifying period is a label, not a
+bound. Hash `dc8fe9d65aeb75ab5724bec4efdb68a2079fefee494851b8be8e4f648c8d6d11`.
+
+94 of the 193 `at` rows are in this class, across 69 provisions in ITA 122.5
+and 125.7, which also hold 42 `end` and 39 `start` rows a rerun would revisit.
+
+**Scheduled for the next consolidation**, not now, because `at` contributes no
+value to any indicator - `earliest_end_date` and `latest_end_date` read
+`bound_kind = 'end'`, `has_step_down` reads `'step_down'`, and the only effect
+is that two measures whose sole temporal rows are `at` report
+`has_step_down = 0` rather than null. Rerunning the whole scope at v4 is
+~$10 and the corpus will be rebuilt against the new consolidation anyway.
+
+To run it: `python -m scripts.extract_temporal_scope` with write mode
+REPLACE, then `--samples 4` once round 4 seeds are wired.
+
+#### How it was run
 
 The one extraction in Phase 2 that needs a model, and the only part of this
 project that calls an API. CLAUDE.md's rules are strict and are not negotiable:
@@ -345,6 +391,43 @@ project that calls an API. CLAUDE.md's rules are strict and are not negotiable:
 
 Scope is the cited provisions only. Expect this to be the slowest step and the
 one most likely to produce a finding about the Act rather than about the code.
+
+## What is next
+
+### 1. The findings review
+
+Phase 2 produced findings that are not yet anyone's decision. They are
+scattered across `docs/decisions.md`, six RESULTS files and
+`data/extraction_notes.csv`, and the useful next step is a person reading them
+together and deciding which are dataset questions and which are Phase 3:
+
+- **Six taxonomy edges** in `extraction_notes.csv`, none of them errors: where
+  a rate schedule's edges stop being part of the schedule (twice), whether an
+  enumeration of named years is a fifth shape, whether a deemed date belongs
+  in the taxonomy, a borderline step-down, and the period-definition class.
+- **Limit A**: 84 provisions carry point-in-time or exception-year conditions,
+  of which 10 produce nothing. Exception-year still has no kind.
+- **Limit B**: mostly closed by context, but 12 provisions had a condition
+  spanning a parent and a child before the rebuild; nobody has recounted.
+- **The designated-period rerun** above.
+- **Beneficiary counts**: 75 of 458 parsed, all English. Still the weakest
+  thing in the dataset, and unlike a reference a wrong count does not announce
+  itself.
+
+### 2. The Excise Tax Act
+
+Deferred since Phase 1 and now the largest single gain available: **53
+references name it and none can resolve**, because the instrument is not held.
+Adding it is the same shape of work as Phase 0 - fetch the XML, parse to
+citation paths, join bilingually - and it converts 53 unresolved references
+into resolved ones without changing any rule.
+
+Also still open, carried from earlier phases: Schedules are not captured in
+either instrument; table structure is not modelled; ranges are endpoints only;
+and the commercial-redistribution question needs a real opinion, not a
+guess.
+
+---
 
 ### Step 4 - acceptance tests - **MOSTLY DONE**
 

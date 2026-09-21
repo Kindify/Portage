@@ -14,7 +14,7 @@ and because Matt reads it before the key is supplied.
 | effort | `high`, adaptive thinking |
 | max_tokens | 16000 |
 | transport | Batch API, one request per provision, keyed by `custom_id` |
-| prompt sha256 | `cac8c075da7afb4bade5f8a660c0932dc8998789912e81a958adf8778317496d` |
+| prompt sha256 | `dc8fe9d65aeb75ab5724bec4efdb68a2079fefee494851b8be8e4f648c8d6d11` |
 
 The hash covers the system prompt, the user template, the response
 schema, the model and the effort together. Change any one of them and
@@ -162,7 +162,36 @@ guesses were both incomplete.
 
 ## Known limits
 
-Both were found by hand, in recall sample round 1. Neither is a bug:
+**C. Designated periods extracted as `at` - fixed in the prompt, not
+yet rerun.** Where a provision names which month or period something
+is - "the month specified in subsection (3.003) is January 2023",
+"for the fourth qualifying period, June 2020" - the date identifies
+the period rather than conditioning when the provision operates. The
+round-3 `at` sample found three of ten rows in this class.
+
+**94 of the 193 `at` rows** are in ITA 122.5 or 125.7, across 69
+provisions; a phrase test for specified month, qualifying period or
+reference period selects 59 of those, all inside the same two
+sections. Nearly half of `at` is this one class. Those provisions also
+hold 42 `end` and 39 `start` rows a rerun would revisit.
+
+Rule 3b in the prompt above fixes it. The rerun is **scheduled for
+the next consolidation**, when the corpus is rebuilt anyway, because
+**`at` contributes no value to any indicator**: `earliest_end_date`
+and `latest_end_date` read `bound_kind = 'end'` and `has_step_down`
+reads `'step_down'`. Its only effect is that two measures whose sole
+temporal rows are `at` report `has_step_down = 0` rather than null.
+The wrong rows are visible in `provision_temporal_scope` and move no
+published indicator.
+
+Worth recording plainly: the context rebuild **made this class
+worse**. Round 2's recall sample read several of these provisions as
+correctly empty, which they were; the rebuild began extracting them
+as `at`. A change that closed two error classes opened a third, and
+only a sample drawn from one kind found it.
+
+The two limits below were found by hand in recall sample round 1.
+Neither is a bug:
 each is a thing the design cannot express, counted so the size is
 known before anyone decides whether to widen it.
 
@@ -265,6 +294,14 @@ Rules, in order of importance:
    year that merely names a statute, a form, a program, a published document
    or a defined term - "the Budget Implementation Act, 2023", "the 2021
    Census", "Class 43.1". These are labels, not conditions.
+3b. A DESIGNATED PERIOD IS A LABEL, NOT A BOUND. Where a provision names
+   which month or period something is - "the month specified in subsection
+   (3.003) is January 2023", "for the fourth qualifying period, June 2020",
+   "the current reference period is March 2021" - the date identifies the
+   period, it does not condition when the provision operates. Specified
+   months, qualifying periods and reference periods are designations of the
+   same species as a statute title or a class number. Return nothing for
+   them, including no "at".
 3a. A VERSION REFERENCE IS A LABEL, NOT A BOUND. "as it read on March 31,
    1977", "as it read immediately before 1996", "as that section applied to
    the 1994 taxation year", "within the meaning assigned by ... as it read
